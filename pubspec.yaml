@@ -1,0 +1,49 @@
+name: service_track
+description: "ServiceTrack - Gestão Inteligente e Confiável de Visitas Técnicas (Mobile Standalone)"
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.5
+  flutter: ">=3.47.6"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Shared Kernel & Arquitetura do Autor
+  kortex:
+    path: ../kortex
+  dnolib:
+    path: ../.dnolib
+
+  # Persistência Local Relacional (SQLite)
+  sqflite: ^2.3.0
+  sqflite_common_ffi: ^2.3.0
+
+  # Segurança & Criptografia Local
+  flutter_secure_storage: ^9.2.2
+  local_auth: ^2.2.0
+
+  # Evidências, Câmera e Localização
+  geolocator: ^13.0.1
+  image_picker: ^1.1.2
+  image: ^4.2.0
+  signature: ^5.5.0
+
+  # Laudo Técnico PDF & Compartilhamento Nativo
+  pdf: ^3.11.1
+  share_plus: ^10.0.2
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  intl: ^0.19.0
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
