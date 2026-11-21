@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'app/theme/app_colors.dart';
 import 'modules/auth/data/biometric/.index.dart';
@@ -11,9 +12,18 @@ import 'modules/auth/features/recovery/.index.dart';
 import 'modules/auth/ui/lock/.index.dart';
 import 'modules/auth/ui/onboarding/.index.dart';
 import 'modules/auth/ui/recovery/.index.dart';
+import 'modules/profile/data/.index.dart';
+import 'modules/profile/domain/ports/.index.dart';
+import 'modules/profile/ui/profile/.index.dart';
 
 void main() {
-  runApp(const ServiceTrackApp());
+  runApp(
+    ServiceTrackApp(
+      profileRepository: FileTechnicianProfileRepository(
+        baseDir: getApplicationSupportDirectory,
+      ),
+    ),
+  );
 }
 
 /// Aplicativo raiz do ServiceTrack (standalone).
@@ -23,6 +33,7 @@ class ServiceTrackApp extends StatelessWidget {
     super.key,
     this.credentialRepository,
     this.biometricAuth,
+    this.profileRepository,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -31,11 +42,16 @@ class ServiceTrackApp extends StatelessWidget {
   /// Porta biométrica (injeção para testes).
   final IBiometricAuthPort? biometricAuth;
 
+  /// Repositório de perfil comercial (injeção para testes).
+  final ITechnicianProfileRepositoryPort? profileRepository;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
         SecureCredentialStore(backend: const FlutterSecureStorageBackend());
     final bio = biometricAuth ?? LocalAuthBiometricAdapter();
+    final profileRepo =
+        profileRepository ?? MemoryTechnicianProfileRepository();
     return MaterialApp(
       title: 'ServiceTrack',
       theme: ThemeData(
@@ -43,16 +59,17 @@ class ServiceTrackApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.surface,
         useMaterial3: true,
       ),
-      home: _AppEntry(repo: repo, bio: bio),
+      home: _AppEntry(repo: repo, bio: bio, profileRepo: profileRepo),
     );
   }
 }
 
 class _AppEntry extends StatefulWidget {
-  const _AppEntry({required this.repo, required this.bio});
+  const _AppEntry({required this.repo, required this.bio, required this.profileRepo});
 
   final IAuthCredentialRepositoryPort repo;
   final IBiometricAuthPort bio;
+  final ITechnicianProfileRepositoryPort profileRepo;
 
   @override
   State<_AppEntry> createState() => _AppEntryState();
@@ -94,11 +111,28 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     }
   }
 
+  void _goProfile() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<ProfileController>(
+              create: (_) => ProfileController(repository: widget.profileRepo),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: const ProfilePage(),
+        ),
+      ),
+    );
+  }
+
   void _goHome() {
     if (!mounted) return;
     _isLockVisible = false;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const _HomePlaceholder()),
+      MaterialPageRoute<void>(builder: (_) => _HomePlaceholder(onProfile: _goProfile)),
     );
   }
 
@@ -200,7 +234,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
               ],
               child: const LockPage(),
             ),
-          AppEntryRoute.home => const _HomePlaceholder(),
+          AppEntryRoute.home => _HomePlaceholder(onProfile: _goProfile),
         };
       },
     );
@@ -208,12 +242,26 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
 }
 
 class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder();
+  const _HomePlaceholder({required this.onProfile});
+
+  final VoidCallback onProfile;
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Home - ServiceTrack')),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ServiceTrack'),
+        actions: [
+          IconButton(
+            key: const Key('home-profile'),
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Perfil comercial',
+            onPressed: onProfile,
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          ),
+        ],
+      ),
+      body: const Center(child: Text('Home - ServiceTrack')),
     );
   }
 }
