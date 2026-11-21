@@ -17,4 +17,9 @@ abstract interface class IBiometricAuthPort {
   /// Implementações devem ser fail-closed: qualquer exceção/estado ambíguo
   /// retorna um [BiometricAuthResult] que não libera acesso.
   Future<BiometricAuthResult> authenticate();
+
+  /// Autentica via credencial do SO (biometria ou PIN/padrão/senha do device).
+  ///
+  /// Usado apenas para recuperação UC-01.04 (INV-SEC-12). Fail-closed.
+  Future<BiometricAuthResult> authenticateDeviceCredential();
 }

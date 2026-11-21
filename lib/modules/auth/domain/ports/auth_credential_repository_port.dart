@@ -46,6 +46,11 @@ abstract class IAuthCredentialRepositoryPort {
   /// Indica se a sessão lembrada ainda está válida (INV-SEC-08).
   Future<IResult<bool, ValidationError>> hasValidRememberedSession();
 
+  /// Redefine apenas o PIN, preservando senha/identidade/dados (UC-01.04/A2).
+  Future<IResult<bool, ValidationError>> resetPin({
+    required SecurityPin newPin,
+  });
+
   /// Apaga as credenciais conhecidas do cofre.
   Future<IResult<bool, ValidationError>> clearAll();
 }

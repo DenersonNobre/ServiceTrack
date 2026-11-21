@@ -7,8 +7,10 @@ import 'modules/auth/data/credential_store/.index.dart';
 import 'modules/auth/domain/ports/.index.dart';
 import 'modules/auth/features/app_entry/.index.dart';
 import 'modules/auth/features/biometric_unlock/.index.dart';
+import 'modules/auth/features/recovery/.index.dart';
 import 'modules/auth/ui/lock/.index.dart';
 import 'modules/auth/ui/onboarding/.index.dart';
+import 'modules/auth/ui/recovery/.index.dart';
 
 void main() {
   runApp(const ServiceTrackApp());
@@ -100,6 +102,34 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     );
   }
 
+  void _goRecovery() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<PinRecoveryController>(
+              create: (_) => PinRecoveryController(
+                useCase: PinRecoveryUseCase(
+                  repository: widget.repo,
+                  biometricAuth: widget.bio,
+                ),
+                repository: widget.repo,
+                onRecovered: () {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  _goHome();
+                },
+              ),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: const PinRecoveryPage(),
+        ),
+      ),
+    );
+  }
+
   void _goLock() {
     if (!mounted) return;
     _isLockVisible = true;
@@ -113,6 +143,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
                     BiometricUnlockUseCase(biometricAuth: widget.bio),
                 repository: widget.repo,
                 onUnlocked: _goHome,
+                onForgotPin: _goRecovery,
               ),
               dispose: (c) => c.dispose(),
             ),
@@ -162,6 +193,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
                         BiometricUnlockUseCase(biometricAuth: widget.bio),
                     repository: widget.repo,
                     onUnlocked: _goHome,
+                    onForgotPin: _goRecovery,
                   ),
                   dispose: (c) => c.dispose(),
                 ),

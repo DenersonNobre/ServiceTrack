@@ -19,6 +19,7 @@ final class LockController extends IKortexController {
     required this.biometricUnlock,
     required this.repository,
     this.onUnlocked,
+    this.onForgotPin,
   });
 
   /// Caso de uso de biometria.
@@ -29,6 +30,9 @@ final class LockController extends IKortexController {
 
   /// Callback invocado quando o acesso é liberado.
   final void Function()? onUnlocked;
+
+  /// Callback para fluxo "Esqueci meu PIN" (UC-01.04).
+  final void Function()? onForgotPin;
 
   /// Indica que a avaliação biométrica inicial está em andamento.
   final KortexSignal<bool> checkingBiometric = KortexSignal<bool>(true);
@@ -112,6 +116,11 @@ final class LockController extends IKortexController {
     } finally {
       submittingPin.value = false;
     }
+  }
+
+  /// Aciona fluxo de recuperação de PIN (UC-01.04).
+  void forgotPin() {
+    onForgotPin?.call();
   }
 
   Future<void> _grantAccess() async {

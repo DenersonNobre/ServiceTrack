@@ -52,6 +52,12 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
   /// Chave do bloqueio temporário do PIN (epoch ms UTC).
   static const pinLockedUntilKey = 'sec_pin_locked_until';
 
+  /// Chave do contador de falhas da senha mestre (UC-01.04/A1).
+  static const passwordFailCountKey = 'sec_password_fail_count';
+
+  /// Chave do bloqueio temporário da senha mestre (epoch ms UTC).
+  static const passwordLockedUntilKey = 'sec_password_locked_until';
+
   /// Chave da preferência de biometria.
   static const biometricsEnabledKey = 'sec_biometrics_enabled';
 
@@ -185,9 +191,28 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
           ),
         );
       }
+      if (await _isPasswordLockedOut()) {
+        return const Failure(
+          ValidationError(
+            code: AuthFailureCodes.passwordLockedOut,
+            message: 'Senha bloqueada temporariamente. Tente mais tarde.',
+          ),
+        );
+      }
       final hash = CredentialHash.parse(stored);
       if (hash.matches(utf8.encode(attempt))) {
+        await _backend.delete(passwordFailCountKey);
+        await _backend.delete(passwordLockedUntilKey);
         return const Success(true);
+      }
+      final failures = await _registerPasswordFailure();
+      if (failures >= maxAttempts) {
+        return const Failure(
+          ValidationError(
+            code: AuthFailureCodes.passwordLockedOut,
+            message: 'Senha bloqueada temporariamente. Tente mais tarde.',
+          ),
+        );
       }
       return const Failure(
         ValidationError(
@@ -277,6 +302,33 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
   }
 
   @override
+  Future<IResult<bool, ValidationError>> resetPin({
+    required SecurityPin newPin,
+  }) async {
+    try {
+      final hasCreds = await _backend.read(pinHashKey);
+      if (hasCreds == null) {
+        return const Failure(
+          ValidationError(
+            code: AuthFailureCodes.noCredentials,
+            message: 'Nenhuma credencial cadastrada neste aparelho.',
+          ),
+        );
+      }
+      final pinHash = CredentialHash.create(
+        password: utf8.encode(newPin.value),
+        iterations: profile.iterations,
+      );
+      await _backend.write(pinHashKey, pinHash.encode());
+      await _backend.delete(pinFailCountKey);
+      await _backend.delete(pinLockedUntilKey);
+      return const Success(true);
+    } on Exception catch (cause) {
+      return Failure(_storeUnavailable(cause));
+    }
+  }
+
+  @override
   Future<IResult<bool, ValidationError>> clearAll() async {
     try {
       await _backend.delete(userIdKey);
@@ -284,6 +336,8 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
       await _backend.delete(pinHashKey);
       await _backend.delete(pinFailCountKey);
       await _backend.delete(pinLockedUntilKey);
+      await _backend.delete(passwordFailCountKey);
+      await _backend.delete(passwordLockedUntilKey);
       await _backend.delete(biometricsEnabledKey);
       await _backend.delete(rememberMeKey);
       await _backend.delete(lastUnlockAtKey);
@@ -346,6 +400,32 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
       final lockedUntil = _now().add(capped);
       await _backend.write(
         pinLockedUntilKey,
+        '${lockedUntil.millisecondsSinceEpoch}',
+      );
+    }
+    return failures;
+  }
+
+  Future<bool> _isPasswordLockedOut() async {
+    final raw = await _backend.read(passwordLockedUntilKey);
+    if (raw == null) return false;
+    final epochMs = int.tryParse(raw);
+    if (epochMs == null) return false;
+    final lockedUntil = DateTime.fromMillisecondsSinceEpoch(epochMs);
+    return _now().isBefore(lockedUntil);
+  }
+
+  Future<int> _registerPasswordFailure() async {
+    final raw = await _backend.read(passwordFailCountKey);
+    final failures = (int.tryParse(raw ?? '') ?? 0) + 1;
+    await _backend.write(passwordFailCountKey, '$failures');
+    if (failures >= maxAttempts) {
+      final extra = failures - maxAttempts;
+      final backoff = baseLockout * (1 << extra);
+      final capped = backoff > maxLockout ? maxLockout : backoff;
+      final lockedUntil = _now().add(capped);
+      await _backend.write(
+        passwordLockedUntilKey,
         '${lockedUntil.millisecondsSinceEpoch}',
       );
     }

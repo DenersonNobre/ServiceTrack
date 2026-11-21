@@ -32,11 +32,30 @@ final class LocalAuthBiometricAdapter implements IBiometricAuthPort {
 
   @override
   Future<BiometricAuthResult> authenticate() async {
+    return _authenticate(
+      localizedReason: 'Desbloqueie o ServiceTrack para continuar.',
+      biometricOnly: true,
+    );
+  }
+
+  @override
+  Future<BiometricAuthResult> authenticateDeviceCredential() async {
+    return _authenticate(
+      localizedReason:
+          'Confirme a identidade no dispositivo para redefinir seu PIN do ServiceTrack.',
+      biometricOnly: false,
+    );
+  }
+
+  Future<BiometricAuthResult> _authenticate({
+    required String localizedReason,
+    required bool biometricOnly,
+  }) async {
     try {
       final didAuthenticate = await _auth.authenticate(
-        localizedReason: 'Desbloqueie o ServiceTrack para continuar.',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
+        localizedReason: localizedReason,
+        options: AuthenticationOptions(
+          biometricOnly: biometricOnly,
           stickyAuth: true,
           useErrorDialogs: false,
           sensitiveTransaction: false,

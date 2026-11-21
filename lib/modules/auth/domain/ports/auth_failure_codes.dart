@@ -17,6 +17,9 @@ abstract final class AuthFailureCodes {
   /// Senha mestre incorreta na verificação/recuperação.
   static const wrongPassword = 'ERR_SENHA_INCORRETA';
 
+  /// Senha mestre bloqueada temporariamente por rate-limit (UC-01.04/A1).
+  static const passwordLockedOut = 'ERR_SENHA_BLOQUEADA_TEMPORARIAMENTE';
+
   /// Nenhuma credencial cadastrada no cofre.
   static const noCredentials = 'ERR_CREDENCIAIS_NAO_CADASTRADAS';
 

@@ -84,6 +84,19 @@ final class LockPage extends IKortexPage<LockController> {
                           onBackspace: controller.backspace,
                           onSubmit: controller.submitPin,
                         ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.center,
+                        child: TextButton(
+                          key: const Key('lock-forgot-pin'),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(48, 48),
+                            foregroundColor: AppColors.primaryAction,
+                          ),
+                          onPressed: controller.forgotPin,
+                          child: const Text('Esqueci meu PIN'),
+                        ),
+                      ),
                     ],
                   );
                 },

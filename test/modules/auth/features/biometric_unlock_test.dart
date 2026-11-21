@@ -16,6 +16,10 @@ final class _FakeBiometricAuthPort implements IBiometricAuthPort {
     calls++;
     return _result;
   }
+
+  @override
+  Future<BiometricAuthResult> authenticateDeviceCredential() async =>
+      BiometricAuthResult.unavailable;
 }
 
 void main() {

@@ -49,6 +49,11 @@ final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
       const Success(false);
 
   @override
+  Future<IResult<bool, ValidationError>> resetPin({
+    required SecurityPin newPin,
+  }) async => const Success(true);
+
+  @override
   Future<IResult<bool, ValidationError>> clearAll() async => const Success(true);
 }
 

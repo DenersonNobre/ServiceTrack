@@ -15,6 +15,10 @@ final class _FakeBio implements IBiometricAuthPort {
   Future<bool> canAuthenticate() async => true;
   @override
   Future<BiometricAuthResult> authenticate() async => result;
+
+  @override
+  Future<BiometricAuthResult> authenticateDeviceCredential() async =>
+      BiometricAuthResult.unavailable;
 }
 
 final class _FakeRepo implements IAuthCredentialRepositoryPort {
@@ -65,6 +69,11 @@ final class _FakeRepo implements IAuthCredentialRepositoryPort {
   @override
   Future<IResult<bool, ValidationError>> hasValidRememberedSession() async =>
       const Success(false);
+  @override
+  Future<IResult<bool, ValidationError>> resetPin({
+    required SecurityPin newPin,
+  }) async => const Success(true);
+
   @override
   Future<IResult<bool, ValidationError>> clearAll() async => const Success(true);
 }
