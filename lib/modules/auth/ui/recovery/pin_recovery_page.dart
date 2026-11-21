@@ -140,6 +140,7 @@ class _MasterPassword extends StatelessWidget {
           ),
         ),
         TextButton(
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
           onPressed: controller.loading.value ? null : controller.backToChoose,
           child: const Text('Voltar'),
         ),
@@ -182,6 +183,7 @@ class _NewPin extends StatelessWidget {
             onSubmit: controller.submitNewPin,
           ),
         TextButton(
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
           onPressed: controller.loading.value ? null : controller.backToChoose,
           child: const Text('Cancelar'),
         ),
