@@ -15,9 +15,13 @@ import '../../domain/value_objects/auth_credentials.dart';
 /// Estado e ações do formulário de onboarding inicial.
 final class OnboardingController extends IKortexController {
   /// Cria o controller com a [repository] de credenciais.
-  OnboardingController({required this.repository});
+  OnboardingController({required this.repository, this.onCompleted});
 
+  /// Porta de persistência segura.
   final IAuthCredentialRepositoryPort repository;
+
+  /// Callback opcional após cadastro concluído.
+  final void Function()? onCompleted;
 
   /// Campos do formulário.
   final KortexSignal<String> name = KortexSignal('');
@@ -69,7 +73,10 @@ final class OnboardingController extends IKortexController {
         pin: pinResult.getOrThrow(),
       );
       result.fold(
-        onSuccess: (_) => submitted.value = true,
+        onSuccess: (_) {
+          submitted.value = true;
+          onCompleted?.call();
+        },
         onFailure: (error) => submitError.value = error.message,
       );
     } finally {

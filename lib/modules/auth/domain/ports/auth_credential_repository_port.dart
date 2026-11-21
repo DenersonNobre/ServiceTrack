@@ -19,11 +19,32 @@ abstract class IAuthCredentialRepositoryPort {
     required SecurityPin pin,
   });
 
+  /// Indica se há credenciais cadastradas no cofre.
+  Future<IResult<bool, ValidationError>> hasCredentials();
+
   /// Verifica a tentativa de PIN; aplica rate-limit com bloqueio temporário.
   Future<IResult<bool, ValidationError>> verifyPin(String attempt);
 
   /// Verifica a tentativa de senha mestre (recuperação de acesso).
   Future<IResult<bool, ValidationError>> verifyPassword(String attempt);
+
+  /// Retorna se a biometria está habilitada pelo usuário.
+  Future<IResult<bool, ValidationError>> isBiometricsEnabled();
+
+  /// Persiste a preferência de biometria.
+  Future<IResult<bool, ValidationError>> setBiometricsEnabled(bool enabled);
+
+  /// Retorna se "Lembrar de Mim" está habilitado.
+  Future<IResult<bool, ValidationError>> isRememberMeEnabled();
+
+  /// Persiste a preferência "Lembrar de Mim".
+  Future<IResult<bool, ValidationError>> setRememberMe(bool enabled);
+
+  /// Registra o instante do último desbloqueio bem-sucedido.
+  Future<IResult<bool, ValidationError>> markUnlocked();
+
+  /// Indica se a sessão lembrada ainda está válida (INV-SEC-08).
+  Future<IResult<bool, ValidationError>> hasValidRememberedSession();
 
   /// Apaga as credenciais conhecidas do cofre.
   Future<IResult<bool, ValidationError>> clearAll();

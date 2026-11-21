@@ -26,6 +26,7 @@ dependencies:
   crypto: ^3.0.8
   flutter_secure_storage: ^9.2.2
   local_auth: ^2.2.0
+  local_auth_platform_interface: ^1.1.0
 
   # Evidências, Câmera e Localização
   geolocator: ^13.0.1

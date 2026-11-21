@@ -31,12 +31,40 @@ final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
   }
 
   @override
+  Future<IResult<bool, ValidationError>> hasCredentials() async =>
+      const Success(false);
+
+  @override
   Future<IResult<bool, ValidationError>> verifyPin(String attempt) async =>
       const Success(true);
 
   @override
   Future<IResult<bool, ValidationError>> verifyPassword(String attempt) async =>
       const Success(true);
+
+  @override
+  Future<IResult<bool, ValidationError>> isBiometricsEnabled() async =>
+      const Success(false);
+
+  @override
+  Future<IResult<bool, ValidationError>> setBiometricsEnabled(bool enabled) async =>
+      const Success(true);
+
+  @override
+  Future<IResult<bool, ValidationError>> isRememberMeEnabled() async =>
+      const Success(false);
+
+  @override
+  Future<IResult<bool, ValidationError>> setRememberMe(bool enabled) async =>
+      const Success(true);
+
+  @override
+  Future<IResult<bool, ValidationError>> markUnlocked() async =>
+      const Success(true);
+
+  @override
+  Future<IResult<bool, ValidationError>> hasValidRememberedSession() async =>
+      const Success(false);
 
   @override
   Future<IResult<bool, ValidationError>> clearAll() async => const Success(true);
