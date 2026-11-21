@@ -18,8 +18,10 @@ import 'modules/profile/ui/profile/.index.dart';
 import 'app/database/app_database.dart';
 import 'modules/customers/data/.index.dart';
 import 'modules/customers/domain/ports/.index.dart';
+import 'modules/customers/domain/value_objects/.index.dart';
 import 'modules/customers/ui/form/.index.dart';
 import 'modules/customers/ui/list/.index.dart';
+import 'modules/customers/ui/locations/.index.dart';
 
 void main() {
   final db = createAppDatabase();
@@ -29,6 +31,7 @@ void main() {
         baseDir: getApplicationSupportDirectory,
       ),
       customerRepository: CustomerSqliteRepository(provider: db),
+      serviceLocationRepository: ServiceLocationSqliteRepository(provider: db),
     ),
   );
 }
@@ -42,6 +45,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.biometricAuth,
     this.profileRepository,
     this.customerRepository,
+    this.serviceLocationRepository,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -56,6 +60,9 @@ class ServiceTrackApp extends StatelessWidget {
   /// Repositório de clientes (injeção para testes).
   final ICustomerRepositoryPort? customerRepository;
 
+  /// Repositório de locais de atendimento (injeção para testes).
+  final IServiceLocationRepositoryPort? serviceLocationRepository;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
@@ -64,6 +71,7 @@ class ServiceTrackApp extends StatelessWidget {
     final profileRepo =
         profileRepository ?? MemoryTechnicianProfileRepository();
     final customerRepo = customerRepository ?? MemoryCustomerRepository();
+    final locationRepo = serviceLocationRepository ?? MemoryServiceLocationRepository();
     return MaterialApp(
       title: 'ServiceTrack',
       theme: ThemeData(
@@ -71,18 +79,31 @@ class ServiceTrackApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.surface,
         useMaterial3: true,
       ),
-      home: _AppEntry(repo: repo, bio: bio, profileRepo: profileRepo, customerRepo: customerRepo),
+      home: _AppEntry(
+        repo: repo,
+        bio: bio,
+        profileRepo: profileRepo,
+        customerRepo: customerRepo,
+        locationRepo: locationRepo,
+      ),
     );
   }
 }
 
 class _AppEntry extends StatefulWidget {
-  const _AppEntry({required this.repo, required this.bio, required this.profileRepo, required this.customerRepo});
+  const _AppEntry({
+    required this.repo,
+    required this.bio,
+    required this.profileRepo,
+    required this.customerRepo,
+    required this.locationRepo,
+  });
 
   final IAuthCredentialRepositoryPort repo;
   final IBiometricAuthPort bio;
   final ITechnicianProfileRepositoryPort profileRepo;
   final ICustomerRepositoryPort customerRepo;
+  final IServiceLocationRepositoryPort locationRepo;
 
   @override
   State<_AppEntry> createState() => _AppEntryState();
@@ -158,6 +179,70 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     );
   }
 
+  void _goLocationForm({
+    required String customerId,
+    String? locationId,
+    ServiceLocation? initial,
+    VoidCallback? onSaved,
+  }) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<ServiceLocationFormController>(
+              create: (_) => ServiceLocationFormController(
+                repository: widget.locationRepo,
+                customerId: customerId,
+                locationId: locationId,
+                initial: initial,
+              ),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: ServiceLocationFormPage(onSaved: () {
+            Navigator.of(context).pop();
+            onSaved?.call();
+          }),
+        ),
+      ),
+    );
+  }
+
+  void _goLocations(Customer customer) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<ServiceLocationListController>(
+              create: (_) => ServiceLocationListController(
+                repository: widget.locationRepo,
+                customerId: customer.id,
+              ),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: Builder(
+            builder: (ctx) {
+              final list = ctx.readKortex<ServiceLocationListController>();
+              return ServiceLocationListPage(
+                customerName: customer.name.value,
+                onAdd: () => _goLocationForm(customerId: customer.id, onSaved: list.load),
+                onEdit: (l) => _goLocationForm(
+                  customerId: customer.id,
+                  locationId: l.id,
+                  initial: l,
+                  onSaved: list.load,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _goCustomers() {
     if (!mounted) return;
     Navigator.of(context).push(
@@ -175,6 +260,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
               return CustomerListPage(
                 onAdd: () => _goCustomerForm(onSaved: list.load),
                 onEdit: (c) => _goCustomerForm(customerId: c.id, onSaved: list.load),
+                onLocations: _goLocations,
               );
             },
           ),

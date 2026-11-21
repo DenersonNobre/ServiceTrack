@@ -10,9 +10,10 @@ import '../../domain/value_objects/customer.dart';
 import 'customer_list_controller.dart';
 
 final class CustomerListPage extends IKortexPage<CustomerListController> {
-  const CustomerListPage({super.key, this.onAdd, this.onEdit});
+  const CustomerListPage({super.key, this.onAdd, this.onEdit, this.onLocations});
   final VoidCallback? onAdd;
   final void Function(Customer customer)? onEdit;
+  final void Function(Customer customer)? onLocations;
 
   @override
   Widget buildPage(BuildContext context, CustomerListController controller) {
@@ -51,6 +52,13 @@ final class CustomerListPage extends IKortexPage<CustomerListController> {
                   subtitle: Text(c.whatsapp.digits),
                   onTap: () => onEdit?.call(c),
                   minTileHeight: 56,
+                  trailing: IconButton(
+                    key: Key('customer-locations-${c.id}'),
+                    icon: const Icon(Icons.place_outlined),
+                    tooltip: 'Locais',
+                    onPressed: () => onLocations?.call(c),
+                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                  ),
                 );
               },
             );
