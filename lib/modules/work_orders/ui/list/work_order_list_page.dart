@@ -1,11 +1,14 @@
-// Lista de Ordens de Serviço (UC-03.01 base, UC-03.02 filtros).
+// Lista de Ordens de Serviço (UC-03.01 base, UC-03.02 filtros, UC-03.03 check-in).
 //
-// SRP: renderizar lista de OS, filtros e delegar ações.
+// SRP: renderizar lista de OS, filtros e ações de check-in. Não contém regra de negócio.
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../domain/value_objects/check_in_bypass_reason.dart';
+import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
 final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
@@ -33,6 +36,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
             }
             if (controller.error.value != null) return Center(child: Text(controller.error.value!));
             final items = controller.filteredItems;
+            final startingId = controller.startingId.value;
             return Column(
               children: [
                 SingleChildScrollView(
@@ -68,6 +72,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                           separatorBuilder: (_, _) => const Divider(height: 1),
                           itemBuilder: (context, i) {
                             final wo = items[i];
+                            final isStarting = startingId == wo.id;
                             return ListTile(
                               key: Key('wo-${wo.id}'),
                               title: Text(wo.serviceDescription),
@@ -75,6 +80,24 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                 '${wo.status.code} • ${wo.scheduledAt.toLocal().toString().substring(0, 16)}',
                               ),
                               minTileHeight: 56,
+                              trailing: wo.status == WorkOrderStatus.scheduled
+                                  ? SizedBox(
+                                      width: 48,
+                                      height: 48,
+                                      child: isStarting
+                                          ? const Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                          : IconButton(
+                                              key: Key('wo-start-${wo.id}'),
+                                              icon: const Icon(Icons.play_arrow),
+                                              tooltip: 'Iniciar atendimento',
+                                              onPressed: () => _startService(context, controller, wo.id),
+                                              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                                            ),
+                                    )
+                                  : null,
                             );
                           },
                         ),
@@ -86,6 +109,72 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       ),
     );
   }
+
+  Future<void> _startService(
+    BuildContext context,
+    WorkOrderListController controller,
+    String workOrderId,
+  ) async {
+    final result = await controller.startService(workOrderId);
+    if (!context.mounted) return;
+    if (result.isSuccess) return;
+    final err = result.getOrNullFailure()!;
+    final reason = _bypassReasonForCode(err.code);
+    if (reason == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.message)));
+      return;
+    }
+    final bypassed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Localização indisponível'),
+        content: Text(
+          '${err.message}\n\nDeseja registrar o check-in sem GPS? '
+          'Este bypass será auditado com motivo explícito.',
+        ),
+        actions: [
+          if (err.code == 'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE' ||
+              err.code == 'ERR_LOCALIZACAO_SERVICO_DESLIGADO')
+            TextButton(
+              onPressed: () async {
+                if (err.code == 'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE') {
+                  await Geolocator.openAppSettings();
+                } else {
+                  await Geolocator.openLocationSettings();
+                }
+              },
+              child: const Text('Abrir configurações'),
+            ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          FilledButton(
+            key: const Key('wo-bypass-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primaryAction),
+            child: const Text('Registrar bypass'),
+          ),
+        ],
+      ),
+    );
+    if (bypassed != true || !context.mounted) return;
+    final bypassResult = await controller.startServiceWithBypass(workOrderId, reason);
+    if (!context.mounted) return;
+    if (bypassResult.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(bypassResult.getOrNullFailure()!.message)),
+      );
+    }
+  }
+
+  CheckInBypassReason? _bypassReasonForCode(String code) => switch (code) {
+        'ERR_LOCALIZACAO_PERMISSAO_NEGADA' => CheckInBypassReason.permissionDenied,
+        'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE' =>
+          CheckInBypassReason.permissionDeniedPermanently,
+        'ERR_LOCALIZACAO_SERVICO_DESLIGADO' => CheckInBypassReason.gpsUnavailable,
+        'ERR_LOCALIZACAO_TIMEOUT' => CheckInBypassReason.timeout,
+        'ERR_LOCALIZACAO_INDISPONIVEL' => CheckInBypassReason.gpsUnavailable,
+        'ERR_LOCALIZACAO_DADOS_INVALIDOS' => CheckInBypassReason.gpsUnavailable,
+        _ => null,
+      };
 
   String _filterLabel(WorkOrderListFilter f) => switch (f) {
         WorkOrderListFilter.all => 'Todas',

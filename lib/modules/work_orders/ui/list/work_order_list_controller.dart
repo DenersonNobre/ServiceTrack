@@ -1,12 +1,15 @@
-// Controller da lista de OS (UC-03.01 base, UC-03.02 filtros).
+// Controller da lista de OS (UC-03.01 base, UC-03.02 filtros, UC-03.03 check-in).
 //
-// SRP: carregar e expor OS com filtros de visita. Não renderiza UI.
+// SRP: carregar, filtrar e iniciar atendimento de OS. Não renderiza UI.
 
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
+import '../../domain/ports/location_service_port.dart';
 import '../../domain/ports/work_order_repository_port.dart';
+import '../../domain/value_objects/check_in_bypass_reason.dart';
+import '../../domain/value_objects/location_capture.dart';
 import '../../domain/value_objects/work_order.dart';
 import '../../domain/value_objects/work_order_status.dart';
 
@@ -14,14 +17,16 @@ import '../../domain/value_objects/work_order_status.dart';
 enum WorkOrderListFilter { all, today, scheduled, inProgress, completed }
 
 final class WorkOrderListController extends IKortexController {
-  WorkOrderListController({required this.repository});
+  WorkOrderListController({required this.repository, required this.locationService});
   final IWorkOrderRepositoryPort repository;
+  final ILocationServicePort locationService;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<List<WorkOrder>> items = KortexSignal<List<WorkOrder>>([]);
   final KortexSignal<String?> error = KortexSignal<String?>(null);
   final KortexSignal<WorkOrderListFilter> filter =
       KortexSignal<WorkOrderListFilter>(WorkOrderListFilter.all);
+  final KortexSignal<String?> startingId = KortexSignal<String?>(null);
   bool _loaded = false;
 
   /// Itens filtrados pelo chip selecionado.
@@ -66,11 +71,77 @@ final class WorkOrderListController extends IKortexController {
     }
   }
 
+  /// Inicia atendimento com captura de GPS (INV-SEC-19: fail-closed).
+  Future<IResult<WorkOrder, ValidationError>> startService(String workOrderId) async {
+    if (startingId.value != null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe um check-in em andamento.'),
+      );
+    }
+    startingId.value = workOrderId;
+    final loc = await locationService.getCurrentLocation();
+    final result = await _applyStart(workOrderId, switch (loc) {
+      Success(:final value) => LocationCaptured(value),
+      Failure(:final value) => _BypassOrFailure.failure(value),
+    });
+    startingId.value = null;
+    return result;
+  }
+
+  /// Inicia atendimento com bypass tipado explícito (INV-SEC-17).
+  Future<IResult<WorkOrder, ValidationError>> startServiceWithBypass(
+    String workOrderId,
+    CheckInBypassReason reason,
+  ) async {
+    if (startingId.value != null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe um check-in em andamento.'),
+      );
+    }
+    startingId.value = workOrderId;
+    final result = await _applyStart(workOrderId, LocationBypassed(reason: reason));
+    startingId.value = null;
+    return result;
+  }
+
+  Future<IResult<WorkOrder, ValidationError>> _applyStart(
+    String workOrderId,
+    Object captureOrFailure,
+  ) async {
+    if (captureOrFailure is _BypassOrFailure) {
+      return Failure(captureOrFailure.error);
+    }
+    final capture = captureOrFailure as LocationCapture;
+    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+    if (wo == null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+      );
+    }
+    final started = wo.startService(capture);
+    switch (started) {
+      case Failure<WorkOrder, ValidationError>(:final value):
+        return Failure(value);
+      case Success<WorkOrder, ValidationError>(:final value):
+        final saved = await repository.save(value);
+        if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+        }
+        return saved;
+    }
+  }
+
   @override
   void onDispose() {
     loading.dispose();
     items.dispose();
     error.dispose();
     filter.dispose();
+    startingId.dispose();
   }
+}
+
+class _BypassOrFailure {
+  const _BypassOrFailure.failure(this.error);
+  final ValidationError error;
 }

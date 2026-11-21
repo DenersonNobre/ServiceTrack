@@ -5,7 +5,11 @@ import 'package:dnolib/sqlite/sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/data/work_order_migration.dart';
 import 'package:service_track/modules/work_orders/data/work_order_sqlite_repository.dart';
+import 'package:service_track/modules/work_orders/domain/value_objects/check_in_record.dart';
+import 'package:service_track/modules/work_orders/domain/value_objects/geo_point.dart';
+import 'package:service_track/modules/work_orders/domain/value_objects/location_capture.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
+import 'package:service_track/modules/work_orders/domain/value_objects/work_order_status.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -22,8 +26,8 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_wo.db',
-        dbVersion: 3,
-        migrations: [WorkOrderMigration.v3()],
+        dbVersion: 4,
+        migrations: [WorkOrderMigration.v3(), WorkOrderMigration.v4()],
         factory: databaseFactoryFfi,
       );
       repo = WorkOrderSqliteRepository(provider: provider);
@@ -47,6 +51,26 @@ void main() {
       final all = await repo.findAll();
       expect(all.getOrNull()!.length, 1);
       expect(all.getOrNull()!.first.serviceDescription, 'Manutenção');
+    });
+
+    test('UC-03.03 - persiste check-in GPS e restaura', () async {
+      final wo = WorkOrder.tryCreate(
+        id: 'wo1',
+        customerId: 'c1',
+        serviceDescription: 'Manutenção',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+      ).getOrNull()!;
+      final point = GeoPoint.tryCreate(
+        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+      ).getOrNull()!;
+      final started = wo.startService(LocationCaptured(point)).getOrNull()!;
+      await repo.save(started);
+
+      final all = await repo.findAll();
+      final loaded = all.getOrNull()!.first;
+      expect(loaded.status, WorkOrderStatus.inProgress);
+      expect(loaded.checkIn, isA<CheckInGps>());
     });
   });
 }

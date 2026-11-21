@@ -1,10 +1,10 @@
-// Migração SQLite de Ordens de Serviço (UC-03.01).
+// Migração SQLite de Ordens de Serviço (UC-03.01, UC-03.03).
 //
-// SRP: definir schema da tabela work_orders.
+// SRP: definir schema/migrações da tabela work_orders.
 
 import 'package:dnolib/sqlite/sqlite.dart';
 
-/// Migração v3 da tabela work_orders.
+/// Migrações da tabela work_orders.
 final class WorkOrderMigration {
   static const table = 'work_orders';
 
@@ -25,5 +25,14 @@ final class WorkOrderMigration {
         ''',
         'CREATE INDEX IF NOT EXISTS idx_work_orders_scheduled ON work_orders(scheduled_at)',
         'CREATE INDEX IF NOT EXISTS idx_work_orders_status ON work_orders(status)',
+      ]);
+
+  /// v4: check-in georreferenciado/auditável (INV-02, INV-SEC-17/18).
+  static Migration v4() => Migration(version: 4, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN check_in_lat REAL',
+        'ALTER TABLE work_orders ADD COLUMN check_in_lng REAL',
+        'ALTER TABLE work_orders ADD COLUMN check_in_at TEXT',
+        'ALTER TABLE work_orders ADD COLUMN check_in_source TEXT',
+        'ALTER TABLE work_orders ADD COLUMN check_in_bypass_reason TEXT',
       ]);
 }

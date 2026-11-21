@@ -63,6 +63,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.customerRepository,
     this.serviceLocationRepository,
     this.workOrderRepository,
+    this.locationService,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -83,6 +84,9 @@ class ServiceTrackApp extends StatelessWidget {
   /// Repositório de Ordens de Serviço (injeção para testes).
   final IWorkOrderRepositoryPort? workOrderRepository;
 
+  /// Porta de localização (injeção para testes).
+  final ILocationServicePort? locationService;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
@@ -93,6 +97,7 @@ class ServiceTrackApp extends StatelessWidget {
     final customerRepo = customerRepository ?? MemoryCustomerRepository();
     final locationRepo = serviceLocationRepository ?? MemoryServiceLocationRepository();
     final workOrderRepo = workOrderRepository ?? MemoryWorkOrderRepository();
+    final location = locationService ?? GeolocatorLocationService();
     return MaterialApp(
       title: 'ServiceTrack',
       theme: ThemeData(
@@ -107,6 +112,7 @@ class ServiceTrackApp extends StatelessWidget {
         customerRepo: customerRepo,
         locationRepo: locationRepo,
         workOrderRepo: workOrderRepo,
+        locationService: location,
       ),
     );
   }
@@ -120,6 +126,7 @@ class _AppEntry extends StatefulWidget {
     required this.customerRepo,
     required this.locationRepo,
     required this.workOrderRepo,
+    required this.locationService,
   });
 
   final IAuthCredentialRepositoryPort repo;
@@ -128,6 +135,7 @@ class _AppEntry extends StatefulWidget {
   final ICustomerRepositoryPort customerRepo;
   final IServiceLocationRepositoryPort locationRepo;
   final IWorkOrderRepositoryPort workOrderRepo;
+  final ILocationServicePort locationService;
 
   @override
   State<_AppEntry> createState() => _AppEntryState();
@@ -343,7 +351,10 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
         builder: (_) => KortexScope(
           providers: [
             KortexProvider<WorkOrderListController>(
-              create: (_) => WorkOrderListController(repository: widget.workOrderRepo),
+              create: (_) => WorkOrderListController(
+                repository: widget.workOrderRepo,
+                locationService: widget.locationService,
+              ),
               dispose: (c) => c.dispose(),
             ),
           ],

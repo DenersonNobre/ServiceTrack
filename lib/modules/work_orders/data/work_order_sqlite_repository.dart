@@ -1,4 +1,4 @@
-// Repositório SQLite de Ordens de Serviço (UC-03.01).
+// Repositório SQLite de Ordens de Serviço (UC-03.01, UC-03.03).
 //
 // SRP: persistir e carregar OS em SQLite. Não contém UI.
 
@@ -8,6 +8,9 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/ports/work_order_repository_port.dart';
+import '../domain/value_objects/check_in_bypass_reason.dart';
+import '../domain/value_objects/check_in_record.dart';
+import '../domain/value_objects/geo_point.dart';
 import '../domain/value_objects/work_order.dart';
 import '../domain/value_objects/work_order_status.dart';
 import 'work_order_migration.dart';
@@ -22,7 +25,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     try {
       final db = await provider.db;
       final now = DateTime.now().toUtc().toIso8601String();
-      final data = {
+      final data = <String, Object?>{
         'id': workOrder.id,
         'customer_id': workOrder.customerId,
         'service_description': workOrder.serviceDescription,
@@ -32,8 +35,29 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         'estimated_value_scale': workOrder.estimatedValue.scale,
         'status': workOrder.status.code,
         'updated_at': now,
+        'check_in_lat': null,
+        'check_in_lng': null,
+        'check_in_at': null,
+        'check_in_source': null,
+        'check_in_bypass_reason': null,
       };
-      final existing = await db.query(WorkOrderMigration.table, where: 'id = ?', whereArgs: [workOrder.id], limit: 1);
+      final checkIn = workOrder.checkIn;
+      if (checkIn case CheckInGps(:final point)) {
+        data['check_in_lat'] = point.latitude;
+        data['check_in_lng'] = point.longitude;
+        data['check_in_at'] = point.timestampUtc.toIso8601String();
+        data['check_in_source'] = 'GPS';
+      } else if (checkIn case CheckInBypassed(:final reason, :final timestampUtc)) {
+        data['check_in_at'] = timestampUtc.toIso8601String();
+        data['check_in_source'] = 'BYPASS';
+        data['check_in_bypass_reason'] = reason.code;
+      }
+      final existing = await db.query(
+        WorkOrderMigration.table,
+        where: 'id = ?',
+        whereArgs: [workOrder.id],
+        limit: 1,
+      );
       if (existing.isEmpty) {
         data['created_at'] = now;
         await db.insert(WorkOrderMigration.table, data);
@@ -80,7 +104,6 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final scheduledRaw = (row['scheduled_at'] ?? '') as String;
     final scheduledAt = DateTime.tryParse(scheduledRaw)?.toUtc() ?? DateTime.now().toUtc();
     final money = Money.fromMinorUnits(minorInt, currencyCode: currency, scale: scale);
-    // Reconstruct with tryCreate-like validation bypass for persisted trusted shape; use internal fields by recreating via tryCreate and then checking status.
     final created = WorkOrder.tryCreate(
       id: (row['id'] ?? '') as String,
       customerId: (row['customer_id'] ?? '') as String,
@@ -88,22 +111,59 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       scheduledAt: scheduledAt,
       estimatedValue: money,
     );
-    return switch (created) {
-      Success<WorkOrder, ValidationError>(:final value) => Success(_withStatus(value, status)),
-      Failure<WorkOrder, ValidationError>(:final value) => Failure(value),
-    };
+    if (created case Failure<WorkOrder, ValidationError>(:final value)) return Failure(value);
+    final base = created.getOrNull()!;
+    final checkInR = _mapCheckIn(row);
+    if (checkInR case Failure<CheckInRecord?, ValidationError>(:final value)) return Failure(value);
+    return Success(
+      WorkOrder.restore(
+        id: base.id,
+        customerId: base.customerId,
+        serviceDescription: base.serviceDescription,
+        scheduledAt: base.scheduledAt,
+        estimatedValue: base.estimatedValue,
+        status: status,
+        checkIn: checkInR.getOrNull(),
+      ),
+    );
   }
 
-  WorkOrder _withStatus(WorkOrder wo, WorkOrderStatus status) {
-    // WorkOrder is immutable; for persisted rows we trust status. Use a simple reconstruction via tryCreate gives scheduled; for now only scheduled is created in UC-03.01. For future statuses, we'll need a factory.
-    if (status == WorkOrderStatus.scheduled) return wo;
-    return WorkOrder.restore(
-      id: wo.id,
-      customerId: wo.customerId,
-      serviceDescription: wo.serviceDescription,
-      scheduledAt: wo.scheduledAt,
-      estimatedValue: wo.estimatedValue,
-      status: status,
-    );
+  IResult<CheckInRecord?, ValidationError> _mapCheckIn(Map<String, Object?> row) {
+    final source = row['check_in_source'] as String?;
+    if (source == null || source.isEmpty) return const Success(null);
+    final atRaw = row['check_in_at'] as String?;
+    final at = DateTime.tryParse(atRaw ?? '')?.toUtc();
+    if (at == null) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    if (source == 'GPS') {
+      final lat = _toDouble(row['check_in_lat']);
+      final lng = _toDouble(row['check_in_lng']);
+      if (lat == null || lng == null) {
+        return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      }
+      final gp = GeoPoint.tryCreate(latitude: lat, longitude: lng, timestampUtc: at);
+      return switch (gp) {
+        Success<GeoPoint, ValidationError>(:final value) => Success(CheckInGps(value)),
+        Failure<GeoPoint, ValidationError>() => const Failure(
+            ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+          ),
+      };
+    }
+    if (source == 'BYPASS') {
+      final reason = CheckInBypassReason.fromCode((row['check_in_bypass_reason'] ?? '') as String);
+      if (reason == null) {
+        return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      }
+      return Success(CheckInBypassed(reason: reason, timestampUtc: at));
+    }
+    return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+  }
+
+  double? _toDouble(Object? v) {
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is num) return v.toDouble();
+    return double.tryParse('$v');
   }
 }
