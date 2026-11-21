@@ -40,6 +40,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         'check_in_at': null,
         'check_in_source': null,
         'check_in_bypass_reason': null,
+        'cancellation_reason': workOrder.cancellationReason,
       };
       final checkIn = workOrder.checkIn;
       if (checkIn case CheckInGps(:final point)) {
@@ -124,6 +125,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         estimatedValue: base.estimatedValue,
         status: status,
         checkIn: checkInR.getOrNull(),
+        cancellationReason: row['cancellation_reason'] as String?,
       ),
     );
   }

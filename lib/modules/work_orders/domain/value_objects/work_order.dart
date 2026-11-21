@@ -1,4 +1,4 @@
-// Agregado Ordem de Serviço (UC-03.01, UC-03.03 base).
+// Agregado Ordem de Serviço (UC-03.01, UC-03.03, UC-03.04).
 //
 // SRP: validar e manter estado consistente da OS. Não persiste, não formata UI.
 //
@@ -22,6 +22,7 @@ final class WorkOrder {
     required this.estimatedValue,
     required this.status,
     required this.checkIn,
+    required this.cancellationReason,
   });
 
   final String id;
@@ -33,6 +34,9 @@ final class WorkOrder {
 
   /// Evidência de check-in (INV-02, INV-SEC-17).
   final CheckInRecord? checkIn;
+
+  /// Justificativa de cancelamento (UC-03.04).
+  final String? cancellationReason;
 
   static IResult<WorkOrder, ValidationError> tryCreate({
     required String id,
@@ -70,6 +74,7 @@ final class WorkOrder {
       estimatedValue: estimatedValue,
       status: WorkOrderStatus.scheduled,
       checkIn: null,
+      cancellationReason: null,
     ));
   }
 
@@ -98,6 +103,38 @@ final class WorkOrder {
       estimatedValue: estimatedValue,
       status: WorkOrderStatus.inProgress,
       checkIn: record,
+      cancellationReason: null,
+    ));
+  }
+
+  /// Cancela OS com justificativa obrigatória (UC-03.04).
+  IResult<WorkOrder, ValidationError> cancel(String reason) {
+    final trimmed = reason.trim();
+    if (trimmed.isEmpty) {
+      return const Failure(
+        ValidationError(
+          code: 'ERR_OS_JUSTIFICATIVA_OBRIGATORIA',
+          message: 'Informe a justificativa do cancelamento.',
+        ),
+      );
+    }
+    if (status == WorkOrderStatus.completed || status == WorkOrderStatus.cancelled) {
+      return const Failure(
+        ValidationError(
+          code: 'ERR_OS_TRANSICAO_INVALIDA',
+          message: 'Transição de estado inválida para a OS.',
+        ),
+      );
+    }
+    return Success(WorkOrder._(
+      id: id,
+      customerId: customerId,
+      serviceDescription: serviceDescription,
+      scheduledAt: scheduledAt,
+      estimatedValue: estimatedValue,
+      status: WorkOrderStatus.cancelled,
+      checkIn: checkIn,
+      cancellationReason: trimmed,
     ));
   }
 
@@ -110,6 +147,7 @@ final class WorkOrder {
     required Money estimatedValue,
     required WorkOrderStatus status,
     CheckInRecord? checkIn,
+    String? cancellationReason,
   }) {
     return WorkOrder._(
       id: id,
@@ -119,6 +157,7 @@ final class WorkOrder {
       estimatedValue: estimatedValue,
       status: status,
       checkIn: checkIn,
+      cancellationReason: cancellationReason,
     );
   }
 

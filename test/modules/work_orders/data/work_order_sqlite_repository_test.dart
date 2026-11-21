@@ -26,8 +26,8 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_wo.db',
-        dbVersion: 4,
-        migrations: [WorkOrderMigration.v3(), WorkOrderMigration.v4()],
+        dbVersion: 5,
+        migrations: [WorkOrderMigration.v3(), WorkOrderMigration.v4(), WorkOrderMigration.v5()],
         factory: databaseFactoryFfi,
       );
       repo = WorkOrderSqliteRepository(provider: provider);
@@ -71,6 +71,23 @@ void main() {
       final loaded = all.getOrNull()!.first;
       expect(loaded.status, WorkOrderStatus.inProgress);
       expect(loaded.checkIn, isA<CheckInGps>());
+    });
+
+    test('UC-03.04 - persiste cancelamento com justificativa', () async {
+      final wo = WorkOrder.tryCreate(
+        id: 'wo1',
+        customerId: 'c1',
+        serviceDescription: 'Manutenção',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+      ).getOrNull()!;
+      final cancelled = wo.cancel('Cliente ausente').getOrNull()!;
+      await repo.save(cancelled);
+
+      final all = await repo.findAll();
+      final loaded = all.getOrNull()!.first;
+      expect(loaded.status, WorkOrderStatus.cancelled);
+      expect(loaded.cancellationReason, 'Cliente ausente');
     });
   });
 }

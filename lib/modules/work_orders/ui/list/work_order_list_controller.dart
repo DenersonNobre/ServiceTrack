@@ -104,6 +104,30 @@ final class WorkOrderListController extends IKortexController {
     return result;
   }
 
+  /// Cancela OS com justificativa obrigatória (UC-03.04).
+  Future<IResult<WorkOrder, ValidationError>> cancel(
+    String workOrderId,
+    String reason,
+  ) async {
+    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+    if (wo == null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+      );
+    }
+    final cancelled = wo.cancel(reason);
+    switch (cancelled) {
+      case Failure<WorkOrder, ValidationError>(:final value):
+        return Failure(value);
+      case Success<WorkOrder, ValidationError>(:final value):
+        final saved = await repository.save(value);
+        if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+        }
+        return saved;
+    }
+  }
+
   Future<IResult<WorkOrder, ValidationError>> _applyStart(
     String workOrderId,
     Object captureOrFailure,

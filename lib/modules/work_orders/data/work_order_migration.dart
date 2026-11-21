@@ -35,4 +35,9 @@ final class WorkOrderMigration {
         'ALTER TABLE work_orders ADD COLUMN check_in_source TEXT',
         'ALTER TABLE work_orders ADD COLUMN check_in_bypass_reason TEXT',
       ]);
+
+  /// v5: justificativa de cancelamento (UC-03.04).
+  static Migration v5() => Migration(version: 5, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN cancellation_reason TEXT',
+      ]);
 }

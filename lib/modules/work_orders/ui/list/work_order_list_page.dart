@@ -80,23 +80,37 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                 '${wo.status.code} • ${wo.scheduledAt.toLocal().toString().substring(0, 16)}',
                               ),
                               minTileHeight: 56,
-                              trailing: wo.status == WorkOrderStatus.scheduled
-                                  ? SizedBox(
-                                      width: 48,
-                                      height: 48,
-                                      child: isStarting
-                                          ? const Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: CircularProgressIndicator(strokeWidth: 2),
-                                            )
-                                          : IconButton(
-                                              key: Key('wo-start-${wo.id}'),
-                                              icon: const Icon(Icons.play_arrow),
-                                              tooltip: 'Iniciar atendimento',
-                                              onPressed: () => _startService(context, controller, wo.id),
-                                              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                              trailing: (wo.status == WorkOrderStatus.scheduled ||
+                                      wo.status == WorkOrderStatus.inProgress)
+                                  ? isStarting
+                                      ? const SizedBox(
+                                          width: 48,
+                                          height: 48,
+                                          child: Padding(
+                                            padding: EdgeInsets.all(12),
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        )
+                                      : PopupMenuButton<String>(
+                                          key: Key('wo-actions-${wo.id}'),
+                                          icon: const Icon(Icons.more_vert),
+                                          tooltip: 'Ações',
+                                          onSelected: (v) {
+                                            if (v == 'start') _startService(context, controller, wo.id);
+                                            if (v == 'cancel') _cancelWorkOrder(context, controller, wo.id);
+                                          },
+                                          itemBuilder: (_) => [
+                                            if (wo.status == WorkOrderStatus.scheduled)
+                                              const PopupMenuItem(
+                                                value: 'start',
+                                                child: Text('Iniciar atendimento'),
+                                              ),
+                                            const PopupMenuItem(
+                                              value: 'cancel',
+                                              child: Text('Cancelar OS'),
                                             ),
-                                    )
+                                          ],
+                                        )
                                   : null,
                             );
                           },
@@ -161,6 +175,48 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     if (bypassResult.isFailure) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(bypassResult.getOrNullFailure()!.message)),
+      );
+    }
+  }
+
+  Future<void> _cancelWorkOrder(
+    BuildContext context,
+    WorkOrderListController controller,
+    String workOrderId,
+  ) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancelar OS'),
+        content: TextField(
+          key: const Key('wo-cancel-reason'),
+          controller: reasonController,
+          decoration: const InputDecoration(
+            labelText: 'Justificativa',
+            hintText: 'Informe o motivo do cancelamento',
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Voltar')),
+          FilledButton(
+            key: const Key('wo-cancel-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Cancelar OS'),
+          ),
+        ],
+      ),
+    );
+    final reason = reasonController.text;
+    reasonController.dispose();
+    if (confirmed != true || !context.mounted) return;
+    final result = await controller.cancel(workOrderId, reason);
+    if (!context.mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.getOrNullFailure()!.message)),
       );
     }
   }
