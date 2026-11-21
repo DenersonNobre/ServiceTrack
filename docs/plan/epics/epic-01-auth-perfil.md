@@ -33,7 +33,7 @@ Garantir o portão de entrada seguro e a identidade comercial do técnico no **S
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
 | **UC-01.01** | Onboarding Inicial & Registro de Credenciais | Nenhuma | `Concluído` |
-| **UC-01.02** | Autenticação por Biometria / "Lembrar de Mim" | UC-01.01 | `Pendente` |
+| **UC-01.02** | Autenticação por Biometria / "Lembrar de Mim" | UC-01.01 | `Concluído` |
 | **UC-01.03** | Desbloqueio Rápido via Teclado de PIN Numérico | UC-01.01 | `Pendente` |
 | **UC-01.04** | Recuperação de Acesso Local & Fallback do SO | UC-01.01, UC-01.03 | `Pendente` |
 | **UC-01.05** | Edição de Perfil Comercial do Técnico | UC-01.01 | `Pendente` |
@@ -97,7 +97,8 @@ Esquema do Cenário: Validação do cadastro de credenciais no primeiro acesso
 ### Caso de Uso UC-01.02 — Autenticação por Biometria / "Lembrar de Mim"
 
 * **Identificador**: `UC-01.02`
-* **Status**: `Pendente`
+* **Status**: `Concluído`
+* **Evidência**: 51/51 testes, analyze limpo. Gate 2.5 INVOKED/APROVADO Média (A1-A5 aplicados). Gate 3 APROVADO Média. Gate 4 APROVADO Alta (`qa-review-v0.4.0.md`). Refatoração pós-QA: barrels `.index.dart` (`9186d4c`) reverificada.
 
 #### Narrativa
 - **Como** Técnico autônomo com o app configurado
