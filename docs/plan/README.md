@@ -1,7 +1,7 @@
 # Plano Mestre de Implementação — ServiceTrack (Mobile Standalone)
 
 > **Responsável do Plano (DevOps / Arch)**: Denerson Nobre  
-> **Status Geral**: `Fase de Fundação (Greenfield Lock)`  
+> **Status Geral**: `Em Execução (EPIC-00/01/02 Concluídos)`  
 > **Arquitetura**: Flutter 100% Autocontido (Zero Backend / Zero Infraestrutura de Nuvem)  
 > **Referências**: [PRD](../product/PRD.md) \| [SPEC](../architecture/SPEC.md) \| [DESIGN](../architecture/DESIGN.md)
 
@@ -13,8 +13,8 @@
 | :--- | :--- | :--- | :---: | :---: |
 | **00 — Fundação Flutter** | [epic-00-fundacao.md](epics/epic-00-fundacao.md) | Nenhuma (Alicerce Técnico) | Crítica | `Concluído` |
 | **01 — Onboarding, Auth Local & Perfil** | [epic-01-auth-perfil.md](epics/epic-01-auth-perfil.md) | EPIC00 | Alta | `Concluído` |
-| **02 — Gestão Local de Clientes** | [epic-02-clientes.md](epics/epic-02-clientes.md) | EPIC00, EPIC01 | Alta | `Pronto para Iniciar` |
-| **03 — Ordens de Serviço & Ciclo de Vida** | [epic-03-ordens-servico.md](epics/epic-03-ordens-servico.md) | EPIC00, EPIC02 | Alta | `Bloqueado` |
+| **02 — Gestão Local de Clientes** | [epic-02-clientes.md](epics/epic-02-clientes.md) | EPIC00, EPIC01 | Alta | `Concluído` |
+| **03 — Ordens de Serviço & Ciclo de Vida** | [epic-03-ordens-servico.md](epics/epic-03-ordens-servico.md) | EPIC00, EPIC02 | Alta | `Pronto para Iniciar` |
 | **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03 | Alta | `Bloqueado` |
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Bloqueado` |
 
@@ -30,9 +30,9 @@ graph TD
     classDef blocked fill:#F4F4F5,stroke:#D4D4D8,color:#71717A;
 
     EPIC00["EPIC-00: Fundação Flutter & Toolchain"]:::foundation
-    EPIC01["EPIC-01: Onboarding, Auth Local & Perfil"]:::ready
-    EPIC02["EPIC-02: Gestão Local de Clientes (SQLite/dnolib)"]:::blocked
-    EPIC03["EPIC-03: Ordens de Serviço & Ciclo de Estados"]:::blocked
+    EPIC01["EPIC-01: Onboarding, Auth Local & Perfil"]:::foundation
+    EPIC02["EPIC-02: Gestão Local de Clientes (SQLite/dnolib)"]:::foundation
+    EPIC03["EPIC-03: Ordens de Serviço & Ciclo de Estados"]:::ready
     EPIC04["EPIC-04: Checklists Rápidos & Evidências com GPS"]:::blocked
     EPIC05["EPIC-05: Geração On-Device de Laudo PDF & Envio WhatsApp"]:::core
 
