@@ -33,4 +33,8 @@ final class MasterPassword {
     }
     return Success(MasterPassword._(candidate));
   }
+
+  /// Redigido de propósito: senha jamais aparece em log (INV-SEC-06).
+  @override
+  String toString() => 'MasterPassword(redacted)';
 }

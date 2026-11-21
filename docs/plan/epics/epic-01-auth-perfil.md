@@ -191,7 +191,8 @@ Esquema do Cenário: Recuperação de PIN esquecido
 | Chave | Descrição | Formato |
 | :--- | :--- | :--- |
 | `sec_user_id` | Identificador único do técnico | UUID v4 |
-| `sec_master_password_hash` | Hash da Senha Mestre | Salt + PBKDF2/SHA-256 |
-| `sec_pin_hash` | Hash do PIN numérico | Salt + SHA-256 |
+| `sec_master_password_hash` | Hash da Senha Mestre | Salt + PBKDF2-HMAC-SHA-256, formato `v1$pbkdf2-sha256$iter$salt$hash` |
+| `sec_pin_hash` | Hash do PIN numérico | Salt + PBKDF2-HMAC-SHA-256, formato `v1$pbkdf2-sha256$iter$salt$hash` (decisão Gate 2.5/PO 2026-11-21: SHA-256 de 1 iteração é força-brutável para 10⁴–10⁶ candidatos) |
+| `sec_pin_fail_count` / `sec_pin_locked_until` | Rate-limit do PIN (estado de segurança) | Contador + epoch-ms UTC do bloqueio; 3 falhas → bloqueio base 30s com backoff, teto 15min |
 | `sec_biometrics_enabled` | Flag de biometria ativa | Booleano ("true"/"false") |
 | `sec_remember_me` | Flag de lembrar sessão | Booleano ("true"/"false") |

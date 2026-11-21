@@ -31,4 +31,8 @@ final class SecurityPin {
     }
     return Success(SecurityPin._(candidate));
   }
+
+  /// Redigido de propósito: PIN jamais aparece em log (INV-SEC-06).
+  @override
+  String toString() => 'SecurityPin(redacted)';
 }

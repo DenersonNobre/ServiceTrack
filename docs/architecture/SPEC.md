@@ -119,6 +119,14 @@ abstract class IPdfReportGeneratorPort {
 abstract class IShareServicePort {
   Future<Result<void>> sharePdfFile(Uint8List pdfBytes, String fileName, {String? textMessage});
 }
+
+// Contrato de Credenciais Locais (Onboarding & Desbloqueio)
+abstract class IAuthCredentialRepositoryPort {
+  Future<Result<String>> saveCredentials({required MasterPassword password, required SecurityPin pin});
+  Future<Result<bool>> verifyPin(String attempt);
+  Future<Result<bool>> verifyPassword(String attempt);
+  Future<Result<bool>> clearAll();
+}
 ```
 
 ---
@@ -132,3 +140,8 @@ abstract class IShareServicePort {
 | `ERR_ASSINATURA_AUSENTE` | Esperada | Fechamento sem assinatura do cliente. | Retornar `Result.Fail(ERR_ASSINATURA_AUSENTE)` |
 | `ERR_EVIDENCIA_LIMITE_EXCEDIDO` | Esperada | Tentativa de adicionar mais de 6 fotos. | Retornar `Result.Fail(ERR_EVIDENCIA_LIMITE_EXCEDIDO)` |
 | `ERR_GERACAO_PDF_FALHOU` | Esperada | Memória insuficiente para rasterizar imagens no PDF. | Retornar `Result.Fail(ERR_GERACAO_PDF_FALHOU)` |
+| `ERR_PIN_INCORRETO_TENTATIVAS_RESTANTES` | Esperada | PIN incorreto com tentativas restantes. | Retornar `Result.Fail(ERR_PIN_INCORRETO_TENTATIVAS_RESTANTES)` e incrementar contador |
+| `ERR_PIN_BLOQUEADO_TEMPORARIAMENTE` | Esperada | 3+ falhas de PIN (rate-limit). | Retornar `Result.Fail(ERR_PIN_BLOQUEADO_TEMPORARIAMENTE)` até expirar o bloqueio |
+| `ERR_SENHA_INCORRETA` | Esperada | Senha mestre incorreta na verificação/recuperação. | Retornar `Result.Fail(ERR_SENHA_INCORRETA)` |
+| `ERR_CREDENCIAIS_NAO_CADASTRADAS` | Esperada | Verificação sem onboarding concluído. | Retornar `Result.Fail(ERR_CREDENCIAIS_NAO_CADASTRADAS)` |
+| `ERR_COFRE_INDISPONIVEL` | Esperada | I/O do Keychain/Keystore falhou. | Retornar `Result.Fail(ERR_COFRE_INDISPONIVEL)` (exceção só neste ponto de fronteira) |
