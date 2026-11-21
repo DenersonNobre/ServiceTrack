@@ -15,13 +15,20 @@ import 'modules/auth/ui/recovery/.index.dart';
 import 'modules/profile/data/.index.dart';
 import 'modules/profile/domain/ports/.index.dart';
 import 'modules/profile/ui/profile/.index.dart';
+import 'app/database/app_database.dart';
+import 'modules/customers/data/.index.dart';
+import 'modules/customers/domain/ports/.index.dart';
+import 'modules/customers/ui/form/.index.dart';
+import 'modules/customers/ui/list/.index.dart';
 
 void main() {
+  final db = createAppDatabase();
   runApp(
     ServiceTrackApp(
       profileRepository: FileTechnicianProfileRepository(
         baseDir: getApplicationSupportDirectory,
       ),
+      customerRepository: CustomerSqliteRepository(provider: db),
     ),
   );
 }
@@ -34,6 +41,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.credentialRepository,
     this.biometricAuth,
     this.profileRepository,
+    this.customerRepository,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -45,6 +53,9 @@ class ServiceTrackApp extends StatelessWidget {
   /// Repositório de perfil comercial (injeção para testes).
   final ITechnicianProfileRepositoryPort? profileRepository;
 
+  /// Repositório de clientes (injeção para testes).
+  final ICustomerRepositoryPort? customerRepository;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
@@ -52,6 +63,7 @@ class ServiceTrackApp extends StatelessWidget {
     final bio = biometricAuth ?? LocalAuthBiometricAdapter();
     final profileRepo =
         profileRepository ?? MemoryTechnicianProfileRepository();
+    final customerRepo = customerRepository ?? MemoryCustomerRepository();
     return MaterialApp(
       title: 'ServiceTrack',
       theme: ThemeData(
@@ -59,17 +71,18 @@ class ServiceTrackApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.surface,
         useMaterial3: true,
       ),
-      home: _AppEntry(repo: repo, bio: bio, profileRepo: profileRepo),
+      home: _AppEntry(repo: repo, bio: bio, profileRepo: profileRepo, customerRepo: customerRepo),
     );
   }
 }
 
 class _AppEntry extends StatefulWidget {
-  const _AppEntry({required this.repo, required this.bio, required this.profileRepo});
+  const _AppEntry({required this.repo, required this.bio, required this.profileRepo, required this.customerRepo});
 
   final IAuthCredentialRepositoryPort repo;
   final IBiometricAuthPort bio;
   final ITechnicianProfileRepositoryPort profileRepo;
+  final ICustomerRepositoryPort customerRepo;
 
   @override
   State<_AppEntry> createState() => _AppEntryState();
@@ -128,11 +141,53 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     );
   }
 
+  void _goCustomerForm({String? customerId, VoidCallback? onSaved}) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<CustomerFormController>(
+              create: (_) => CustomerFormController(repository: widget.customerRepo, customerId: customerId),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: CustomerFormPage(onSaved: () { Navigator.of(context).pop(); onSaved?.call(); }),
+        ),
+      ),
+    );
+  }
+
+  void _goCustomers() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<CustomerListController>(
+              create: (_) => CustomerListController(repository: widget.customerRepo),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: Builder(
+            builder: (ctx) {
+              final list = ctx.readKortex<CustomerListController>();
+              return CustomerListPage(
+                onAdd: () => _goCustomerForm(onSaved: list.load),
+                onEdit: (c) => _goCustomerForm(customerId: c.id, onSaved: list.load),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _goHome() {
     if (!mounted) return;
     _isLockVisible = false;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => _HomePlaceholder(onProfile: _goProfile)),
+      MaterialPageRoute<void>(builder: (_) => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers)),
     );
   }
 
@@ -234,7 +289,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
               ],
               child: const LockPage(),
             ),
-          AppEntryRoute.home => _HomePlaceholder(onProfile: _goProfile),
+          AppEntryRoute.home => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers),
         };
       },
     );
@@ -242,9 +297,10 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
 }
 
 class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder({required this.onProfile});
+  const _HomePlaceholder({required this.onProfile, required this.onCustomers});
 
   final VoidCallback onProfile;
+  final VoidCallback onCustomers;
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +308,13 @@ class _HomePlaceholder extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ServiceTrack'),
         actions: [
+          IconButton(
+            key: const Key('home-customers'),
+            icon: const Icon(Icons.people_outline),
+            tooltip: 'Clientes',
+            onPressed: onCustomers,
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          ),
           IconButton(
             key: const Key('home-profile'),
             icon: const Icon(Icons.person_outline),
