@@ -36,7 +36,7 @@ Garantir o portão de entrada seguro e a identidade comercial do técnico no **S
 | **UC-01.02** | Autenticação por Biometria / "Lembrar de Mim" | UC-01.01 | `Concluído` |
 | **UC-01.03** | Desbloqueio Rápido via Teclado de PIN Numérico | UC-01.01 | `Concluído` |
 | **UC-01.04** | Recuperação de Acesso Local & Fallback do SO | UC-01.01, UC-01.03 | `Pendente` |
-| **UC-01.05** | Edição de Perfil Comercial do Técnico | UC-01.01 | `Pendente` |
+| **UC-01.05** | Edição de Perfil Comercial do Técnico | UC-01.01 | `Concluído` |
 
 ---
 
@@ -180,7 +180,8 @@ Esquema do Cenário: Recuperação de PIN esquecido
 ### Caso de Uso UC-01.05 — Edição de Perfil Comercial do Técnico
 
 * **Identificador**: `UC-01.05`
-* **Status**: `Pendente`
+* **Status**: `Concluído`
+* **Evidência**: 76/76 testes, analyze limpo. Gate 2.5 INVOKED/APROVADO condicionado (INV-SEC-14/15/16). Gate 3 APROVADO Média. Gate 4 APROVADO Alta (`qa-review-v0.7.0.md`).
 
 #### Narrativa
 - **Como** Técnico autônomo

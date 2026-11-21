@@ -2,26 +2,26 @@
 
 ## Metadados
 - **Fatia (Slice)**: `UC-01.05` (Edição de Perfil Comercial do Técnico)
-- **Status**: 🟡 Em Progresso (Gate 3/4 pendentes)
+- **Status**: 🟢 Concluído (Gates 2.5/3/4)
 - **Agente Responsável**: `opc01@e03ff640`
 - **Épico**: `EPIC-01`
 - **Última Atualização**: `2026-11-21`
 
 ## Contexto Atual
-- **O que foi feito**: Módulo `profile` (domain VOs/port, data repo file+memory, UI page/controller) com nome comercial, WhatsApp BR validado e logo/foto importada com normalização (re-encode sem EXIF, limites tamanho/dimensão). Acesso pelo Home. Perfil persistido fora do cofre de segredos (INV-SEC-14).
-- **Gate 2.5 (Segurança)**: INVOKED — APROVADO condicionado, confiança Média (`ses_e01a4a344ffed6rbOyYgRWeglq`). Aplicado: INV-SEC-14 (port dedicado, sem PII em toString/log), INV-SEC-15 (re-encode sem EXIF, resize/quality cap), INV-SEC-16 (validação tipo/tamanho/dimensões, erro tipado). Sem nova dep; image_picker/image/path_provider já presentes.
-- **Gates 3/4**: pendentes.
+- **O que foi feito**: Módulo `profile` com VOs (nome comercial, WhatsApp BR), repo file+memory, importação de logo normalizada (sem EXIF, limites), UI Kortex e acesso pelo Home.
+- **Gate 2.5**: INVOKED/APROVADO condicionado (`ses_e01a4a344ffed6rbOyYgRWeglq`) — INV-SEC-14/15/16 aplicados.
+- **Gate 3**: APROVADO Média (`ses_e0193f3aeffe8SWQki2r4mxpWx`).
+- **Gate 4**: APROVADO Alta (`ses_e0193f3aeffdcT4O7gRLwomdaJ`) — laudo `docs/plan/reviews/qa-review-v0.7.0.md`.
 
 ## Evidência
 - `flutter test` → **76/76 All tests passed**. `flutter analyze --fatal-infos` → **No issues found**.
-- RED comprovado: teste VOs falhou por símbolos ausentes. Cobertura: VOs, repo (roundtrip, imagem inválida, normalização, clear), UI salva perfil.
+- Commits: `83187f0`.
 
-## Arquivos do slice
-- `lib/modules/profile/**`, `lib/main.dart` (rota/DI home->perfil)
-- `test/modules/profile/**`
-- `docs/plan/state/UC-CURRENT.md`
+## Observações (não bloqueantes)
+- UC-01.05 sem Gherkin/fixture detalhado (A1).
+- Reflexo em PDFs diferido para EPIC-05 (A2).
+- `load()` mascara perfil corrompido como `null` (A3); cobertura UI caminho feliz (A4); memory repo sem normalização (A5).
 
 ## Próximo passo
-1. Gate 3 (review).
-2. Gate 4 (QA) + laudo.
-3. Consolidação e release claim UC-01.05.
+1. Liberar claim `UC-01.05`.
+2. EPIC-01 concluído; avaliar próximo épico conforme `docs/plan/README.md` (EPIC-02 Clientes, depende de EPIC-00).

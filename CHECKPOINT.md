@@ -9,14 +9,14 @@ App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite
 ## Estado Real (Verificado em 2026-11-21)
 - **Branch**: `main` (commits locais à frente de `origin/main`, sem push — sem autorização do PO).
 - **EPIC-00 (Fundação Técnica)**: **CONCLUÍDA** e 100% verde.
-- **EPIC-01 (em andamento)**: UC-01.01..UC-01.04 concluídas (laudos `qa-review-v0.1.0..v0.6.0`). UC-01.05 próxima.
+- **EPIC-01 (CONCLUÍDA)**: UC-01.01..UC-01.05 concluídas (laudos `qa-review-v0.1.0..v0.7.0`).
   - Desvio PBKDF2 senha+PIN autorizado pelo PO (Gate 2.5 C1, UC-01.01).
 - **Dívidas**: `docs/DEBITOS.md` D-01..D-04; observações QA baixas/info em laudos.
 
 ## Próximo Passo Acionável
-1. Iniciar **UC-01.05** (Edição de Perfil Comercial do Técnico) com claim, TDD e Gate 2.5 conforme superfície.
-2. Antes de codar: pré-flight build/teste verde + claim atômico.
+1. Iniciar **EPIC-02 (Clientes & Locais)** conforme DAG — pré-flight, claim, Gate 2.5 conforme superfície.
+2. Antes de codar: build/teste verde + claim atômico.
 
 ## Travas Vivas
-- **Claim ativo**: Nenhum (UC-01.04 liberado após consolidação em 2026-11-21).
+- **Claim ativo**: Nenhum (UC-01.05 liberado após consolidação em 2026-11-21).
 - **Greenfield Lock**: **DESTRAVADO** para código de negócio pela conclusão da EPIC-00.
