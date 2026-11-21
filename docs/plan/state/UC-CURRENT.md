@@ -21,5 +21,6 @@ Gate 2.5: PULADO — TASK-01 é validação pura em memória (sem storage, sem s
 - `test/auth_credentials_test.dart`
 
 ## Próximo passo
-1. Gate 3 (review do diff vs SPEC).
-2. TASK-02: repositório seguro (`flutter_secure_storage`) — invocar Gate 2.5/security antes.
+1. Gate 3: Aprovado (Média) — sanado em `a58774e`.
+2. Gate 4: APROVADO (Alta) — laudo `docs/plan/reviews/qa-review-v0.1.0.md` (suíte 16/16, arquivo 15/15, analyze limpo).
+3. TASK-02: repositório seguro (`flutter_secure_storage`) — invocar Gate 2.5/security antes.
