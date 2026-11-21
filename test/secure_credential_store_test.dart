@@ -194,6 +194,22 @@ void main() {
       );
     });
 
+    test('senha com acento e emoji faz roundtrip', () async {
+      const password = 'Ségura🔒@2026';
+      final store = SecureCredentialStore(
+        backend: FakeSecureBackend(),
+        profile: const KdfProfile(iterations: 1200),
+      );
+      await store.saveCredentials(
+        password: MasterPassword.tryCreate(password).getOrThrow(),
+        pin: SecurityPin.tryCreate('1234').getOrThrow(),
+      );
+      final result = await store.verifyPassword(password);
+      expect(result.isSuccess, isTrue);
+      final wrong = await store.verifyPassword('Segura@2026');
+      expect(wrong.isFailure, isTrue);
+    });
+
     test('backend indisponivel vira falha tipada', () async {
       final store = SecureCredentialStore(
         backend: FakeSecureBackend(throwsOnRead: true),

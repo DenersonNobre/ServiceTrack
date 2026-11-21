@@ -11,6 +11,8 @@
 //
 // Dependências: dnolib (core/patterns), package:uuid, ports/security da fatia.
 
+import 'dart:convert';
+
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:uuid/uuid.dart';
@@ -71,11 +73,11 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
     try {
       final userId = const Uuid().v4();
       final passwordHash = CredentialHash.create(
-        password: password.value.codeUnits,
+        password: utf8.encode(password.value),
         iterations: profile.iterations,
       );
       final pinHash = CredentialHash.create(
-        password: pin.value.codeUnits,
+        password: utf8.encode(pin.value),
         iterations: profile.iterations,
       );
       await _backend.write(userIdKey, userId);
@@ -116,7 +118,7 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
         );
       }
       final hash = CredentialHash.parse(stored);
-      if (hash.matches(attempt.codeUnits)) {
+      if (hash.matches(utf8.encode(attempt))) {
         await _backend.delete(pinFailCountKey);
         await _backend.delete(pinLockedUntilKey);
         return const Success(true);
@@ -170,7 +172,7 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
         );
       }
       final hash = CredentialHash.parse(stored);
-      if (hash.matches(attempt.codeUnits)) {
+      if (hash.matches(utf8.encode(attempt))) {
         return const Success(true);
       }
       return const Failure(
