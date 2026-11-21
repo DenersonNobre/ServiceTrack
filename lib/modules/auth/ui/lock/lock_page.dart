@@ -10,6 +10,7 @@ import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import 'lock_controller.dart';
+import 'widgets/pin_keypad.dart';
 
 /// Página de bloqueio com biometria e PIN manual.
 final class LockPage extends IKortexPage<LockController> {
@@ -58,51 +59,31 @@ final class LockPage extends IKortexPage<LockController> {
                       ),
                       const SizedBox(height: 24),
                       const Text('Digite seu PIN'),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        key: const Key('lock-pin-field'),
-                        obscureText: true,
-                        keyboardType: TextInputType.number,
-                        onChanged: (v) => controller.pin.value = v,
-                        decoration: InputDecoration(
-                          errorText: controller.pinError.value,
-                          filled: true,
-                          fillColor: AppColors.surfaceCard,
-                          constraints: const BoxConstraints(minHeight: 48),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.border),
-                          ),
+                      const SizedBox(height: 12),
+                      _PinDots(length: controller.pin.value.length),
+                      if (controller.pinError.value != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          controller.pinError.value!,
+                          style: const TextStyle(color: AppColors.error),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 16),
-                      SizedBox(
-                        height: 52,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primaryAction,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size.fromHeight(48),
+                      if (controller.submittingPin.value)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: CircularProgressIndicator(
+                              color: AppColors.primaryAction,
+                            ),
                           ),
-                          onPressed: controller.submittingPin.value
-                              ? null
-                              : controller.submitPin,
-                          child: controller.submittingPin.value
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text('Desbloquear'),
+                        )
+                      else
+                        PinKeypad(
+                          onDigit: controller.appendDigit,
+                          onBackspace: controller.backspace,
+                          onSubmit: controller.submitPin,
                         ),
-                      ),
                     ],
                   );
                 },
@@ -111,6 +92,32 @@ final class LockPage extends IKortexPage<LockController> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PinDots extends StatelessWidget {
+  const _PinDots({required this.length});
+  final int length;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      key: const Key('lock-pin-dots'),
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(6, (i) {
+        final filled = i < length;
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: filled ? AppColors.primaryAction : Colors.transparent,
+            border: Border.all(color: AppColors.primaryAction, width: 1.5),
+            shape: BoxShape.circle,
+          ),
+        );
+      }),
     );
   }
 }

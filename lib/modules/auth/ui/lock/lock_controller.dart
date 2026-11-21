@@ -48,6 +48,22 @@ final class LockController extends IKortexController {
   bool _unlocked = false;
   bool _initialized = false;
 
+  /// Adiciona um dígito ao PIN (UC-01.03).
+  void appendDigit(String digit) {
+    if (_unlocked || submittingPin.value) return;
+    if (pin.value.length >= 6) return;
+    pinError.value = null;
+    pin.value = '${pin.value}$digit';
+  }
+
+  /// Remove o último dígito do PIN (UC-01.03).
+  void backspace() {
+    if (_unlocked || submittingPin.value) return;
+    if (pin.value.isEmpty) return;
+    pinError.value = null;
+    pin.value = pin.value.substring(0, pin.value.length - 1);
+  }
+
   /// Dispara inicialização única.
   void ensureInitialized() {
     if (_initialized) return;
