@@ -19,6 +19,7 @@ import 'app/database/app_database.dart';
 import 'modules/customers/data/.index.dart';
 import 'modules/customers/domain/ports/.index.dart';
 import 'modules/customers/domain/value_objects/.index.dart';
+import 'modules/customers/ui/detail/.index.dart';
 import 'modules/customers/ui/form/.index.dart';
 import 'modules/customers/ui/list/.index.dart';
 import 'modules/customers/ui/locations/.index.dart';
@@ -243,6 +244,31 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     );
   }
 
+  void _goCustomerDetail(Customer customer) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<CustomerDetailController>(
+              create: (_) => CustomerDetailController(repository: widget.customerRepo, customerId: customer.id),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: Builder(
+            builder: (ctx) {
+              final detail = ctx.readKortex<CustomerDetailController>();
+              return CustomerDetailPage(
+                onEdit: () => _goCustomerForm(customerId: customer.id, onSaved: detail.load),
+                onLocations: () => _goLocations(customer),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _goCustomers() {
     if (!mounted) return;
     Navigator.of(context).push(
@@ -261,6 +287,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
                 onAdd: () => _goCustomerForm(onSaved: list.load),
                 onEdit: (c) => _goCustomerForm(customerId: c.id, onSaved: list.load),
                 onLocations: _goLocations,
+                onDetail: _goCustomerDetail,
               );
             },
           ),
