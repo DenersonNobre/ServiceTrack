@@ -1,6 +1,6 @@
 # Estado Canônico do Caso de Uso (Hand-off Transitório)
 
-> **Localização no Projeto**: `docs/plan/state/UC-CURRENT.md`
+> **Localização no Projeto**: `docs/plan/state/uc-current.md`
 
 ---
 
