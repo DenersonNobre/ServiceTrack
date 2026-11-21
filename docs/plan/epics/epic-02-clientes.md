@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC01` |
 | **Prioridade** | Alta (Base Cadastral para OSs) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Andamento` |
+| **Status Atual** | `Concluído` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/product/PRD.md](../../product/PRD.md) |
 
 ---
@@ -34,14 +34,14 @@ Permitir que o técnico cadastre, consulte, edite e organize sua carteira de cli
 | **UC-02.01** | Cadastro e Edição de Cliente com Validação `brlib` | Nenhuma | `Concluído` |
 | **UC-02.02** | Gestão de Endereços e Locais de Atendimento | UC-02.01 | `Concluído` |
 | **UC-02.03** | Busca Rápida Tátil de Clientes | UC-02.01 | `Concluído` |
-| **UC-02.04** | Histórico e Detalhes do Cliente | UC-02.01, UC-02.03 | `Pendente` |
+| **UC-02.04** | Histórico e Detalhes do Cliente | UC-02.01, UC-02.03 | `Concluído` |
 
 ---
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Entidades de domínio `Customer` e `ServiceLocation` puras com testes unitários.
-- [ ] Validação de CPF/CNPJ via `dnolib/brlib` sem exceções.
-- [ ] Tabela SQLite criada com índices para busca por nome e documento.
-- [ ] Controllers reativos implementados com `kortex` (`KortexSignal`, `IKortexPage`).
-- [ ] Suíte de testes unitários e de widgets 100% verde com exit code 0.
+- [x] Entidades de domínio `Customer` e `ServiceLocation` puras com testes unitários.
+- [x] Validação de CPF/CNPJ via `dnolib/brlib` sem exceções.
+- [x] Tabela SQLite criada com índices para busca por nome e documento.
+- [x] Controllers reativos implementados com `kortex` (`KortexSignal`, `IKortexPage`).
+- [x] Suíte de testes unitários e de widgets 100% verde com exit code 0.
