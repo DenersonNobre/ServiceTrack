@@ -17,3 +17,24 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 
 ### 3. CI/CD e Qualidade de Código
 - **Decisão**: Configurado `analysis_options.yaml` com flags de checagem estrita (`strict-casts`, `strict-inference`, `strict-raw-types`), garantindo que nenhum código sem tipagem completa passe despercebido.
+
+## 2026-11-21 — Obsidian MCP (Local REST API) com OpenCode: integração e decisão
+
+### 1. Falha TLS no endpoint HTTPS (Node 24)
+- **Sintoma**: `mcp connect failed` para `obsidian` com `TypeError: unsupported name constraint type (UNSUPPORTED_CONSTRAINT_TYPE)` ao conectar em `https://127.0.0.1:27124/mcp/`.
+- **Causa**: incompatibilidade de parsing/validação X.509 na pilha TLS do Node.js (v24) com o certificado autoassinado emitido pelo plugin "Local REST API with MCP" (v5.5.2). O transporte falhava antes do handshake MCP.
+- **Mitigação aplicada**: uso do endpoint HTTP local `http://127.0.0.1:27123/mcp/` (loopback), contornando TLS. HTTPS exigiria regenerar/atualizar certificado do plugin ou proxy local compatível.
+- **Evidência**: endpoint HTTP respondeu (401 sem auth) enquanto HTTPS falhava com o erro acima; após ajuste de URL e auth, `command_list` respondeu com sucesso.
+
+### 2. Autenticação: API key estática, não OAuth
+- **Sintoma**: após trocar para HTTP, status `needs_auth` (401); ao clicar "Sign In" na TUI, OpenCode tentou fluxo OAuth/DCR e falhou com `Dynamic Client Registration rejected (HTTP 401)` e mensagem do plugin pedindo API Key.
+- **Causa**: o plugin autentica por **Bearer token estático** (`Authorization: Bearer {env:OBSIDIAN_API_KEY}`), não oferece OAuth/DCR.
+- **Mitigação**: definir `OBSIDIAN_API_KEY` no ambiente do processo que inicia o OpenCode e reiniciar completamente (variável de usuário exige novo processo/sessão que herde o ambiente). Não usar "Sign In" OAuth para este servidor.
+
+### 3. Operação do vault e escopo do MCP
+- **Fato**: o MCP (Local REST API) opera no **vault aberto/servido** no momento; `.obsidian/` é bloqueado pela API. Plugins/configurações (incluindo Local REST API, porta e chave) são **por vault** — cada novo vault exige instalação/configuração do plugin.
+- **Estrutura em disco**: criado e depois removido `C:\Users\Denerson\Vaults\Oraculo` (hub, índice, sessão e pastas); entrada do vault removida de `%APPDATA%\obsidian\obsidian.json`; MCP `obsidian` desativado em `~/.config/opencode/opencode.json` (`disabled: true`).
+
+### 4. Decisão de adoção (ServiceTrack / fluxo Oráculo)
+- **Avaliação**: com artefatos canônicos já versionados no repo (PRD/SPEC/DESIGN, `docs/plan`, `CHECKPOINT.md`, `LEARNINGS.md`, reviews), Obsidian/Notion adicionariam camada paralela com custo de manutenção e risco de divergência sem ganho claro no momento.
+- **Decisão**: não adotar Obsidian/Notion para este fluxo agora; seguir com Oráculo + repositório como fonte única. Reavaliar apenas diante de dor concreta (colaboração externa/stakeholders → Notion; base pessoal interligada cross-projeto → Obsidian).
