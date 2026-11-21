@@ -34,7 +34,7 @@ Garantir o portão de entrada seguro e a identidade comercial do técnico no **S
 | :--- | :--- | :--- | :---: |
 | **UC-01.01** | Onboarding Inicial & Registro de Credenciais | Nenhuma | `Concluído` |
 | **UC-01.02** | Autenticação por Biometria / "Lembrar de Mim" | UC-01.01 | `Concluído` |
-| **UC-01.03** | Desbloqueio Rápido via Teclado de PIN Numérico | UC-01.01 | `Pendente` |
+| **UC-01.03** | Desbloqueio Rápido via Teclado de PIN Numérico | UC-01.01 | `Concluído` |
 | **UC-01.04** | Recuperação de Acesso Local & Fallback do SO | UC-01.01, UC-01.03 | `Pendente` |
 | **UC-01.05** | Edição de Perfil Comercial do Técnico | UC-01.01 | `Pendente` |
 
@@ -125,7 +125,8 @@ Esquema do Cenário: Autenticação biométrica na abertura do app
 ### Caso de Uso UC-01.03 — Desbloqueio Rápido via Teclado de PIN Numérico
 
 * **Identificador**: `UC-01.03`
-* **Status**: `Pendente`
+* **Status**: `Concluído`
+* **Evidência**: 55/55 testes, analyze limpo. Gate 2.5 PULADO. Gate 3 APROVADO Alta. Gate 4 APROVADO Alta (`qa-review-v0.5.0.md`).
 
 #### Narrativa
 - **Como** Técnico com as mãos sujas de trabalho ou luvas em campo
