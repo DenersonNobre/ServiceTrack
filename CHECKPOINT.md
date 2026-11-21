@@ -9,14 +9,14 @@ App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite
 ## Estado Real (Verificado em 2026-11-21)
 - **Branch**: `main` (local à frente de `origin/main`, sem push — aguardar autorização do PO).
 - **EPIC-00/01/02**: **CONCLUÍDAS** (`qa-review-v0.1.0..v0.11.0`).
-- **EPIC-03 (em andamento)**: UC-03.01..UC-03.03 concluídas (`qa-review-v0.12.0..v0.14.0`). Próxima: UC-03.04.
-- **Dívidas**: `docs/DEBITOS.md` D-01..D-04; observações QA (M1 flakiness auth fora do slice).
+- **EPIC-03 (em andamento)**: UC-03.01..03 concluídas; UC-03.04 **PARCIAL** (cancelamento entregue; pausa pendente de contrato SPEC) (`qa-review-v0.12.0..v0.15.0`). Próxima: UC-03.05.
+- **Dívidas**: `docs/DEBITOS.md` D-01..D-04; M1 flakiness `credential_recovery_test.dart` UC-01.04 fora do slice.
 
 ## Próximo Passo Acionável
-1. Iniciar **UC-03.04** (Pausa e Cancelamento com Justificativa) com pré-flight, claim, TDD e Gate 2.5 conforme superfície.
-2. Antes de codar: build/teste verde + claim atômico.
+1. Definir contrato de "Pausa" na SPEC/épico antes de completar parte faltante da UC-03.04.
+2. Iniciar **UC-03.05** (Fechamento e Travamento Imutável da OS) com pré-flight, claim, TDD e Gate 2.5 conforme superfície.
 
 ## Travas Vivas
-- **Claim ativo**: Nenhum (UC-03.03 liberado após consolidação em 2026-11-21).
+- **Claim ativo**: Nenhum (UC-03.04 liberado após consolidação em 2026-11-21).
 - **Push**: pendente autorização explícita do PO (e evidências: árvore limpa, sem concorrência/divergência).
 - **Greenfield Lock**: **DESTRAVADO**.
