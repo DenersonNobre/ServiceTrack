@@ -4,7 +4,7 @@
 
 ## Status
 - **UC**: `UC-01.01` | **Épico**: EPIC-01 | **Owner**: `opc01@e03ff640`
-- **Fase**: TASK-01, TASK-02 e TASK-03 implementadas em verde (33/33, analyze limpo). Gates 3/4 da TASK-03 pendentes; Gate 2.5: PULADO (sem superfície nova — UI usa VOs + store já auditados).
+- **Fase**: TASK-01/02/03 consolidadas. Gate 3 APROVADO (Alta, `ses_e02174665ffeDHfacAcd0q5HLu`) e Gate 4 APROVADO (Alta, `ses_e02154301ffeeDmsU19zDVzzWY`). Laudo `docs/plan/reviews/qa-review-v0.3.0.md`. Gate 2.5: PULADO (TASK-03 sem superfície nova; TASK-02 INVOKED — ver seção).
 - **Claim**: `UC-01.01` ativo (lib/modules/auth/, test/, docs/plan/state/UC-CURRENT.md).
 
 ## Gate 2.5 (Segurança)
@@ -15,6 +15,8 @@ Gate 2.5: INVOKED — REPROVADO o esquema literal (C1: PIN com SHA-256 1 iteraç
 - **Verificação (Red)**: `flutter test test/modules/auth/ui/onboarding_page_test.dart` → exit 1 (símbolos `OnboardingPage`/`OnboardingController` ausentes).
 - **Confirmação (Green)**: `flutter test` → `All tests passed!` (33/33); `flutter analyze --fatal-infos` → `No issues found!`.
 - **Migração estrutural**: `infrastructure/credential_store` → `data/credential_store`, `presentation/onboarding` → `ui/onboarding`, tokens em `lib/app/theme/app_colors.dart`, `main.dart` com injeção de repositório.
+- **Gate 3**: APROVADO / Alta (`ses_e02174665ffeDHfacAcd0q5HLu`) — diff budget, DIP/Kortex/tokens/48dp, sem PII. Obs. baixas: gap semântico nome/e-mail vs persistência; 48dp explícito só no campo nome.
+- **Gate 4**: APROVADO / Alta (`ses_e02154301ffeeDmsU19zDVzzWY`) — `flutter analyze --fatal-infos` No issues found (26.8s); `flutter test --reporter compact` 33/33 All tests passed; laudo `docs/plan/reviews/qa-review-v0.3.0.md`.
 
 ## Evidência (TASK-02)
 - **Leitura**: `secure_credential_store.dart` + `credential_kdf.dart` + `flutter_secure_storage_backend.dart` (oráculo da API: cache Puro `flutter_secure_storage-9.2.4`, `platform_interface-1.1.2`).
@@ -37,9 +39,8 @@ Gate 2.5: INVOKED — REPROVADO o esquema literal (C1: PIN com SHA-256 1 iteraç
 - `lib/modules/auth/data/credential_store/*` (migrou de infrastructure/)
 - `lib/modules/auth/ui/onboarding/{onboarding_controller,onboarding_page}.dart`
 - `test/{auth_credentials_test,secure_credential_store_test,smoke_test}.dart`, `test/helpers/fake_secure_backend.dart`, `test/modules/auth/ui/onboarding_page_test.dart`
-- `docs/plan/state/UC-CURRENT.md`, `docs/architecture/SPEC.md`, `docs/plan/epics/epic-01-auth-perfil.md`
+- `docs/plan/state/UC-CURRENT.md`, `docs/plan/reviews/qa-review-v0.3.0.md`, `docs/architecture/SPEC.md`, `docs/plan/epics/epic-01-auth-perfil.md`
 
 ## Próximo passo
-1. Gate 3 (review do diff TASK-03 vs SPEC/DESIGN).
-2. Gate 4 (QA) + laudo `qa-review-v0.3.0`.
-3. Consolidação UC-01.01 (release claim após QA Alta).
+1. Liberar claim `UC-01.01` (commit de consolidação feito).
+2. Iniciar **UC-01.02** (Autenticação por Biometria / "Lembrar de Mim") — novo claim, TDD, avaliar Gate 2.5 (superfície `local_auth`/biometria).

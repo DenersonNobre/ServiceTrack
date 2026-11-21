@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00` (Fundação Flutter) |
 | **Prioridade** | Alta (Portão de Entrada do App) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Não Iniciado` |
+| **Status Atual** | `Em Andamento` (UC-01.01 concluído; UC-01.02..05 pendentes) |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/product/PRD.md](../../product/PRD.md) |
 
 ---
@@ -32,7 +32,7 @@ Garantir o portão de entrada seguro e a identidade comercial do técnico no **S
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
-| **UC-01.01** | Onboarding Inicial & Registro de Credenciais | Nenhuma | `Pendente` |
+| **UC-01.01** | Onboarding Inicial & Registro de Credenciais | Nenhuma | `Concluído` |
 | **UC-01.02** | Autenticação por Biometria / "Lembrar de Mim" | UC-01.01 | `Pendente` |
 | **UC-01.03** | Desbloqueio Rápido via Teclado de PIN Numérico | UC-01.01 | `Pendente` |
 | **UC-01.04** | Recuperação de Acesso Local & Fallback do SO | UC-01.01, UC-01.03 | `Pendente` |
@@ -57,9 +57,10 @@ Garantir o portão de entrada seguro e a identidade comercial do técnico no **S
 ### Caso de Uso UC-01.01 — Onboarding Inicial & Registro de Credenciais
 
 * **Identificador**: `UC-01.01`
-* **Status**: `Pendente`
+* **Status**: `Concluído`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-01.01 -owner <agente> -paths lib/modules/auth/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-01.01`
+* **Evidência**: TASK-01/02/03 verdes (33/33, analyze limpo). Gates 2.5/3/4 aprovados (Alta). Laudos `qa-review-v0.1.0`, `qa-review-v0.2.0`, `qa-review-v0.3.0`. Desvio PBKDF2 PIN autorizado pelo PO (2026-11-21). Obs. QA: B1-B3 registradas no laudo v0.3.0.
 
 #### Narrativa
 - **Como** Técnico autônomo abrindo o ServiceTrack pela primeira vez

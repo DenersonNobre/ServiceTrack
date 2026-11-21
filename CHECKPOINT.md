@@ -7,16 +7,17 @@
 App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite local, biometria/PIN e geração de laudos em PDF no aparelho.
 
 ## Estado Real (Verificado em 2026-11-21)
-- **Branch**: `main` (3 commits locais à frente de `origin/main`, sem push — sem autorização do PO).
+- **Branch**: `main` (commits locais à frente de `origin/main`, sem push — sem autorização do PO).
 - **EPIC-00 (Fundação Técnica)**: **CONCLUÍDA** e 100% verde.
-- **UC-01.01 (EPIC-01)**: TASK-01 (Value Objects, 15 testes) e TASK-02 (cofre PBKDF2 + rate-limit, 14 testes) **consolidadas** com Gates 2.5/3/4 — suíte 30/30, `analyze` limpo, laudos `qa-review-v0.1.0` e `qa-review-v0.2.0`.
+- **UC-01.01 (EPIC-01, Concluída)**: TASK-01/02/03 consolidadas com Gates 2.5/3/4 — suíte 33/33, `flutter analyze --fatal-infos` limpo, laudos `qa-review-v0.1.0..v0.3.0`.
   - Desvio do épico autorizado pelo PO: PBKDF2-HMAC-SHA-256 para senha E PIN (Gate 2.5 C1).
-- **Dívidas**: `docs/DEBITOS.md` D-01..D-04 (runners nativos, CVE-audit, rate-limit da senha, ledger MIT).
+  - Estrutura canônica Flutter/Dart alinhada ao POC `kortex/poc/lib` (`app/`, `core/`, `modules/<nome>/{domain,data,commands,features,ui}`).
+- **Dívidas**: `docs/DEBITOS.md` D-01..D-04 (runners nativos, CVE-audit, rate-limit da senha, ledger MIT). QA v0.3.0: B1-B3 baixas.
 
 ## Próximo Passo Acionável
-1. Retomar **`UC-01.01` TASK-03**: tela de Onboarding (tokens Deep Petrol Green, teclado ≥48dp) com `kortex`.
-2. Alvo: widget tests TDD contra VOs + store já auditados (sem superfície nova p/ Gate 2.5).
+1. Iniciar **UC-01.02** (Biometria / "Lembrar de Mim") com novo claim, TDD e Gate 2.5 por superfície `local_auth`.
+2. Antes de codar: pré-flight build/teste verde + claim atômico.
 
 ## Travas Vivas
-- **Claim ativo**: Nenhum (claim `UC-01.01` liberado no encerramento da sessão em 2026-11-21).
+- **Claim ativo**: Nenhum (UC-01.01 liberado após consolidação Gates 3/4 em 2026-11-21).
 - **Greenfield Lock**: **DESTRAVADO** para código de negócio pela conclusão da EPIC-00.
