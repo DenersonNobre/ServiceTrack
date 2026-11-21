@@ -44,9 +44,9 @@ final class ServiceLocationSqliteRepository implements IServiceLocationRepositor
       if (existing.isEmpty) {
         data['created_at'] = now;
         await db.insert(ServiceLocationMigration.table, data);
-      } else {
-        await db.update(ServiceLocationMigration.table, data, where: 'id = ?', whereArgs: [location.id]);
+        return Success(location);
       }
+      await db.update(ServiceLocationMigration.table, data, where: 'id = ?', whereArgs: [location.id]);
       return Success(location);
     } catch (_) {
       return const Failure(
