@@ -4,7 +4,7 @@
 
 ## Status
 - **UC**: `UC-01.01` | **Épico**: EPIC-01 | **Owner**: `opc01@e03ff640`
-- **Fase**: TASK-01 e TASK-02 consolidadas (Gates 3+4 Alta); resta TASK-03 (tela).
+- **Fase**: TASK-01 e TASK-02 consolidadas (Gates 2.5/3/4); resta TASK-03 (tela). Sessão encerrada em 2026-11-21, claim liberado.
 - **Claim**: `UC-01.01` ativo (lib/modules/auth/, test/, docs/plan/state/UC-CURRENT.md).
 
 ## Gate 2.5 (Segurança)
