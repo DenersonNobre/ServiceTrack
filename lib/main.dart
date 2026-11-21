@@ -15,6 +15,10 @@ import 'modules/auth/ui/recovery/.index.dart';
 import 'modules/profile/data/.index.dart';
 import 'modules/profile/domain/ports/.index.dart';
 import 'modules/profile/ui/profile/.index.dart';
+import 'modules/work_orders/data/.index.dart';
+import 'modules/work_orders/domain/ports/.index.dart';
+import 'modules/work_orders/ui/form/.index.dart';
+import 'modules/work_orders/ui/list/.index.dart';
 import 'app/database/app_database.dart';
 import 'modules/customers/data/.index.dart';
 import 'modules/customers/domain/ports/.index.dart';
@@ -33,6 +37,7 @@ void main() {
       ),
       customerRepository: CustomerSqliteRepository(provider: db),
       serviceLocationRepository: ServiceLocationSqliteRepository(provider: db),
+      workOrderRepository: WorkOrderSqliteRepository(provider: db),
     ),
   );
 }
@@ -47,6 +52,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.profileRepository,
     this.customerRepository,
     this.serviceLocationRepository,
+    this.workOrderRepository,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -64,6 +70,9 @@ class ServiceTrackApp extends StatelessWidget {
   /// Repositório de locais de atendimento (injeção para testes).
   final IServiceLocationRepositoryPort? serviceLocationRepository;
 
+  /// Repositório de Ordens de Serviço (injeção para testes).
+  final IWorkOrderRepositoryPort? workOrderRepository;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
@@ -73,6 +82,7 @@ class ServiceTrackApp extends StatelessWidget {
         profileRepository ?? MemoryTechnicianProfileRepository();
     final customerRepo = customerRepository ?? MemoryCustomerRepository();
     final locationRepo = serviceLocationRepository ?? MemoryServiceLocationRepository();
+    final workOrderRepo = workOrderRepository ?? MemoryWorkOrderRepository();
     return MaterialApp(
       title: 'ServiceTrack',
       theme: ThemeData(
@@ -86,6 +96,7 @@ class ServiceTrackApp extends StatelessWidget {
         profileRepo: profileRepo,
         customerRepo: customerRepo,
         locationRepo: locationRepo,
+        workOrderRepo: workOrderRepo,
       ),
     );
   }
@@ -98,6 +109,7 @@ class _AppEntry extends StatefulWidget {
     required this.profileRepo,
     required this.customerRepo,
     required this.locationRepo,
+    required this.workOrderRepo,
   });
 
   final IAuthCredentialRepositoryPort repo;
@@ -105,6 +117,7 @@ class _AppEntry extends StatefulWidget {
   final ITechnicianProfileRepositoryPort profileRepo;
   final ICustomerRepositoryPort customerRepo;
   final IServiceLocationRepositoryPort locationRepo;
+  final IWorkOrderRepositoryPort workOrderRepo;
 
   @override
   State<_AppEntry> createState() => _AppEntryState();
@@ -296,11 +309,52 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
     );
   }
 
+  void _goWorkOrderForm({VoidCallback? onSaved}) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<WorkOrderFormController>(
+              create: (_) => WorkOrderFormController(repository: widget.workOrderRepo, customerRepository: widget.customerRepo),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: WorkOrderFormPage(onSaved: () { Navigator.of(context).pop(); onSaved?.call(); }),
+        ),
+      ),
+    );
+  }
+
+  void _goWorkOrders() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<WorkOrderListController>(
+              create: (_) => WorkOrderListController(repository: widget.workOrderRepo),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: Builder(
+            builder: (ctx) {
+              final list = ctx.readKortex<WorkOrderListController>();
+              return WorkOrderListPage(onAdd: () => _goWorkOrderForm(onSaved: list.load));
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   void _goHome() {
     if (!mounted) return;
     _isLockVisible = false;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers)),
+      MaterialPageRoute<void>(
+        builder: (_) => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers, onWorkOrders: _goWorkOrders),
+      ),
     );
   }
 
@@ -402,7 +456,7 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
               ],
               child: const LockPage(),
             ),
-          AppEntryRoute.home => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers),
+          AppEntryRoute.home => _HomePlaceholder(onProfile: _goProfile, onCustomers: _goCustomers, onWorkOrders: _goWorkOrders),
         };
       },
     );
@@ -410,10 +464,11 @@ class _AppEntryState extends State<_AppEntry> with WidgetsBindingObserver {
 }
 
 class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder({required this.onProfile, required this.onCustomers});
+  const _HomePlaceholder({required this.onProfile, required this.onCustomers, required this.onWorkOrders});
 
   final VoidCallback onProfile;
   final VoidCallback onCustomers;
+  final VoidCallback onWorkOrders;
 
   @override
   Widget build(BuildContext context) {
@@ -421,6 +476,13 @@ class _HomePlaceholder extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ServiceTrack'),
         actions: [
+          IconButton(
+            key: const Key('home-work-orders'),
+            icon: const Icon(Icons.assignment_outlined),
+            tooltip: 'Ordens de Serviço',
+            onPressed: onWorkOrders,
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          ),
           IconButton(
             key: const Key('home-customers'),
             icon: const Icon(Icons.people_outline),
