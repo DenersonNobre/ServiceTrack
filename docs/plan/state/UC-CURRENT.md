@@ -4,7 +4,7 @@
 
 ## Status
 - **UC**: `UC-01.01` | **Épico**: EPIC-01 | **Owner**: `opc01@e03ff640`
-- **Fase**: TASK-01 consolidada (Gate 4 Alta); TASK-02 implementada e verde, aguardando Gates 3/4.
+- **Fase**: TASK-01 e TASK-02 consolidadas (Gates 3+4 Alta); resta TASK-03 (tela).
 - **Claim**: `UC-01.01` ativo (lib/modules/auth/, test/, docs/plan/state/UC-CURRENT.md).
 
 ## Gate 2.5 (Segurança)
@@ -13,7 +13,9 @@ Gate 2.5: INVOKED — REPROVADO o esquema literal (C1: PIN com SHA-256 1 iteraç
 ## Evidência (TASK-02)
 - **Leitura**: `secure_credential_store.dart` + `credential_kdf.dart` + `flutter_secure_storage_backend.dart` (oráculo da API: cache Puro `flutter_secure_storage-9.2.4`, `platform_interface-1.1.2`).
 - **Verificação (Red)**: `flutter test test/secure_credential_store_test.dart` → exit 1 (símbolos ausentes); 1ª GREEN parcial 12/13 — `StateError` (Error, não Exception) escapou do `on Exception`: dublê corrigido para `Exception` (fiel a `PlatformException` real).
-- **Confirmação (Green)**: `flutter test` → `All tests passed!` (29/29); `flutter analyze --fatal-infos` → `No issues found!`.
+- **Confirmação (Green)**: `flutter test` → `All tests passed!` (30/30: 15 VOs + 14 cofre + 1 smoke); `flutter analyze --fatal-infos` → `No issues found!`.
+- **Gate 3**: Aprovado com confiança Alta — advisory UTF-8 corrigido em `20837d1`; risco `verifyPassword` sem rate-limit registrado (D-03).
+- **Gate 4**: APROVADO (Alta) — laudo `docs/plan/reviews/qa-review-v0.2.0.md`.
 - **Dependência**: `crypto: ^3.0.8` declarada direta, lock `transitive` → `"direct main"` via `flutter pub get --offline` (INV-SEC-02).
 - **Dívidas descobertas (fora do slice, registrar em DEBITOS)**: (a) sem runners nativos (`android/`, `ios/` ausentes) — verificação de `allowBackup` e build em aparelho pendentes de scaffolding de plataforma; (b) `pub audit`/CVE sem toolchain (`audit` inexistente no Dart 3.13.5) + offline; (c) flags UX (`biometrics_enabled`, `remember_me`) e `user_id` ainda sem casa definitiva (INV-SEC-05: fora do cofre).
 
