@@ -8,12 +8,20 @@ import 'package:kortex/kortex.dart';
 import '../../../../app/theme/app_colors.dart';
 import 'customer_form_controller.dart';
 
-final class CustomerFormPage extends IKortexPage<CustomerFormController> {
+final class CustomerFormPage extends StatefulWidget {
   const CustomerFormPage({super.key, this.onSaved});
   final VoidCallback? onSaved;
 
   @override
-  Widget buildPage(BuildContext context, CustomerFormController controller) {
+  State<CustomerFormPage> createState() => _CustomerFormPageState();
+}
+
+class _CustomerFormPageState extends State<CustomerFormPage> {
+  bool _savedHandled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.readKortex<CustomerFormController>();
     controller.ensureLoaded();
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -24,8 +32,11 @@ final class CustomerFormPage extends IKortexPage<CustomerFormController> {
             if (controller.loading.value) {
               return const Center(child: CircularProgressIndicator(color: AppColors.primaryAction));
             }
-            if (controller.saved.value) {
-              WidgetsBinding.instance.addPostFrameCallback((_) => onSaved?.call());
+            if (controller.saved.value && !_savedHandled) {
+              _savedHandled = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) widget.onSaved?.call();
+              });
             }
             controller.error.value;
             controller.saving.value;

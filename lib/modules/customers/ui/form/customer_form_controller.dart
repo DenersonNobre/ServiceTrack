@@ -35,14 +35,19 @@ final class CustomerFormController extends IKortexController {
     loading.value = true;
     final result = await repository.findById(id);
     loading.value = false;
-    if (result case Success<Customer?, ValidationError>(:final value)) {
-      if (value != null) {
+    switch (result) {
+      case Success<Customer?, ValidationError>(:final value):
+        if (value == null) {
+          error.value = 'Cliente não encontrado.';
+          return;
+        }
         name.value = value.name.value;
         document.value = value.document?.digits ?? '';
         whatsapp.value = value.whatsapp.digits;
         email.value = value.email?.value ?? '';
         notes.value = value.notes;
-      }
+      case Failure<Customer?, ValidationError>(:final value):
+        error.value = value.message;
     }
   }
 
