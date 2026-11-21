@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:service_track/modules/auth/data/credential_store/secure_credential_store.dart';
-import 'package:service_track/modules/auth/domain/value_objects/auth_credentials.dart';
+import 'package:service_track/modules/auth/data/credential_store/.index.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
 
 import '../../../helpers/fake_secure_backend.dart';
 

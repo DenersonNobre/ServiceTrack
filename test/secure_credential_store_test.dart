@@ -6,10 +6,10 @@
 // Não testa biometria (UC-01.02), tela (TASK-03) nem plugin real em aparelho.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:service_track/modules/auth/domain/ports/auth_failure_codes.dart';
-import 'package:service_track/modules/auth/domain/security/credential_kdf.dart';
-import 'package:service_track/modules/auth/domain/value_objects/auth_credentials.dart';
-import 'package:service_track/modules/auth/data/credential_store/secure_credential_store.dart';
+import 'package:service_track/modules/auth/domain/ports/.index.dart';
+import 'package:service_track/modules/auth/domain/security/.index.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
+import 'package:service_track/modules/auth/data/credential_store/.index.dart';
 
 import 'helpers/fake_secure_backend.dart';
 

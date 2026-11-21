@@ -5,7 +5,7 @@
 // Não testa persistência, tela ou biometria.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:service_track/modules/auth/domain/value_objects/auth_credentials.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
 
 void main() {
   group('TechnicianName', () {

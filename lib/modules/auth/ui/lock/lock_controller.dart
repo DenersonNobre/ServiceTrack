@@ -9,8 +9,8 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
-import '../../domain/ports/auth_credential_repository_port.dart';
-import '../../features/biometric_unlock/biometric_unlock_use_case.dart';
+import '../../domain/ports/.index.dart';
+import '../../features/biometric_unlock/.index.dart';
 
 /// Estado reativo da tela de bloqueio.
 final class LockController extends IKortexController {

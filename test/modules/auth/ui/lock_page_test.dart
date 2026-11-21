@@ -3,13 +3,10 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kortex/kortex.dart';
-import 'package:service_track/modules/auth/domain/ports/auth_credential_repository_port.dart';
-import 'package:service_track/modules/auth/domain/ports/biometric_auth_port.dart';
-import 'package:service_track/modules/auth/domain/value_objects/auth_credentials.dart';
-import 'package:service_track/modules/auth/domain/value_objects/biometric_auth_result.dart';
-import 'package:service_track/modules/auth/features/biometric_unlock/biometric_unlock_use_case.dart';
-import 'package:service_track/modules/auth/ui/lock/lock_controller.dart';
-import 'package:service_track/modules/auth/ui/lock/lock_page.dart';
+import 'package:service_track/modules/auth/domain/ports/.index.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
+import 'package:service_track/modules/auth/features/biometric_unlock/.index.dart';
+import 'package:service_track/modules/auth/ui/lock/.index.dart';
 
 final class _FakeBio implements IBiometricAuthPort {
   _FakeBio(this.result);

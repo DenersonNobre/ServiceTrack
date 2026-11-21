@@ -1,9 +1,9 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:service_track/modules/auth/domain/ports/auth_credential_repository_port.dart';
-import 'package:service_track/modules/auth/domain/value_objects/auth_credentials.dart';
-import 'package:service_track/modules/auth/features/app_entry/resolve_initial_route_use_case.dart';
+import 'package:service_track/modules/auth/domain/ports/.index.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
+import 'package:service_track/modules/auth/features/app_entry/.index.dart';
 
 final class _FakeAuthRepo implements IAuthCredentialRepositoryPort {
   _FakeAuthRepo({

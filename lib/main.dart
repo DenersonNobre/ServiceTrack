@@ -2,17 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import 'app/theme/app_colors.dart';
-import 'modules/auth/data/biometric/local_auth_biometric_adapter.dart';
-import 'modules/auth/data/credential_store/flutter_secure_storage_backend.dart';
-import 'modules/auth/data/credential_store/secure_credential_store.dart';
-import 'modules/auth/domain/ports/auth_credential_repository_port.dart';
-import 'modules/auth/domain/ports/biometric_auth_port.dart';
-import 'modules/auth/features/app_entry/resolve_initial_route_use_case.dart';
-import 'modules/auth/features/biometric_unlock/biometric_unlock_use_case.dart';
-import 'modules/auth/ui/lock/lock_controller.dart';
-import 'modules/auth/ui/lock/lock_page.dart';
-import 'modules/auth/ui/onboarding/onboarding_controller.dart';
-import 'modules/auth/ui/onboarding/onboarding_page.dart';
+import 'modules/auth/data/biometric/.index.dart';
+import 'modules/auth/data/credential_store/.index.dart';
+import 'modules/auth/domain/ports/.index.dart';
+import 'modules/auth/features/app_entry/.index.dart';
+import 'modules/auth/features/biometric_unlock/.index.dart';
+import 'modules/auth/ui/lock/.index.dart';
+import 'modules/auth/ui/onboarding/.index.dart';
 
 void main() {
   runApp(const ServiceTrackApp());

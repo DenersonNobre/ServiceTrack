@@ -9,8 +9,8 @@
 import 'package:kortex/kortex.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
-import '../../domain/ports/auth_credential_repository_port.dart';
-import '../../domain/value_objects/auth_credentials.dart';
+import '../../domain/ports/.index.dart';
+import '../../domain/value_objects/.index.dart';
 
 /// Estado e ações do formulário de onboarding inicial.
 final class OnboardingController extends IKortexController {

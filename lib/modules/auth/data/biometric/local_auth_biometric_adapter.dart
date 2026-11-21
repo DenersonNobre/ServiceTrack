@@ -8,8 +8,8 @@
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_platform_interface/local_auth_platform_interface.dart';
 
-import '../../domain/ports/biometric_auth_port.dart';
-import '../../domain/value_objects/biometric_auth_result.dart';
+import '../../domain/ports/.index.dart';
+import '../../domain/value_objects/.index.dart';
 
 /// Adapter que delega ao [LocalAuthentication].
 final class LocalAuthBiometricAdapter implements IBiometricAuthPort {

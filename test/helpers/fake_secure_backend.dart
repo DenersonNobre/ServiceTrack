@@ -6,7 +6,7 @@
 //
 // Dependências: ports desta fatia.
 
-import 'package:service_track/modules/auth/domain/ports/secure_key_value_port.dart';
+import 'package:service_track/modules/auth/domain/ports/.index.dart';
 
 /// Dublê de testes do armazenamento seguro.
 final class FakeSecureBackend implements ISecureKeyValue {

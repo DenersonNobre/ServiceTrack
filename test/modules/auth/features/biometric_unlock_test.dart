@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:service_track/modules/auth/domain/ports/biometric_auth_port.dart';
-import 'package:service_track/modules/auth/domain/value_objects/biometric_auth_result.dart';
-import 'package:service_track/modules/auth/features/biometric_unlock/biometric_unlock_use_case.dart';
+import 'package:service_track/modules/auth/domain/ports/.index.dart';
+import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
+import 'package:service_track/modules/auth/features/biometric_unlock/.index.dart';
 
 final class _FakeBiometricAuthPort implements IBiometricAuthPort {
   _FakeBiometricAuthPort(this._result);

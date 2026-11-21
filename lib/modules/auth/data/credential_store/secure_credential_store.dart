@@ -17,11 +17,9 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../domain/ports/auth_credential_repository_port.dart';
-import '../../domain/ports/auth_failure_codes.dart';
-import '../../domain/ports/secure_key_value_port.dart';
-import '../../domain/security/credential_kdf.dart';
-import '../../domain/value_objects/auth_credentials.dart';
+import '../../domain/ports/.index.dart';
+import '../../domain/security/.index.dart';
+import '../../domain/value_objects/.index.dart';
 
 /// Repositório seguro das credenciais do técnico.
 final class SecureCredentialStore implements IAuthCredentialRepositoryPort {

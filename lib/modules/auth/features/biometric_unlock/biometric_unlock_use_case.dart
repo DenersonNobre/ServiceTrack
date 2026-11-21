@@ -5,8 +5,8 @@
 //
 // Pattern: Use Case (CQRS-lite) + fail-closed.
 
-import '../../domain/ports/biometric_auth_port.dart';
-import '../../domain/value_objects/biometric_auth_result.dart';
+import '../../domain/ports/.index.dart';
+import '../../domain/value_objects/.index.dart';
 
 /// Decisão de desbloqueio após avaliação biométrica.
 enum UnlockDecision {

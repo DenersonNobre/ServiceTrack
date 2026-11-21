@@ -14,7 +14,7 @@
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../../domain/ports/secure_key_value_port.dart';
+import '../../domain/ports/.index.dart';
 
 /// Backend seguro baseado no Keychain/Keystore do aparelho.
 final class FlutterSecureStorageBackend implements ISecureKeyValue {

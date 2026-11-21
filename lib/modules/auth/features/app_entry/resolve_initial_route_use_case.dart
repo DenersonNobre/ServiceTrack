@@ -8,7 +8,7 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
-import '../../domain/ports/auth_credential_repository_port.dart';
+import '../../domain/ports/.index.dart';
 
 /// Rota inicial decidida no boot.
 enum AppEntryRoute {
