@@ -199,11 +199,18 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
           maxLines: 2,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Voltar')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            child: const Text('Voltar'),
+          ),
           FilledButton(
             key: const Key('wo-cancel-confirm'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+              minimumSize: const Size(48, 48),
+            ),
             child: const Text('Cancelar OS'),
           ),
         ],

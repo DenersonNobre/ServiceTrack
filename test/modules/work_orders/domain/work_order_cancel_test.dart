@@ -1,3 +1,7 @@
+// Testes de cancelamento de OS (UC-03.04).
+//
+// SRP: validar transições e justificativa obrigatória no domínio.
+
 import 'package:dnolib/core/models/money.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/geo_point.dart';
@@ -37,6 +41,20 @@ void main() {
       final inProgress = scheduled().startService(LocationCaptured(point())).getOrNull()!;
       final cancelled = inProgress.cancel('Motivo').getOrNull()!;
       final r = cancelled.cancel('Outro');
+      expect(r.isFailure, isTrue);
+      expect(r.getOrNullFailure()!.code, 'ERR_OS_TRANSICAO_INVALIDA');
+    });
+
+    test('rejeita cancelamento de OS concluída (INV-06)', () {
+      final completed = WorkOrder.restore(
+        id: 'wo1',
+        customerId: 'c1',
+        serviceDescription: 'Manutenção',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(1000, currencyCode: 'BRL', scale: 2),
+        status: WorkOrderStatus.completed,
+      );
+      final r = completed.cancel('Motivo');
       expect(r.isFailure, isTrue);
       expect(r.getOrNullFailure()!.code, 'ERR_OS_TRANSICAO_INVALIDA');
     });
