@@ -19,16 +19,19 @@ final class CustomerListController extends IKortexController {
   final KortexSignal<String?> error = KortexSignal<String?>(null);
   bool _loaded = false;
 
-  /// Clientes filtrados pela busca em tempo real.
+  /// Clientes filtrados pela busca em tempo real (normaliza máscara de CPF/CNPJ/WhatsApp).
   List<Customer> get filteredCustomers {
     final q = query.value.trim().toLowerCase();
     final all = customers.value;
     if (q.isEmpty) return all;
+    final qDigits = q.replaceAll(RegExp(r'\D'), '');
     return all.where((c) {
       final name = c.name.value.toLowerCase();
       final doc = c.document?.digits ?? '';
       final phone = c.whatsapp.digits;
-      return name.contains(q) || doc.contains(q) || phone.contains(q);
+      final matchesDigits = qDigits.isNotEmpty &&
+          (doc.contains(qDigits) || phone.contains(qDigits));
+      return name.contains(q) || matchesDigits;
     }).toList();
   }
 

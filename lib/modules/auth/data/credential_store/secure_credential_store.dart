@@ -12,6 +12,7 @@
 // Dependências: dnolib (core/patterns), package:uuid, ports/security da fatia.
 
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
@@ -92,17 +93,23 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
   }) async {
     try {
       final userId = const Uuid().v4();
-      final passwordHash = CredentialHash.create(
-        password: utf8.encode(password.value),
-        iterations: profile.iterations,
-      );
-      final pinHash = CredentialHash.create(
-        password: utf8.encode(pin.value),
-        iterations: profile.iterations,
-      );
+      final iterations = profile.iterations;
+      final passwordBytes = utf8.encode(password.value);
+      final pinBytes = utf8.encode(pin.value);
+      final (passwordEncoded, pinEncoded) = await Isolate.run(() {
+        final passwordHash = CredentialHash.create(
+          password: passwordBytes,
+          iterations: iterations,
+        );
+        final pinHash = CredentialHash.create(
+          password: pinBytes,
+          iterations: iterations,
+        );
+        return (passwordHash.encode(), pinHash.encode());
+      });
       await _backend.write(userIdKey, userId);
-      await _backend.write(passwordHashKey, passwordHash.encode());
-      await _backend.write(pinHashKey, pinHash.encode());
+      await _backend.write(passwordHashKey, passwordEncoded);
+      await _backend.write(pinHashKey, pinEncoded);
       await _backend.delete(pinFailCountKey);
       await _backend.delete(pinLockedUntilKey);
       return Success(userId);
@@ -138,7 +145,9 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
         );
       }
       final hash = CredentialHash.parse(stored);
-      if (hash.matches(utf8.encode(attempt))) {
+      final attemptBytes = utf8.encode(attempt);
+      final matched = await Isolate.run(() => hash.matches(attemptBytes));
+      if (matched) {
         await _backend.delete(pinFailCountKey);
         await _backend.delete(pinLockedUntilKey);
         return const Success(true);
@@ -200,7 +209,9 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
         );
       }
       final hash = CredentialHash.parse(stored);
-      if (hash.matches(utf8.encode(attempt))) {
+      final attemptBytes = utf8.encode(attempt);
+      final matched = await Isolate.run(() => hash.matches(attemptBytes));
+      if (matched) {
         await _backend.delete(passwordFailCountKey);
         await _backend.delete(passwordLockedUntilKey);
         return const Success(true);
@@ -315,11 +326,15 @@ final class SecureCredentialStore implements IAuthCredentialRepositoryPort {
           ),
         );
       }
-      final pinHash = CredentialHash.create(
-        password: utf8.encode(newPin.value),
-        iterations: profile.iterations,
+      final iterations = profile.iterations;
+      final pinBytes = utf8.encode(newPin.value);
+      final pinEncoded = await Isolate.run(
+        () => CredentialHash.create(
+          password: pinBytes,
+          iterations: iterations,
+        ).encode(),
       );
-      await _backend.write(pinHashKey, pinHash.encode());
+      await _backend.write(pinHashKey, pinEncoded);
       await _backend.delete(pinFailCountKey);
       await _backend.delete(pinLockedUntilKey);
       return const Success(true);

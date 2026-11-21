@@ -18,4 +18,16 @@ void main() {
     expect(controller.filteredCustomers.length, 2);
     controller.dispose();
   });
+
+  test('UC-02.03 - filtra clientes por WhatsApp com mascara (M1)', () async {
+    final repo = MemoryCustomerRepository();
+    await repo.save(Customer.tryCreate(id: '1', name: 'Ana', document: '', whatsapp: '11999998888', email: '', notes: '').getOrNull()!);
+    await repo.save(Customer.tryCreate(id: '2', name: 'Bruno', document: '', whatsapp: '21988887777', email: '', notes: '').getOrNull()!);
+    final controller = CustomerListController(repository: repo);
+    await controller.load();
+
+    controller.query.value = '(11) 99999-8888';
+    expect(controller.filteredCustomers.map((c) => c.name.value).toList(), ['Ana']);
+    controller.dispose();
+  });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kortex/kortex.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -29,6 +30,15 @@ import 'modules/customers/ui/list/.index.dart';
 import 'modules/customers/ui/locations/.index.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final view = WidgetsBinding.instance.platformDispatcher.views.firstOrNull;
+  if (view != null) {
+    final shortestSide = view.physicalSize.shortestSide / view.devicePixelRatio;
+    if (shortestSide < 600) {
+      // ignore: discarded_futures
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    }
+  }
   final db = createAppDatabase();
   runApp(
     ServiceTrackApp(
