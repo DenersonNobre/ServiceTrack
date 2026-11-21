@@ -153,7 +153,8 @@ Esquema do Cenário: Validação de PIN na tela de bloqueio
 ### Caso de Uso UC-01.04 — Recuperação de Acesso Local & Fallback do SO
 
 * **Identificador**: `UC-01.04`
-* **Status**: `Pendente`
+* **Status**: `Concluído`
+* **Evidência**: 65/65 testes, analyze limpo. Gate 2.5 INVOKED/APROVADO condicionado (A1-A5). Gate 3 APROVADO Alta (re-review após fix 48dp). Gate 4 APROVADO Alta (`qa-review-v0.6.0.md`).
 
 #### Narrativa
 - **Como** Técnico que esqueceu seu PIN numérico
