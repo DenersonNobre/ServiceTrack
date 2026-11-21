@@ -32,7 +32,7 @@ Permitir que o técnico cadastre, consulte, edite e organize sua carteira de cli
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
 | **UC-02.01** | Cadastro e Edição de Cliente com Validação `brlib` | Nenhuma | `Concluído` |
-| **UC-02.02** | Gestão de Endereços e Locais de Atendimento | UC-02.01 | `Pendente` |
+| **UC-02.02** | Gestão de Endereços e Locais de Atendimento | UC-02.01 | `Concluído` |
 | **UC-02.03** | Busca Rápida Tátil de Clientes | UC-02.01 | `Pendente` |
 | **UC-02.04** | Histórico e Detalhes do Cliente | UC-02.01, UC-02.03 | `Pendente` |
 
