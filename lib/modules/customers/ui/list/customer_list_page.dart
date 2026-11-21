@@ -29,40 +29,64 @@ final class CustomerListPage extends IKortexPage<CustomerListController> {
         child: const Icon(Icons.add),
       ),
       body: SafeArea(
-        child: KortexWatch(
-          builder: (context, _) {
-            if (controller.loading.value) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.primaryAction));
-            }
-            if (controller.error.value != null) {
-              return Center(child: Text(controller.error.value!));
-            }
-            final items = controller.customers.value;
-            if (items.isEmpty) {
-              return const Center(child: Text('Nenhum cliente cadastrado.'));
-            }
-            return ListView.separated(
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final c = items[i];
-                return ListTile(
-                  key: Key('customer-${c.id}'),
-                  title: Text(c.name.value),
-                  subtitle: Text(c.whatsapp.digits),
-                  onTap: () => onEdit?.call(c),
-                  minTileHeight: 56,
-                  trailing: IconButton(
-                    key: Key('customer-locations-${c.id}'),
-                    icon: const Icon(Icons.place_outlined),
-                    tooltip: 'Locais',
-                    onPressed: () => onLocations?.call(c),
-                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                  ),
-                );
-              },
-            );
-          },
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: TextField(
+                key: const Key('customer-search'),
+                onChanged: (v) => controller.query.value = v,
+                decoration: const InputDecoration(
+                  hintText: 'Buscar cliente...',
+                  prefixIcon: Icon(Icons.search),
+                  filled: true,
+                  fillColor: AppColors.surfaceCard,
+                  constraints: BoxConstraints(minHeight: 48),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: KortexWatch(
+                builder: (context, _) {
+                  if (controller.loading.value) {
+                    return const Center(child: CircularProgressIndicator(color: AppColors.primaryAction));
+                  }
+                  if (controller.error.value != null) {
+                    return Center(child: Text(controller.error.value!));
+                  }
+                  final items = controller.filteredCustomers;
+                  if (controller.customers.value.isEmpty) {
+                    return const Center(child: Text('Nenhum cliente cadastrado.'));
+                  }
+                  if (items.isEmpty) {
+                    return const Center(child: Text('Nenhum cliente encontrado.'));
+                  }
+                  return ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, i) {
+                      final c = items[i];
+                      return ListTile(
+                        key: Key('customer-${c.id}'),
+                        title: Text(c.name.value),
+                        subtitle: Text(c.whatsapp.digits),
+                        onTap: () => onEdit?.call(c),
+                        minTileHeight: 56,
+                        trailing: IconButton(
+                          key: Key('customer-locations-${c.id}'),
+                          icon: const Icon(Icons.place_outlined),
+                          tooltip: 'Locais',
+                          onPressed: () => onLocations?.call(c),
+                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
