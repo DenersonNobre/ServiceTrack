@@ -26,26 +26,31 @@
 graph TD
     classDef foundation fill:#115E59,stroke:#0D524D,color:#fff;
     classDef core fill:#0284C7,stroke:#0369A1,color:#fff;
+    classDef ready fill:#D97706,stroke:#B45309,color:#fff;
     classDef blocked fill:#F4F4F5,stroke:#D4D4D8,color:#71717A;
 
     EPIC00["EPIC-00: Fundação Flutter & Toolchain"]:::foundation
-    EPIC01["EPIC-01: Gestão Local de Clientes (Drift/SQLite)"]:::blocked
-    EPIC02["EPIC-02: Ordens de Serviço & Ciclo de Estados"]:::blocked
-    EPIC03["EPIC-03: Checklists Rápidos & Evidências com GPS"]:::blocked
-    EPIC04["EPIC-04: Geração On-Device de Laudo PDF & Envio WhatsApp"]:::core
+    EPIC01["EPIC-01: Onboarding, Auth Local & Perfil"]:::ready
+    EPIC02["EPIC-02: Gestão Local de Clientes (SQLite/dnolib)"]:::blocked
+    EPIC03["EPIC-03: Ordens de Serviço & Ciclo de Estados"]:::blocked
+    EPIC04["EPIC-04: Checklists Rápidos & Evidências com GPS"]:::blocked
+    EPIC05["EPIC-05: Geração On-Device de Laudo PDF & Envio WhatsApp"]:::core
 
     EPIC00 --> EPIC01
     EPIC01 --> EPIC02
     EPIC02 --> EPIC03
     EPIC03 --> EPIC04
+    EPIC03 --> EPIC05
+    EPIC04 --> EPIC05
 ```
 
 ---
 
 ## 3. Ordem Canônica de Execução (Core-First & Risk-First)
 
-1. **EPIC00 (Fundação Flutter)**: Configurar projeto Flutter com Drift (SQLite), design tokens do Styleguide v2.1, scripts de teste headless e shims de claim.
-2. **EPIC01 (Clientes)**: Estrutura base de dados locais relacionais.
-3. **EPIC02 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
-4. **EPIC03 (Checklists & Fotos)**: Captura de evidências com compressão e coordenadas do GPS.
-5. **EPIC04 (PDF & Compartilhamento)**: O núcleo de maior valor perceptível para o técnico autônomo (gerar laudo executivo e disparar pelo WhatsApp com 1 toque).
+1. **EPIC00 (Fundação Flutter)**: Configurar projeto Flutter, design tokens do Styleguide v2.1, scripts de teste headless e shims de claim.
+2. **EPIC01 (Onboarding & Auth Local)**: Primeiro acesso do técnico, cadastro de perfil e cofre seguro de Biometria/PIN.
+3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `dnolib/sqlite` e validações `brlib`.
+4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
+5. **EPIC04 (Checklists & Fotos)**: Captura de evidências com compressão e coordenadas do GPS.
+6. **EPIC05 (Laudo PDF & WhatsApp)**: O núcleo de maior valor perceptível para o técnico autônomo (gerar laudo executivo e disparar pelo WhatsApp com 1 toque).
