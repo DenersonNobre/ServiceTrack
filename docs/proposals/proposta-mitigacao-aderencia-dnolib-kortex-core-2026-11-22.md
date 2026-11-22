@@ -2,6 +2,7 @@
 
 > **Data**: 2026-11-22  
 > **Autor**: `opc01@e03ff640` (auditoria estática/read-only; sem mutação de código de produção)  
+> **Atualização**: 2026-11-22 — alinhado com regra `AGENTS.md` “Widgets Stateless por Padrão”; ver **Seção 7** (validação independente/adendos por `agy01@59993bf1`).  
 > **Escopo**: `lib/`, `pubspec.yaml`, `docs/DEBITOS.md`, convenções `AGENTS.md`/`architecture-guidelines.md`  
 > **Método**: inspeção estática (`git grep`, leitura de arquivos, contagem de padrões). Itens não executados em runtime são marcados como [INFERÊNCIA].
 
@@ -74,7 +75,7 @@
 | N-01 | Duplicação `DigitalSignature` (work_orders vs evidences) | dois arquivos com contratos distintos | **Alta** | Definir contrato canônico (SPEC/INV-03), adapter/migração, único VO |
 | N-02 | Respostas checklist só em memória | `MemoryChecklistAnswerRepository` | Alta | Repo SQLite por OS/template, migração, binding com UC-04.02/INV-03 |
 | N-03 | EPIC-04 desatualizado no plano/gates | epic/README/uc-current sem reconciliação | Média | Auditoria por UC, gates 2.5/3/4, qa-reviews v0.18+ |
-| N-04 | `setState` em forms/shell/widget | 11 ocorrências achadas | Média | Classificar: efêmero local aceitável vs estado de tela; migrar onde houver regra de negócio/UI complexa |
+| N-04 | `StatefulWidget`/`setState` em forms/shell/widget | 11 ocorrências na varredura inicial; **seção 7.1** revalidou: 3 `setState` reais (todos em `signature_pad_widget.dart`), demais são lifecycle de controller/observer. AGENTS.md agora codifica **Stateless por padrão**. | Média (rebaixável p/ Baixa após validação 7.1) | Migrar estado de tela para Kortex; manter `StatefulWidget` só com justificativa técnica explícita/documentada. |
 | N-05 | SnackBar boilerplate repetido | 9 ocorrências no work order list page | Baixa | helper `core/ui/app_feedback.dart` |
 | N-06 | Códigos `ERR_*` inline | ampla ocorrência | Média | `*FailureCodes` por módulo ou catálogo central por contexto |
 | N-07 | Repetição `Size(48,48)` | ampla ocorrência | Baixa | token/constante de acessibilidade + theme/button styles |
@@ -117,7 +118,7 @@
 | M-04 | Persistência checklist por OS | Domínio/Dados | Alta | G | M-03 | respostas SQLite, prova real, fail-closed, D-05 fechado |
 | M-05 | Unificar `DigitalSignature` | Domínio | Alta | M | M-03 | um contrato canônico; migração/adapters; testes |
 | M-06 | Reconciliação EPIC-04 | Governança | Alta | M | M-04/M-05 | épico/status/laudos coerentes com evidência |
-| M-07 | Política setState local | Arquitetura | Média | P | nenhum | guideline + refactors pontuais onde necessário |
+| M-07 | Política StatelessWidget + Kortex | Arquitetura | Média (Baixa após 7.1) | P | nenhum | AGENTS.md atualizado; refatorar `StatefulWidget` sem justificativa; exceção só com justificativa explícita |
 | M-08 | Gate anti-string-mágica ERR | Qualidade | Média | P | M-01 | script/gate falha em literal novo fora catálogo |
 
 ## 5. Riscos e Cuidados
