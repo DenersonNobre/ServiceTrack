@@ -1,6 +1,5 @@
 // Gate de entrada, observador de ciclo de vida e roteamento de módulos.
 
-import 'package:dnolib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
@@ -10,13 +9,9 @@ import '../modules/auth/features/recovery/.index.dart';
 import '../modules/auth/ui/lock/.index.dart';
 import '../modules/auth/ui/onboarding/.index.dart';
 import '../modules/auth/ui/recovery/.index.dart';
-import '../modules/checklists/ui/execution/checklist_execution_controller.dart';
-import '../modules/checklists/ui/execution/checklist_execution_page.dart';
 import '../modules/customers/ui/customers_routes.dart';
 import '../modules/profile/ui/profile_routes.dart';
-import '../modules/work_orders/domain/value_objects/work_order_status.dart';
-import '../modules/work_orders/ui/form/.index.dart';
-import '../modules/work_orders/ui/list/.index.dart';
+import '../modules/work_orders/ui/work_orders_routes.dart';
 import 'app_dependencies.dart';
 import 'home_page.dart';
 
@@ -34,6 +29,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
   late final CustomersRoutes _customersRoutes;
   late final ProfileRoutes _profileRoutes;
+  late final WorkOrdersRoutes _workOrdersRoutes;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
   static const _backgroundLockTtl = Duration(minutes: 5);
@@ -48,6 +44,16 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     );
     _profileRoutes = ProfileRoutes(
       profileRepository: widget.deps.profileRepository,
+    );
+    _workOrdersRoutes = WorkOrdersRoutes(
+      workOrderRepository: widget.deps.workOrderRepository,
+      customerRepository: widget.deps.customerRepository,
+      locationService: widget.deps.locationService,
+      checklistProofPort: widget.deps.checklistProofPort,
+      checklistTemplateRepository: widget.deps.checklistTemplateRepository,
+      checklistAnswerRepository: widget.deps.checklistAnswerRepository,
+      requireChecklistTemplate: widget.deps.requireChecklistTemplate,
+      requireReceiverDocument: widget.deps.requireReceiverDocument,
     );
     _routeFuture = ResolveInitialRouteUseCase(
       repo: widget.deps.credentialRepository,
@@ -87,102 +93,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     Navigator.of(context).push(_customersRoutes.list());
   }
 
-  void _goWorkOrderForm({VoidCallback? onSaved}) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<WorkOrderFormController>(
-              create: (_) => WorkOrderFormController(
-                repository: widget.deps.workOrderRepository,
-                customerRepository: widget.deps.customerRepository,
-                checklistTemplateRepository:
-                    widget.deps.checklistTemplateRepository,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: WorkOrderFormPage(
-            onSaved: () {
-              Navigator.of(context).pop();
-              onSaved?.call();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _goChecklistExecution({
-    required String workOrderId,
-    required String templateId,
-  }) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<ChecklistExecutionController>(
-              create: (_) => ChecklistExecutionController(
-                templateRepository: widget.deps.checklistTemplateRepository,
-                answerRepository: widget.deps.checklistAnswerRepository,
-                workOrderId: workOrderId,
-                templateId: templateId,
-                isWorkOrderMutable: () async {
-                  final r = await widget.deps.workOrderRepository.findAll();
-                  switch (r) {
-                    case Success(:final value):
-                      final wo = value
-                          .where((e) => e.id == workOrderId)
-                          .firstOrNull;
-                      return wo != null &&
-                          wo.status != WorkOrderStatus.completed &&
-                          wo.status != WorkOrderStatus.cancelled;
-                    case Failure():
-                      return false;
-                  }
-                },
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: const ChecklistExecutionPage(),
-        ),
-      ),
-    );
-  }
-
   void _goWorkOrders() {
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<WorkOrderListController>(
-              create: (_) => WorkOrderListController(
-                repository: widget.deps.workOrderRepository,
-                locationService: widget.deps.locationService,
-                checklistProofPort: widget.deps.checklistProofPort,
-                requireChecklistTemplate: widget.deps.requireChecklistTemplate,
-                requireReceiverDocument: widget.deps.requireReceiverDocument,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: Builder(
-            builder: (ctx) {
-              final list = ctx.readKortex<WorkOrderListController>();
-              return WorkOrderListPage(
-                onAdd: () => _goWorkOrderForm(onSaved: list.load),
-                onChecklist: (woId, tplId) =>
-                    _goChecklistExecution(workOrderId: woId, templateId: tplId),
-              );
-            },
-          ),
-        ),
-      ),
-    );
+    Navigator.of(context).push(_workOrdersRoutes.list());
   }
 
   void _goHome() {
