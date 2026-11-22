@@ -10,11 +10,13 @@ final class HomePage extends StatelessWidget {
     required this.onProfile,
     required this.onCustomers,
     required this.onWorkOrders,
+    required this.onSettings,
   });
 
   final VoidCallback onProfile;
   final VoidCallback onCustomers;
   final VoidCallback onWorkOrders;
+  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,13 @@ final class HomePage extends StatelessWidget {
             icon: const Icon(Icons.person_outline),
             tooltip: 'Perfil comercial',
             onPressed: onProfile,
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          ),
+          IconButton(
+            key: const Key('home-settings'),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Configurações',
+            onPressed: onSettings,
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           ),
         ],

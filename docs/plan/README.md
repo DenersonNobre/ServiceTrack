@@ -19,7 +19,7 @@
 | **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política/defaults) | Alta | `Implementado (E2E device pendente)` |
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Bloqueado` |
 | **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Em Andamento` |
-| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Em Andamento (UC-07.01 concluído)` |
+| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Em Andamento (UC-07.01/02 concluídos)` |
 
 ---
 
@@ -60,7 +60,7 @@ graph TD
 2. **EPIC01 (Onboarding & Auth Local)**: Primeiro acesso do técnico, cadastro de perfil e cofre seguro de Biometria/PIN.
 3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `dnolib/sqlite` e validações `brlib`.
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
-5. **EPIC07 (Configurações & Políticas Locais)**: Fundação concluída (`UC-07.01`: catálogo tipado + SQLite v11 + use cases). Próximo: `UC-07.02` (UI) → Gate 2.5/`UC-07.03` (integração de políticas, D2/D-01).
+5. **EPIC07 (Configurações & Políticas Locais)**: Fundação e UI concluídas (`UC-07.01`: catálogo + SQLite v11 + use cases; `UC-07.02`: controller/página/rota + entrada na Home). Próximo: Gate 2.5/`UC-07.03` (integração das políticas, D2/D-01).
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.08, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.
 7. **EPIC06 (Hardening Técnico & Qualidade)**: Em andamento — **UC-06.05 concluído** (`AppDependencies` + `*Routes` + `appScopedRoute`; `AppEntry` 168 linhas/0 providers; `qa-review-v0.20.0.md`). Restam UC-06.01/02 residuais e UC-06.03/04.
 8. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.

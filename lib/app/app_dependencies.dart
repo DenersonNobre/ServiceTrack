@@ -8,6 +8,7 @@ import '../modules/checklists/domain/ports/checklist_answer_repository_port.dart
 import '../modules/checklists/domain/ports/checklist_template_repository_port.dart';
 import '../modules/customers/domain/ports/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
+import '../modules/settings/domain/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
 
 /// Dependências compartilhadas do aplicativo standalone.
@@ -23,6 +24,7 @@ final class AppDependencies {
     required this.checklistProofPort,
     required this.checklistTemplateRepository,
     required this.checklistAnswerRepository,
+    required this.settingsRepository,
     this.requireChecklistTemplate = true,
     this.requireReceiverDocument = false,
   });
@@ -37,6 +39,7 @@ final class AppDependencies {
   final IChecklistProofPort checklistProofPort;
   final IChecklistTemplateRepositoryPort checklistTemplateRepository;
   final IChecklistAnswerRepositoryPort checklistAnswerRepository;
+  final ISettingsRepositoryPort settingsRepository;
   final bool requireChecklistTemplate;
   final bool requireReceiverDocument;
 }

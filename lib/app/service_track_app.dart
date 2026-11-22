@@ -10,6 +10,8 @@ import '../modules/customers/data/.index.dart';
 import '../modules/customers/domain/ports/.index.dart';
 import '../modules/profile/data/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
+import '../modules/settings/data/.index.dart';
+import '../modules/settings/domain/.index.dart';
 import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
 import 'adapters/checklist_proof_adapter.dart';
@@ -32,6 +34,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.checklistTemplateRepository,
     this.checklistAnswerRepository,
     this.checklistProofPort,
+    this.settingsRepository,
     this.requireChecklistTemplate = true,
     this.requireReceiverDocument = false,
   });
@@ -66,6 +69,9 @@ class ServiceTrackApp extends StatelessWidget {
   /// Porta de prova de checklist para conclusão de OS (injeção para testes).
   final IChecklistProofPort? checklistProofPort;
 
+  /// Repositório de configurações locais (injeção para testes).
+  final ISettingsRepositoryPort? settingsRepository;
+
   /// Política: exige template vinculado na conclusão (UC-04.07/EPIC-07).
   final bool requireChecklistTemplate;
 
@@ -95,6 +101,7 @@ class ServiceTrackApp extends StatelessWidget {
           templateRepository: checklistTemplateRepo,
           answerRepository: checklistAnswerRepo,
         );
+    final settingsRepo = settingsRepository ?? MemorySettingsRepository();
     final dependencies = AppDependencies(
       credentialRepository: repo,
       biometricAuth: bio,
@@ -106,6 +113,7 @@ class ServiceTrackApp extends StatelessWidget {
       checklistProofPort: proofPort,
       checklistTemplateRepository: checklistTemplateRepo,
       checklistAnswerRepository: checklistAnswerRepo,
+      settingsRepository: settingsRepo,
       requireChecklistTemplate: requireChecklistTemplate,
       requireReceiverDocument: requireReceiverDocument,
     );

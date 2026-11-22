@@ -8,6 +8,7 @@ import 'modules/checklists/data/checklist_answer_sqlite_repository.dart';
 import 'modules/checklists/data/checklist_template_sqlite_repository.dart';
 import 'modules/customers/data/.index.dart';
 import 'modules/profile/data/.index.dart';
+import 'modules/settings/data/.index.dart';
 import 'modules/work_orders/data/.index.dart';
 
 export 'app/service_track_app.dart' show ServiceTrackApp;
@@ -24,8 +25,11 @@ void main() {
       customerRepository: CustomerSqliteRepository(provider: db),
       serviceLocationRepository: ServiceLocationSqliteRepository(provider: db),
       workOrderRepository: WorkOrderSqliteRepository(provider: db),
-      checklistTemplateRepository: ChecklistTemplateSqliteRepository(provider: db),
+      checklistTemplateRepository: ChecklistTemplateSqliteRepository(
+        provider: db,
+      ),
       checklistAnswerRepository: ChecklistAnswerSqliteRepository(provider: db),
+      settingsRepository: SettingsSqliteRepository(provider: db),
     ),
   );
 }

@@ -65,6 +65,8 @@
 └─────────────────────┴────────────────────┴─────────────────────────────┘
 ```
 
+- **Configurações**: acessível pela Home; toggles de política (checklist obrigatório e documento do recebedor), feedback via `AppFeedback` e persistência local por use case.
+
 ---
 
 ## 4. Contrato Visual do Laudo Técnico em PDF (Gerado no Celular)

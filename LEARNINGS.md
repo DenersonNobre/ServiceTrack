@@ -86,3 +86,9 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 
 ### 4. Gotcha de teste
 - `group(..., timeout: ...)` **não** existe no wrapper do `flutter_test` (só `skip`/`retry`); timeout é por `test`. Testes pesados de PBKDF2 estouravam 30s sob carga paralela; helper `_slowTest` com `Timeout(2min)` estabilizou `credential_recovery_test.dart` (commit `cd2c6c7`).
+
+### 5. UI de configurações (UC-07.02)
+- `SettingsController` usa `KortexSignal` para `loading/saving/snapshot/error/success`; `KortexListener` dispara `AppFeedback.showSuccess/showError` fora do build (sem `setState`).
+- `SwitchListTile` com `minTileHeight: 56` garante alvo >=48dp; `SettingsRoutes.edit()` usa `appScopedRoute`.
+- Entrada na Home via callback `onSettings`; `AppDependencies`/`ServiceTrackApp` recebem `ISettingsRepositoryPort`, com `MemorySettingsRepository` como fallback de teste e `SettingsSqliteRepository` no `main.dart`.
+- Evidência: 4 testes de UI/controller; suíte completa **194 verdes**; análise limpa.

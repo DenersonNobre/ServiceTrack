@@ -6,6 +6,7 @@ import '../modules/auth/features/app_entry/.index.dart';
 import '../modules/auth/ui/auth_routes.dart';
 import '../modules/customers/ui/customers_routes.dart';
 import '../modules/profile/ui/profile_routes.dart';
+import '../modules/settings/ui/.index.dart';
 import '../modules/work_orders/ui/work_orders_routes.dart';
 import 'app_dependencies.dart';
 import 'home_page.dart';
@@ -25,6 +26,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final AuthRoutes _authRoutes;
   late final CustomersRoutes _customersRoutes;
   late final ProfileRoutes _profileRoutes;
+  late final SettingsRoutes _settingsRoutes;
   late final WorkOrdersRoutes _workOrdersRoutes;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
@@ -44,6 +46,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     );
     _profileRoutes = ProfileRoutes(
       profileRepository: widget.deps.profileRepository,
+    );
+    _settingsRoutes = SettingsRoutes(
+      settingsRepository: widget.deps.settingsRepository,
     );
     _workOrdersRoutes = WorkOrdersRoutes(
       workOrderRepository: widget.deps.workOrderRepository,
@@ -93,6 +98,11 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     Navigator.of(context).push(_customersRoutes.list());
   }
 
+  void _goSettings() {
+    if (!mounted) return;
+    Navigator.of(context).push(_settingsRoutes.edit());
+  }
+
   void _goWorkOrders() {
     if (!mounted) return;
     Navigator.of(context).push(_workOrdersRoutes.list());
@@ -107,6 +117,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           onProfile: _goProfile,
           onCustomers: _goCustomers,
           onWorkOrders: _goWorkOrders,
+          onSettings: _goSettings,
         ),
       ),
     );
@@ -160,6 +171,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             onProfile: _goProfile,
             onCustomers: _goCustomers,
             onWorkOrders: _goWorkOrders,
+            onSettings: _goSettings,
           ),
         };
       },

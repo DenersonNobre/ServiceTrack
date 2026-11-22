@@ -1,26 +1,27 @@
 # UC-CURRENT — Handoff de Estado
 
 ## Metadados
-- **Fatia (Slice)**: `UC-07.01` — Fundação do Módulo de Configurações Locais
+- **Fatia (Slice)**: `UC-07.02` — UI de Configurações Locais
 - **Status**: CONCLUÍDO (código+testes)
 - **Dono**: `opc01@e03ff640`
 - **Épico**: `EPIC-07`
-- **Gate 2.5 (Segurança)**: PULADO — sem superfície sensível nova, sem PII e sem nova dependência; persistência local SQLite padrão do projeto.
+- **Gate 2.5 (Segurança)**: PULADO — UI consome use cases; não coleta PII nova e apenas edita políticas já definidas (D2).
 - **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **Concluído**: `SettingKey` (catálogo tipado), `SettingsSnapshot` (defaults seguros), `ISettingsRepositoryPort`, `SettingsSqliteRepository`, `MemorySettingsRepository`, `GetSettings`, `UpdateSetting` e `SettingsMigration.v11`; `app_database` em `dbVersion: 11`.
-- **Defaults**: `require_checklist_template=true`; `require_receiver_document=false` (minimização D2).
-- **Barrels**: `settings/.index.dart` → `data/`, `domain/`, `features/`; `domain/.index.dart` → entities/ports/value_objects. Sem imports profundos entre camadas.
+- **Concluído**: `SettingsController` (Kortex), `SettingsPage` (`SwitchListTile` >=48dp, `KortexListener` + `AppFeedback`), `SettingsRoutes` e entrada `home-settings` na Home.
+- **Wiring**: `AppDependencies`/`ServiceTrackApp` recebem `ISettingsRepositoryPort`; `main.dart` injeta `SettingsSqliteRepository`; fallback de testes usa `MemorySettingsRepository`.
+- **Defaults visíveis**: checklist exigido = `true`; documento do recebedor = `false` (minimização D2).
+- **Testes**: 4 testes de UI/controller; suíte completa **194 verdes**; análise limpa.
 - **Decisão**: [ADR-003](../../architecture/adr-003-settings-locais-tipadas.md).
-- **Testes do módulo**: 10 verdes (snapshot, SQLite, use cases). Suíte completa: **190 verdes**.
 
 ## [EVIDENCIA]
-- Leitura: `lib/modules/settings/domain/value_objects/setting_key.dart`, `lib/modules/settings/domain/entities/settings_snapshot.dart`, `lib/modules/settings/data/settings_sqlite_repository.dart`, `lib/modules/settings/features/update_setting.dart`, `lib/app/database/app_database.dart` → catálogo/defaults/porta/migration v11.
-- Verifica: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test test/modules/settings` → `+10 All tests passed!`.
-- Confirma: `flutter test` → `+190 All tests passed!`; `SettingsMigration.v11` registrada em `createAppDatabase` (`dbVersion: 11`).
+- Leitura: `lib/modules/settings/ui/settings_controller.dart`, `lib/modules/settings/ui/settings_page.dart`, `lib/modules/settings/ui/settings_routes.dart`, `lib/app/home_page.dart`, `lib/app/app_dependencies.dart`, `lib/app/service_track_app.dart`, `lib/main.dart` → UI, feedback, rota e injeção.
+- Verifica: `flutter test test/modules/settings/ui` → `+4 All tests passed!`; `flutter analyze --fatal-infos` → `No issues found!`.
+- Confirma: `flutter test` → `+194 All tests passed!`; `SwitchListTile` com altura >=48dp e persistência via `UpdateSetting`.
 
 ## Próximo passo
-1. **UC-07.02**: UI de Configurações (Kortex, >=48dp, leitura/edição por use case).
-2. **Gate 2.5** antes de UC-07.03 (D2/PII; manter C-01/D-01 fail-closed).
-3. **UC-07.03**: integrar `require_checklist_template`/`require_receiver_document` nos consumidores.
+1. **Gate 2.5** para `UC-07.03` (D2/PII; C-01/D-01 fail-closed).
+2. **UC-07.03**: integrar `require_checklist_template`/`require_receiver_document` nos consumidores (`AppEntry`, `ServiceTrackApp`, `WorkOrderListController/Page`).
+3. **EPIC-06 residual**: UC-06.01/02 residuais.
+4. **E2E device EPIC-04**: validação pendente.
