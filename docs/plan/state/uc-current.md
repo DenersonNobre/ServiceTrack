@@ -1,27 +1,23 @@
 # UC-CURRENT — Handoff de Estado
 
 ## Metadados
-- **Fatia (Slice)**: `UC-03.04` (Pausa e Cancelamento com Justificativa)
-- **Status**: CONCLUIDO (Gates 2.5/3/4)
+- **Fatia (Slice)**: `UC-04.05` (Contrato Canônico de Assinatura & Decisão de Domínio)
+- **Status**: EM ANDAMENTO (ADR proposta; Gate 2.5 pendente)
 - **Dono**: `opc01@e03ff640`
-- **Épico**: `EPIC-03`
-- **Última Atualização**: `2026-11-21`
+- **Épico**: `EPIC-04`
+- **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **O que foi feito**: UC-03.04 completa. Cancelamento com justificativa (entrega anterior) + pausa/retomada (59661c6): `PAUSED`, `pause(reason)`, `resume()` sem GPS por decisão do PO, migração SQLite v7 `pause_reason`, controller/UI filtros e ações.
-- **Gate 2.5 (Segurança)**: Gate 2.5: PULADO — transição local com justificativa em SQLite, sem nova superfície sensível; retomada sem GPS por decisão do PO.
-- **Gate 3**: APROVADO Média (`ses_dfedd90adffeEk5ZybiJqKFgWd`).
-- **Gate 4**: APROVADO Alta (`ses_dfedd90abffeX2FsP3Wc1IiQMH`) — laudo `docs/plan/reviews/qa-review-v0.17.0.md`.
+- **O que foi feito**: Auditoria EPIC-04; criada EPIC-06; proposta de mitigação; ADR-001 rascunhada para unificar `DigitalSignature` (work_orders vs evidences), cobrir PII/LGPD e destravar D-05/M-04/M-05.
+- **Gate 2.5 (Segurança)**: Gate 2.5: INVOKED — em execução para `docs/architecture/adr-001-assinatura-digital-canonica.md` (PII: nome/documento/assinatura; LGPD; armazenamento local; redaction; migração).
+- **Gates 3/4**: não aplicável ainda (decisão/ADR, sem implementação de código).
 
 ## [EVIDENCIA]
-- Leitura: `docs/plan/epics/epic-03-ordens-servico.md` UC-03.04, `docs/architecture/SPEC.md` INV-01/PAUSED/pause/resume.
-- Verifica: `flutter analyze --fatal-infos` -> No issues found (exit 0). `flutter test` completo -> 03:21 +137 -5 (5 falhas fora do slice: UC-01.02 timeout full-run mas PASS isolado; UC-01.04 flaky). `flutter test test/modules/work_orders` -> 32/32 pass.
-- Confirma: RED `work_order_pause_test.dart` falhou por ausência de `pause/resume/paused` (exit 1); após implementação verde.
-
-## Observações (não bloqueantes)
-- A1: flakiness UC-01.02/UC-01.04 fora do slice.
-- A2: `pauseReason` persistido mas não exposto em UI de detalhe/histórico.
+- Leitura: `lib/modules/work_orders/domain/value_objects/digital_signature.dart`, `lib/modules/evidences/domain/entities/digital_signature.dart`, `docs/architecture/SPEC.md` RN-03/INV-03, `docs/plan/epics/epic-04-checklists-evidencias.md` §6, `docs/DEBITOS.md` D-05.
+- Verifica: `flutter test test/modules/checklists test/modules/evidences` => `+19 All tests passed` (evidência prévia de módulo; sem mudança de código neste slice).
+- Confirma: ADR-001 criada com opções D1-D5 e pendências de aprovação PO/Arch/Security.
 
 ## Próximo passo
-1. Liberar claim UC-03.04.
-2. Tratar D-05 antes de EPIC-04; iniciar próximo épico conforme `docs/plan/README.md` (EPIC-04 bloqueado por EPIC-03 agora concluído, mas D-05 pendente).
+1. Concluir Gate 2.5 da ADR-001.
+2. Obter decisão PO sobre D2 (documento obrigatório/opcional).
+3. Após aprovação, iniciar UC-04.06/04.08 implementação com TDD.
