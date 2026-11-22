@@ -130,3 +130,34 @@
 ## 6. Próximo passo recomendado
 
 Aprovar Fase 0 (decisões) e executar Fase 1 M-01/M-02 em fatias pequenas com TDD/verify, sem tocar na integração sensível de D-05 antes do desenho M-03/M-04.
+
+---
+
+## 7. Validação Independente & Considerações (`agy01@59993bf1`)
+
+> **Data**: 2026-11-22 | **Método**: verificação factual via `git grep`, `Test-Path`, `Select-String` e inspeção do histórico de commits no workspace atual (`HEAD` em `67432dc`).
+
+### 7.1 Divergências factuais encontradas na proposta
+
+| Item na proposta | Afirmação original | Realidade verificada `[FATO]` | Impacto na priorização |
+|---|---|---|---|
+| **N-04 (`setState`)** | "11 ocorrências achadas" em `app_entry.dart`, `customer_form_page.dart`, `service_location_form_page.dart`, `signature_pad_widget.dart`, `profile_page.dart`, `work_order_form_page.dart`. | `git grep -n "setState(" lib/` retorna **apenas 3 ocorrências**, todas concentradas em `lib/modules/evidences/ui/signature/signature_pad_widget.dart` (linhas 58, 71, 76). As demais telas usam `StatefulWidget` apenas para lifecycle de `TextEditingController`/`WidgetsBindingObserver`, sem `setState` de estado de tela. | **Rebaixar N-04 / M-07 para Baixa.** Não há violação sistêmica do Kortex; basta decidir se `SignaturePadWidget` mantém estado efêmero local ou migra para `KortexSignal`. |
+| **D-01 (Runners nativos)** | "Sem runners nativos; `allowBackup`/Keystore pendentes". | `android/app/src/main/AndroidManifest.xml` **já existe** (commit `872e25b`, `FlutterFragmentActivity` + build `app-debug.apk` verde). Porém, `android:allowBackup="false"` **ainda não está configurado** no manifest e `ios/` não foi gerado. | Atualizar `D-01` para **"Android ativo; pendente `allowBackup="false"`, Keystore release e runner iOS"**. |
+
+### 7.2 Pontos confirmados como reais e de alto valor `[FATO | Confiança: Alta]`
+
+1. **N-06 / M-01 (`ERR_*` inline)**: confirmadas **131 ocorrências** de `ERR_` em `lib/`. Padronizar `*FailureCodes` por módulo (seguindo `AuthFailureCodes`) tem alto retorno de manutenibilidade e zero risco de quebra de domínio se feito por módulo.
+2. **N-05 / M-02 (`ScaffoldMessenger`)**: confirmadas **9 ocorrências** em `lib/`. Extrair `lib/core/ui/app_feedback.dart` é um quick win limpo.
+3. **D-05 / N-01 / N-02 (Integridade de domínio `EPIC-04`)**:
+   - Confirmado: `DigitalSignature` está duplicado em `work_orders/domain/value_objects/digital_signature.dart` e `evidences/domain/entities/digital_signature.dart`.
+   - Confirmado: `checklists/data/` tem `ChecklistTemplateSqliteRepository`, mas respostas só existem em `MemoryChecklistAnswerRepository` — e `ChecklistMigration.v7()` ainda não está registrado em `AppDatabase`.
+   - **Este é o único bloco verdadeiramente crítico antes de avançar para o `EPIC-05` (Laudo PDF)**, pois o laudo precisa ler respostas persistidas em SQLite e a assinatura canônica da OS.
+
+### 7.3 Considerações adicionais & Recomendação de ordem
+
+- **Evitar over-engineering na Fase 1**: `M-08` (script/gate de CI para `ERR_*`) e `touch_target.dart` são úteis, mas **não devem bloquear** a integração real do `EPIC-04` (`M-03` → `M-04` → `M-05`) nem o `EPIC-05` (Laudo PDF).
+- **Ordem sugerida de execução**:
+  1. **Imediato (Crítico para MVP)**: `M-03` (decisão curta de contrato canônico de `DigitalSignature`) → `M-04` (SQLite para respostas de checklist + `ChecklistMigration.v7()` no `AppDatabase` + fechar `D-05`) → `M-05` (unificar `DigitalSignature`).
+  2. **Em seguida**: `EPIC-05` (Laudo PDF on-device + Share WhatsApp, já consumindo `report_pdf_ready.png` e dados reais do SQLite).
+  3. **Limpeza incremental (paralela ou pós-MVP)**: `M-02` (`AppFeedback`), `M-01` (`*FailureCodes` por módulo) e hardening `allowBackup="false"` em `AndroidManifest.xml` (`D-01`).
+
