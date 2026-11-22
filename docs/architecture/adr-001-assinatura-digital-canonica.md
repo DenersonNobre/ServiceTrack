@@ -37,7 +37,8 @@ Opções:
 2. **Opcional** (compatível com UC-03.05 atual): menor fricção; menor força probatória.
 3. **Obrigatório quando política/configuração exigir**: flexível, mas adiciona complexidade.
 
-**Recomendação [INFERÊNCIA, confiança Média]**: Opção 2 no MVP, com campo opcional normalizado/validado quando informado, e redação/criptografia conforme política; evoluir para obrigatoriedade por configuração se PO exigir. *Requer aprovação PO.*
+**Decisão PO (2026-11-22): Opção 3 — obrigatório por política/configuração.**  
+Implementação deve definir default seguro (minimização: não coletar/exigir por padrão até política habilitar), validar/normalizar quando informado, redigir/criptografar conforme C-01/C-06/C-07 e registrar finalidade/retenção (C-03).
 
 ### D3 — Local canônico
 - Colocar contrato em `lib/modules/evidences/domain/` **ou** `lib/core/domain/value_objects/` se for transversal. [INFERÊNCIA] Como assinatura é evidência e também usada na conclusão de OS, preferir módulo `evidences` como dono e expor via port/uso explícito; evitar duplicação.
@@ -83,7 +84,7 @@ Negativas/riscos:
 |---|---|---|---|
 | C-01 | Alta | Antes de persistir `documentNumber`, definir base legal/finalidade/minimização/retenção (LGPD) e proteção em repouso (cifra DB/campo, chave Keystore/Keychain; segredos fora do SQLite). | Aberto |
 | C-02 | Alta | Endurecer backup: Android `allowBackup="false"` enquanto sem backup cifrado controlado; excluir DB/artefatos sensíveis; tratar iOS equivalente. (D-01) | Aberto |
-| C-03 | Alta | Decisão PO D2 com justificativa documentada; recomendação segurança: não coletar documento por padrão (minimização). | Aberto |
+| C-03 | Alta | Decisão PO D2 com justificativa documentada; recomendação segurança: não coletar documento por padrão (minimização). | **Decidido PO 2026-11-22**: obrigatório por política/configuração; default seguro/minimização |
 | C-04 | Média | Migração bidirecional na leitura/unidirecional na escrita; não fabricar `signedAtUtc`/documento ausente; semântica explícita (`nullable`/`migratedAtUtc`). | Aberto |
 | C-05 | Média | Limite por bytes reais decodificados (não comprimento base64); política para legado acima do limite: preservar imutável ou marcar, nunca truncar. | Aberto |
 | C-06 | Média | Proibir `toJson` com PII/imagem crus; DTOs de borda explícitos; `toString` redigido só com metadados não sensíveis. | Aberto |
@@ -100,7 +101,7 @@ Negativas/riscos:
 
 ## Aprovação
 
-- [ ] PO: decisão D2 (documento obrigatório/opcional).
-- [ ] Arch: decisão D1/D3.
-- [ ] Security: Gate 2.5 com condicionantes.
+- [x] PO: decisão D2 — **obrigatório por política/configuração** (2026-11-22); default seguro/minimização.
+- [ ] Arch: decisão D1/D3/D4/D5.
+- [ ] Security: Gate 2.5 com condicionantes (C-01..C-12 abertos; C-03 decidido).
 - [ ] QA: plano de testes de migração.
