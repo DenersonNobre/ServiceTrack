@@ -1,6 +1,6 @@
 # ADR-001 — Contrato Canônico de Assinatura Digital
 
-> **Status**: Proposto — Gate 2.5 APROVADO COM CONDICIONANTES (Média, 2026-11-22); aguardando decisão PO D2 + aprovação Arch  
+> **Status**: Aceito para implementação com condicionantes — Gate 2.5 APROVADO COM CONDICIONANTES (Média, 2026-11-22); PO D2 decidido; Arch D1/D3/D4/D5 aprovados 
 > **Data**: 2026-11-22  
 > **Autores**: `opc01@e03ff640`  
 > **Relacionado**: UC-04.04, UC-04.05, UC-04.08, UC-03.05, D-05, INV-03, INV-SEC-24/25/26/27, LGPD
@@ -27,9 +27,11 @@ Adotar **um único VO** `DigitalSignature` (nome final a confirmar) com:
 
 - `signatureBytes: Uint8List` (canônico; PNG rasterizado)
 - `signerName: String` (normalizado, 1..120)
-- `documentNumber: String?` ou `String` (**decisão PO necessária**; ver D2)
+- `documentNumber: String?` (opcional no modelo; exigido por política D2 quando habilitada)
 - `signedAtUtc: DateTime`
 - `toBase64()`/codec apenas na borda de persistência/serialização, não como campo de domínio primário.
+
+**Aprovação Arch (2026-11-22)**: D1 aprovado com condicionantes C-05/C-06/C-08/C-09.
 
 ### D2 — Documento do recebedor (PII/LGPD) — decisão PO
 Opções:
@@ -41,20 +43,29 @@ Opções:
 Implementação deve definir default seguro (minimização: não coletar/exigir por padrão até política habilitar), validar/normalizar quando informado, redigir/criptografar conforme C-01/C-06/C-07 e registrar finalidade/retenção (C-03).
 
 ### D3 — Local canônico
-- Colocar contrato em `lib/modules/evidences/domain/` **ou** `lib/core/domain/value_objects/` se for transversal. [INFERÊNCIA] Como assinatura é evidência e também usada na conclusão de OS, preferir módulo `evidences` como dono e expor via port/uso explícito; evitar duplicação.
-- `work_orders` não deve manter um segundo VO com mesmo nome semântico.
+- **Dono canônico**: `lib/modules/evidences/domain/` (assinatura é evidência). 
+- `work_orders` consome o contrato canônico (import/port/DTO conforme fronteira) e **não** mantém segundo VO semântico.
+- Evitar mover para `core` até haver 2+ consumidores reais com mesmo contrato; se necessário, promover com ADR de atualização.
+
+**Aprovação Arch (2026-11-22)**: D3 aprovado.
 
 ### D4 — Persistência
-- Persistir bytes como BLOB ou base64 em coluna dedicada, mas nunca logar. 
-- `documentNumber` é PII: redigir em `toString`, logs, erros; avaliar armazenamento cifrado/mascarado (dependência de D-01/INV-SEC-26/27).
+- Persistir imagem como BLOB (preferido) ou base64 em coluna dedicada, mas nunca logar. 
+- `documentNumber` é PII: redigir em `toString`, logs, erros; armazenamento cifrado/mascarado conforme C-01 (dependência D-01/INV-SEC-26/27).
+- `signedAtUtc` persistido como ISO-8601 UTC; legado sem timestamp não fabrica valor original (C-04).
+
+**Aprovação Arch (2026-11-22)**: D4 aprovado com condicionantes C-01/C-04/C-05/C-10.
 
 ### D5 — Erros
 Padronizar catálogo de erros de assinatura (mapeando legados):
 - `ERR_ASSINATURA_AUSENTE`
 - `ERR_ASSINATURA_TAMANHO_EXCEDIDO`
 - `ERR_ASSINANTE_NOME_OBRIGATORIO`
+- `ERR_ASSINANTE_DOCUMENTO_OBRIGATORIO` (quando política exige e está ausente)
 - `ERR_ASSINANTE_DOCUMENTO_INVALIDO` (quando informado/inválido)
-- `ERR_ASSINATURA_INVALIDA` (formato/base64/corrompida)
+- `ERR_ASSINATURA_INVALIDA` (formato/base64/corrompida/PNG inválido)
+
+**Aprovação Arch (2026-11-22)**: D5 aprovado; mapear `ERR_ASSINATURA_INVALIDA` legado sem perder semântica onde necessário.
 
 ## Consequências
 
@@ -102,6 +113,6 @@ Negativas/riscos:
 ## Aprovação
 
 - [x] PO: decisão D2 — **obrigatório por política/configuração** (2026-11-22); default seguro/minimização.
-- [ ] Arch: decisão D1/D3/D4/D5.
-- [ ] Security: Gate 2.5 com condicionantes (C-01..C-12 abertos; C-03 decidido).
-- [ ] QA: plano de testes de migração.
+- [x] Arch: D1/D3/D4/D5 aprovados (2026-11-22), condicionados a C-01..C-12 na implementação.
+- [x] Security: Gate 2.5 com condicionantes (C-01..C-12 abertos; C-03 decidido).
+- [ ] QA: plano de testes de migração (na implementação UC-04.06/07/08).
