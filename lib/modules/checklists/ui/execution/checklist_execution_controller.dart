@@ -17,12 +17,16 @@ final class ChecklistExecutionController extends IKortexController {
     required this.answerRepository,
     required this.workOrderId,
     required this.templateId,
+    this.isWorkOrderMutable,
   });
 
   final IChecklistTemplateRepositoryPort templateRepository;
   final IChecklistAnswerRepositoryPort answerRepository;
   final String workOrderId;
   final String templateId;
+
+  /// Guard INV-06: retorna true quando a OS pode receber respostas.
+  final Future<bool> Function()? isWorkOrderMutable;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<String?> error = KortexSignal<String?>(null);
@@ -65,6 +69,16 @@ final class ChecklistExecutionController extends IKortexController {
     String notes = '',
   }) async {
     savingItemId.value = itemId;
+    final mutableCheck = isWorkOrderMutable;
+    if (mutableCheck != null && !await mutableCheck()) {
+      savingItemId.value = null;
+      return const Failure(
+        ValidationError(
+          code: 'ERR_OS_IMUTAVEL',
+          message: 'Ordem de Serviço concluída ou cancelada não pode ser alterada.',
+        ),
+      );
+    }
     final result = ChecklistAnswer.tryCreate(
       workOrderId: workOrderId,
       itemId: itemId,

@@ -23,12 +23,12 @@ final class WorkOrderListController extends IKortexController {
   WorkOrderListController({
     required this.repository,
     required this.locationService,
-    this.checklistProofPort,
+    required this.checklistProofPort,
     this.requireChecklistTemplate = true,
   });
   final IWorkOrderRepositoryPort repository;
   final ILocationServicePort locationService;
-  final IChecklistProofPort? checklistProofPort;
+  final IChecklistProofPort checklistProofPort;
 
   /// Política: exige template vinculado na conclusão (UC-04.07, EPIC-07).
   final bool requireChecklistTemplate;
@@ -191,7 +191,6 @@ final class WorkOrderListController extends IKortexController {
   Future<IResult<WorkOrder, ValidationError>> completeWorkOrder(
     String workOrderId, {
     required DigitalSignature signature,
-    ChecklistCompletionProof? checklistProof,
   }) async {
     if (completingId.value != null) {
       return const Failure(
@@ -206,22 +205,11 @@ final class WorkOrderListController extends IKortexController {
           ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
         );
       }
-      final proofPort = checklistProofPort;
-      final IResult<ChecklistCompletionProof, ValidationError> proofResult;
-      if (proofPort != null) {
-        proofResult = await proofPort.getProof(
-          workOrderId: workOrderId,
-          templateId: wo.checklistTemplateId,
-          requireTemplate: requireChecklistTemplate,
-        );
-      } else if (checklistProof != null) {
-        proofResult = Success(checklistProof);
-      } else {
-        proofResult = ChecklistCompletionProof.tryCreate(
-          mandatoryTotal: 0,
-          answeredMandatory: 0,
-        );
-      }
+      final proofResult = await checklistProofPort.getProof(
+        workOrderId: workOrderId,
+        templateId: wo.checklistTemplateId,
+        requireTemplate: requireChecklistTemplate,
+      );
       final ChecklistCompletionProof effectiveProof;
       switch (proofResult) {
         case Success(:final value):

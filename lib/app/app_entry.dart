@@ -1,5 +1,6 @@
 // Gate de entrada, observador de ciclo de vida e roteamento de módulos.
 
+import 'package:dnolib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
@@ -23,6 +24,7 @@ import '../modules/customers/ui/locations/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
 import '../modules/profile/ui/profile/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
+import '../modules/work_orders/domain/value_objects/work_order_status.dart';
 import '../modules/work_orders/ui/form/.index.dart';
 import '../modules/work_orders/ui/list/.index.dart';
 import 'home_page.dart';
@@ -304,6 +306,18 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
                 answerRepository: widget.checklistAnswerRepository,
                 workOrderId: workOrderId,
                 templateId: templateId,
+                isWorkOrderMutable: () async {
+                  final r = await widget.workOrderRepo.findAll();
+                  switch (r) {
+                    case Success(:final value):
+                      final wo = value.where((e) => e.id == workOrderId).firstOrNull;
+                      return wo != null &&
+                          wo.status != WorkOrderStatus.completed &&
+                          wo.status != WorkOrderStatus.cancelled;
+                    case Failure():
+                      return false;
+                  }
+                },
               ),
               dispose: (c) => c.dispose(),
             ),

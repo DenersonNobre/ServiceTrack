@@ -72,7 +72,13 @@ void main() {
     await repo.save(wo('2', WorkOrderStatus.inProgress, tomorrow));
     await repo.save(wo('3', WorkOrderStatus.completed, today));
 
-    final c = WorkOrderListController(repository: repo, locationService: _FakeLocationService());
+    final c = WorkOrderListController(
+      repository: repo,
+      locationService: _FakeLocationService(),
+      checklistProofPort: _FakeChecklistProofPort(
+        ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0),
+      ),
+    );
     await c.load();
 
     c.filter.value = WorkOrderListFilter.today;
@@ -132,6 +138,7 @@ void main() {
     expect(result.getOrNullFailure()!.code, 'ERR_CHECKLIST_INCOMPLETO');
     expect(proofPort.lastWorkOrderId, 'wo1');
     expect(proofPort.lastTemplateId, 'tpl-1');
+    expect(proofPort.lastRequireTemplate, isTrue);
 
     final okPort = _FakeChecklistProofPort(
       ChecklistCompletionProof.tryCreate(mandatoryTotal: 1, answeredMandatory: 1),
