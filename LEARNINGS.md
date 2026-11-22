@@ -38,3 +38,21 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 ### 4. Decisão de adoção (ServiceTrack / fluxo Oráculo)
 - **Avaliação**: com artefatos canônicos já versionados no repo (PRD/SPEC/DESIGN, `docs/plan`, `CHECKPOINT.md`, `LEARNINGS.md`, reviews), Obsidian/Notion adicionariam camada paralela com custo de manutenção e risco de divergência sem ganho claro no momento.
 - **Decisão**: não adotar Obsidian/Notion para este fluxo agora; seguir com Oráculo + repositório como fonte única. Reavaliar apenas diante de dor concreta (colaboração externa/stakeholders → Notion; base pessoal interligada cross-projeto → Obsidian).
+
+## 2026-11-22 — Shell DI: `AppDependencies` + bindings por módulo
+
+### 1. Sintoma
+- `lib/app/app_entry.dart` concentrava gate de rota, lifecycle, navegação e 13 `KortexScope`/`KortexProvider` em 487 linhas; cada módulo novo exigia editar o shell.
+
+### 2. Decisão
+- GetX é proibido (`AGENTS.md`); o "binding" no Kortex é o `KortexScope`/`KortexProvider`.
+- Introduzido `AppDependencies` (composition root) e `CustomersRoutes` (rotas + bindings Kortex do módulo de clientes), com injeção por construtor.
+- `AppEntry` recebe `deps` e delega a navegação de clientes ao módulo; o comportamento observável foi preservado.
+
+### 3. Regra
+- Cada módulo deve expor seu route/scope builder e receber apenas as portas que usa; o shell só orquestra gate, lifecycle e rotas.
+- Refator é behavior-preserving: a suíte completa é a rede de segurança.
+
+### 4. Evidência
+- `app_entry.dart`: 487 -> 317 linhas; `KortexProvider` no shell: 13 -> 8 (5 extraídos para `CustomersRoutes`).
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => `172 passed, 0 failed`.

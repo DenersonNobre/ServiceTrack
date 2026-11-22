@@ -13,6 +13,7 @@ import '../modules/profile/domain/ports/.index.dart';
 import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
 import 'adapters/checklist_proof_adapter.dart';
+import 'app_dependencies.dart';
 import 'app_entry.dart';
 import 'theme/app_theme.dart';
 
@@ -73,7 +74,8 @@ class ServiceTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = credentialRepository ??
+    final repo =
+        credentialRepository ??
         SecureCredentialStore(backend: const FlutterSecureStorageBackend());
     final bio = biometricAuth ?? LocalAuthBiometricAdapter();
     final profileRepo =
@@ -87,30 +89,32 @@ class ServiceTrackApp extends StatelessWidget {
         checklistTemplateRepository ?? MemoryChecklistTemplateRepository();
     final checklistAnswerRepo =
         checklistAnswerRepository ?? MemoryChecklistAnswerRepository();
-    final proofPort = checklistProofPort ??
+    final proofPort =
+        checklistProofPort ??
         ChecklistProofAdapter(
           templateRepository: checklistTemplateRepo,
           answerRepository: checklistAnswerRepo,
         );
+    final dependencies = AppDependencies(
+      credentialRepository: repo,
+      biometricAuth: bio,
+      profileRepository: profileRepo,
+      customerRepository: customerRepo,
+      locationRepository: locationRepo,
+      workOrderRepository: workOrderRepo,
+      locationService: location,
+      checklistProofPort: proofPort,
+      checklistTemplateRepository: checklistTemplateRepo,
+      checklistAnswerRepository: checklistAnswerRepo,
+      requireChecklistTemplate: requireChecklistTemplate,
+      requireReceiverDocument: requireReceiverDocument,
+    );
     return MaterialApp(
       title: 'ServiceTrack',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
-      home: AppEntry(
-        repo: repo,
-        bio: bio,
-        profileRepo: profileRepo,
-        customerRepo: customerRepo,
-        locationRepo: locationRepo,
-        workOrderRepo: workOrderRepo,
-        locationService: location,
-        checklistProofPort: proofPort,
-        checklistTemplateRepository: checklistTemplateRepo,
-        checklistAnswerRepository: checklistAnswerRepo,
-        requireChecklistTemplate: requireChecklistTemplate,
-        requireReceiverDocument: requireReceiverDocument,
-      ),
+      home: AppEntry(deps: dependencies),
     );
   }
 }

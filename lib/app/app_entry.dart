@@ -4,61 +4,27 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
-import '../modules/auth/domain/ports/.index.dart';
-import '../modules/checklists/domain/ports/checklist_answer_repository_port.dart';
-import '../modules/checklists/domain/ports/checklist_template_repository_port.dart';
-import '../modules/checklists/ui/execution/checklist_execution_controller.dart';
-import '../modules/checklists/ui/execution/checklist_execution_page.dart';
 import '../modules/auth/features/app_entry/.index.dart';
 import '../modules/auth/features/biometric_unlock/.index.dart';
 import '../modules/auth/features/recovery/.index.dart';
 import '../modules/auth/ui/lock/.index.dart';
 import '../modules/auth/ui/onboarding/.index.dart';
 import '../modules/auth/ui/recovery/.index.dart';
-import '../modules/customers/domain/ports/.index.dart';
-import '../modules/customers/domain/value_objects/.index.dart';
-import '../modules/customers/ui/detail/.index.dart';
-import '../modules/customers/ui/form/.index.dart';
-import '../modules/customers/ui/list/.index.dart';
-import '../modules/customers/ui/locations/.index.dart';
-import '../modules/profile/domain/ports/.index.dart';
+import '../modules/checklists/ui/execution/checklist_execution_controller.dart';
+import '../modules/checklists/ui/execution/checklist_execution_page.dart';
+import '../modules/customers/ui/customers_routes.dart';
 import '../modules/profile/ui/profile/.index.dart';
-import '../modules/work_orders/domain/ports/.index.dart';
 import '../modules/work_orders/domain/value_objects/work_order_status.dart';
 import '../modules/work_orders/ui/form/.index.dart';
 import '../modules/work_orders/ui/list/.index.dart';
+import 'app_dependencies.dart';
 import 'home_page.dart';
 
 /// Porta de entrada do aplicativo após o [MaterialApp].
 class AppEntry extends StatefulWidget {
-  const AppEntry({
-    super.key,
-    required this.repo,
-    required this.bio,
-    required this.profileRepo,
-    required this.customerRepo,
-    required this.locationRepo,
-    required this.workOrderRepo,
-    required this.locationService,
-    required this.checklistProofPort,
-    required this.checklistTemplateRepository,
-    required this.checklistAnswerRepository,
-    this.requireChecklistTemplate = true,
-    this.requireReceiverDocument = false,
-  });
+  const AppEntry({super.key, required this.deps});
 
-  final IAuthCredentialRepositoryPort repo;
-  final IBiometricAuthPort bio;
-  final ITechnicianProfileRepositoryPort profileRepo;
-  final ICustomerRepositoryPort customerRepo;
-  final IServiceLocationRepositoryPort locationRepo;
-  final IWorkOrderRepositoryPort workOrderRepo;
-  final ILocationServicePort locationService;
-  final IChecklistProofPort checklistProofPort;
-  final IChecklistTemplateRepositoryPort checklistTemplateRepository;
-  final IChecklistAnswerRepositoryPort checklistAnswerRepository;
-  final bool requireChecklistTemplate;
-  final bool requireReceiverDocument;
+  final AppDependencies deps;
 
   @override
   State<AppEntry> createState() => _AppEntryState();
@@ -66,6 +32,7 @@ class AppEntry extends StatefulWidget {
 
 class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
+  late final CustomersRoutes _customersRoutes;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
   static const _backgroundLockTtl = Duration(minutes: 5);
@@ -74,7 +41,13 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _routeFuture = ResolveInitialRouteUseCase(repo: widget.repo).execute();
+    _customersRoutes = CustomersRoutes(
+      customerRepository: widget.deps.customerRepository,
+      locationRepository: widget.deps.locationRepository,
+    );
+    _routeFuture = ResolveInitialRouteUseCase(
+      repo: widget.deps.credentialRepository,
+    ).execute();
   }
 
   @override
@@ -107,7 +80,8 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         builder: (_) => KortexScope(
           providers: [
             KortexProvider<ProfileController>(
-              create: (_) => ProfileController(repository: widget.profileRepo),
+              create: (_) =>
+                  ProfileController(repository: widget.deps.profileRepository),
               dispose: (c) => c.dispose(),
             ),
           ],
@@ -117,154 +91,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     );
   }
 
-  void _goCustomerForm({String? customerId, VoidCallback? onSaved}) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<CustomerFormController>(
-              create: (_) => CustomerFormController(
-                repository: widget.customerRepo,
-                customerId: customerId,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: CustomerFormPage(
-            onSaved: () {
-              Navigator.of(context).pop();
-              onSaved?.call();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _goLocationForm({
-    required String customerId,
-    String? locationId,
-    ServiceLocation? initial,
-    VoidCallback? onSaved,
-  }) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<ServiceLocationFormController>(
-              create: (_) => ServiceLocationFormController(
-                repository: widget.locationRepo,
-                customerId: customerId,
-                locationId: locationId,
-                initial: initial,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: ServiceLocationFormPage(
-            onSaved: () {
-              Navigator.of(context).pop();
-              onSaved?.call();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _goLocations(Customer customer) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<ServiceLocationListController>(
-              create: (_) => ServiceLocationListController(
-                repository: widget.locationRepo,
-                customerId: customer.id,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: Builder(
-            builder: (ctx) {
-              final list = ctx.readKortex<ServiceLocationListController>();
-              return ServiceLocationListPage(
-                customerName: customer.name.value,
-                onAdd: () =>
-                    _goLocationForm(customerId: customer.id, onSaved: list.load),
-                onEdit: (l) => _goLocationForm(
-                  customerId: customer.id,
-                  locationId: l.id,
-                  initial: l,
-                  onSaved: list.load,
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _goCustomerDetail(Customer customer) {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<CustomerDetailController>(
-              create: (_) => CustomerDetailController(
-                repository: widget.customerRepo,
-                customerId: customer.id,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: Builder(
-            builder: (ctx) {
-              final detail = ctx.readKortex<CustomerDetailController>();
-              return CustomerDetailPage(
-                onEdit: () =>
-                    _goCustomerForm(customerId: customer.id, onSaved: detail.load),
-                onLocations: () => _goLocations(customer),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
   void _goCustomers() {
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<CustomerListController>(
-              create: (_) =>
-                  CustomerListController(repository: widget.customerRepo),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: Builder(
-            builder: (ctx) {
-              final list = ctx.readKortex<CustomerListController>();
-              return CustomerListPage(
-                onAdd: () => _goCustomerForm(onSaved: list.load),
-                onEdit: (c) =>
-                    _goCustomerForm(customerId: c.id, onSaved: list.load),
-                onLocations: _goLocations,
-                onDetail: _goCustomerDetail,
-              );
-            },
-          ),
-        ),
-      ),
-    );
+    Navigator.of(context).push(_customersRoutes.list());
   }
 
   void _goWorkOrderForm({VoidCallback? onSaved}) {
@@ -275,9 +104,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           providers: [
             KortexProvider<WorkOrderFormController>(
               create: (_) => WorkOrderFormController(
-                repository: widget.workOrderRepo,
-                customerRepository: widget.customerRepo,
-                checklistTemplateRepository: widget.checklistTemplateRepository,
+                repository: widget.deps.workOrderRepository,
+                customerRepository: widget.deps.customerRepository,
+                checklistTemplateRepository:
+                    widget.deps.checklistTemplateRepository,
               ),
               dispose: (c) => c.dispose(),
             ),
@@ -304,15 +134,17 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           providers: [
             KortexProvider<ChecklistExecutionController>(
               create: (_) => ChecklistExecutionController(
-                templateRepository: widget.checklistTemplateRepository,
-                answerRepository: widget.checklistAnswerRepository,
+                templateRepository: widget.deps.checklistTemplateRepository,
+                answerRepository: widget.deps.checklistAnswerRepository,
                 workOrderId: workOrderId,
                 templateId: templateId,
                 isWorkOrderMutable: () async {
-                  final r = await widget.workOrderRepo.findAll();
+                  final r = await widget.deps.workOrderRepository.findAll();
                   switch (r) {
                     case Success(:final value):
-                      final wo = value.where((e) => e.id == workOrderId).firstOrNull;
+                      final wo = value
+                          .where((e) => e.id == workOrderId)
+                          .firstOrNull;
                       return wo != null &&
                           wo.status != WorkOrderStatus.completed &&
                           wo.status != WorkOrderStatus.cancelled;
@@ -338,11 +170,11 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           providers: [
             KortexProvider<WorkOrderListController>(
               create: (_) => WorkOrderListController(
-                repository: widget.workOrderRepo,
-                locationService: widget.locationService,
-                checklistProofPort: widget.checklistProofPort,
-                requireChecklistTemplate: widget.requireChecklistTemplate,
-                requireReceiverDocument: widget.requireReceiverDocument,
+                repository: widget.deps.workOrderRepository,
+                locationService: widget.deps.locationService,
+                checklistProofPort: widget.deps.checklistProofPort,
+                requireChecklistTemplate: widget.deps.requireChecklistTemplate,
+                requireReceiverDocument: widget.deps.requireReceiverDocument,
               ),
               dispose: (c) => c.dispose(),
             ),
@@ -385,10 +217,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             KortexProvider<PinRecoveryController>(
               create: (_) => PinRecoveryController(
                 useCase: PinRecoveryUseCase(
-                  repository: widget.repo,
-                  biometricAuth: widget.bio,
+                  repository: widget.deps.credentialRepository,
+                  biometricAuth: widget.deps.biometricAuth,
                 ),
-                repository: widget.repo,
+                repository: widget.deps.credentialRepository,
                 onRecovered: () {
                   if (!mounted) return;
                   Navigator.of(context).pop();
@@ -413,9 +245,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           providers: [
             KortexProvider<LockController>(
               create: (_) => LockController(
-                biometricUnlock:
-                    BiometricUnlockUseCase(biometricAuth: widget.bio),
-                repository: widget.repo,
+                biometricUnlock: BiometricUnlockUseCase(
+                  biometricAuth: widget.deps.biometricAuth,
+                ),
+                repository: widget.deps.credentialRepository,
                 onUnlocked: _goHome,
                 onForgotPin: _goRecovery,
               ),
@@ -445,41 +278,42 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         }
         return switch (route) {
           AppEntryRoute.onboarding => KortexScope(
-              providers: [
-                KortexProvider<OnboardingController>(
-                  create: (_) => OnboardingController(
-                    repository: widget.repo,
-                    onCompleted: () {
-                      // ignore: discarded_futures
-                      widget.repo.markUnlocked();
-                      _goHome();
-                    },
-                  ),
-                  dispose: (c) => c.dispose(),
+            providers: [
+              KortexProvider<OnboardingController>(
+                create: (_) => OnboardingController(
+                  repository: widget.deps.credentialRepository,
+                  onCompleted: () {
+                    // ignore: discarded_futures
+                    widget.deps.credentialRepository.markUnlocked();
+                    _goHome();
+                  },
                 ),
-              ],
-              child: const OnboardingPage(),
-            ),
+                dispose: (c) => c.dispose(),
+              ),
+            ],
+            child: const OnboardingPage(),
+          ),
           AppEntryRoute.lock => KortexScope(
-              providers: [
-                KortexProvider<LockController>(
-                  create: (_) => LockController(
-                    biometricUnlock:
-                        BiometricUnlockUseCase(biometricAuth: widget.bio),
-                    repository: widget.repo,
-                    onUnlocked: _goHome,
-                    onForgotPin: _goRecovery,
+            providers: [
+              KortexProvider<LockController>(
+                create: (_) => LockController(
+                  biometricUnlock: BiometricUnlockUseCase(
+                    biometricAuth: widget.deps.biometricAuth,
                   ),
-                  dispose: (c) => c.dispose(),
+                  repository: widget.deps.credentialRepository,
+                  onUnlocked: _goHome,
+                  onForgotPin: _goRecovery,
                 ),
-              ],
-              child: const LockPage(),
-            ),
+                dispose: (c) => c.dispose(),
+              ),
+            ],
+            child: const LockPage(),
+          ),
           AppEntryRoute.home => HomePage(
-              onProfile: _goProfile,
-              onCustomers: _goCustomers,
-              onWorkOrders: _goWorkOrders,
-            ),
+            onProfile: _goProfile,
+            onCustomers: _goCustomers,
+            onWorkOrders: _goWorkOrders,
+          ),
         };
       },
     );
