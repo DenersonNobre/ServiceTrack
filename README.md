@@ -41,3 +41,4 @@ flutter test
 - **Especificação de Domínio**: [docs/architecture/SPEC.md](docs/architecture/SPEC.md)
 - **Contratos Visuais & Tokens**: [docs/architecture/DESIGN.md](docs/architecture/DESIGN.md)
 - **Plano Mestre & Backlog**: [docs/plan/README.md](docs/plan/README.md)
+- **CI/CD**: [.github/workflows/ci.yml](.github/workflows/ci.yml) com vendor de dependências locais em `ci/vendor/`; regeneração em [docs/guides/ci-vendor-deps.md](docs/guides/ci-vendor-deps.md).

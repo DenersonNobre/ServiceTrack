@@ -92,3 +92,21 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - `SwitchListTile` com `minTileHeight: 56` garante alvo >=48dp; `SettingsRoutes.edit()` usa `appScopedRoute`.
 - Entrada na Home via callback `onSettings`; `AppDependencies`/`ServiceTrackApp` recebem `ISettingsRepositoryPort`, com `MemorySettingsRepository` como fallback de teste e `SettingsSqliteRepository` no `main.dart`.
 - Evidência: 4 testes de UI/controller; suíte completa **194 verdes**; análise limpa.
+
+## 2026-11-22 — CI GitHub: path deps não existem no runner
+
+### 1. Sintoma
+- **Todos** os runs recentes do GitHub Actions falhavam no passo `flutter pub get`: `could not find package dnolib at "../.dnolib"` (exit 66). O Gitea não possui workflow de CI.
+
+### 2. Causa
+- `pubspec.yaml` usa path deps de desenvolvimento (`../.dnolib`, `../kortex`). O checkout do runner só contém o repo do app; os diretórios irmãos não existem.
+- `dnolib` não está no pub.dev nem no GitHub; `kortex` está no GitHub, mas o path dep exige o checkout local.
+
+### 3. Fix
+- Vendor de CI: `ci/vendor/dnolib.tar.gz` e `ci/vendor/kortex.tar.gz`, gerados por `git archive HEAD` via `scripts/ci/vendor-deps.ps1`.
+- Workflow extrai os tarballs para `../.dnolib` e `../kortex` antes do `flutter pub get`.
+- `pubspec.yaml` local permanece intacto; o vendor é snapshot de CI, não cópia de desenvolvimento.
+
+### 4. Prevenção
+- Ao atualizar `../.dnolib`/`../kortex`, rodar o script e commitar os tarballs no mesmo commit.
+- CI que depende de path dep externo precisa de bootstrap explícito; nunca assumir que o runner tem os irmãos.
