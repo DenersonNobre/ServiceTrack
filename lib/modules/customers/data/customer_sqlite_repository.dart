@@ -8,6 +8,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
+import '../domain/ports/customer_failure_codes.dart';
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/value_objects/customer.dart';
 import 'customer_migration.dart';
@@ -46,7 +47,7 @@ final class CustomerSqliteRepository implements ICustomerRepositoryPort {
       return Success(customer);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_PERSISTENCIA', message: 'Não foi possível salvar o cliente.'),
+        ValidationError(code: CustomerFailureCodes.customerPersistence, message: 'Não foi possível salvar o cliente.'),
       );
     }
   }
@@ -60,7 +61,7 @@ final class CustomerSqliteRepository implements ICustomerRepositoryPort {
       return _mapRow(rows.first);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_PERSISTENCIA', message: 'Não foi possível carregar o cliente.'),
+        ValidationError(code: CustomerFailureCodes.customerPersistence, message: 'Não foi possível carregar o cliente.'),
       );
     }
   }
@@ -79,7 +80,7 @@ final class CustomerSqliteRepository implements ICustomerRepositoryPort {
       return Success(customers);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_PERSISTENCIA', message: 'Não foi possível carregar clientes.'),
+        ValidationError(code: CustomerFailureCodes.customerPersistence, message: 'Não foi possível carregar clientes.'),
       );
     }
   }

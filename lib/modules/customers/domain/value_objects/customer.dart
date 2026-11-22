@@ -8,6 +8,8 @@ import 'package:dnolib/brlib/brlib.dart';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/customer_failure_codes.dart';
+
 /// Nome do cliente.
 final class CustomerName {
   const CustomerName._(this.value);
@@ -17,12 +19,12 @@ final class CustomerName {
     final normalized = raw.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (normalized.isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_NOME_INVALIDO', message: 'Informe o nome do cliente.'),
+        ValidationError(code: CustomerFailureCodes.invalidCustomerName, message: 'Informe o nome do cliente.'),
       );
     }
     if (normalized.length > 120) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_NOME_INVALIDO', message: 'Nome do cliente muito longo.'),
+        ValidationError(code: CustomerFailureCodes.invalidCustomerName, message: 'Nome do cliente muito longo.'),
       );
     }
     return Success(CustomerName._(normalized));
@@ -43,7 +45,7 @@ final class BrazilianDocument {
     if (CpfValidator.isValid(digits)) return Success(BrazilianDocument._(digits, true));
     if (CnpjValidator.isValid(digits)) return Success(BrazilianDocument._(digits, false));
     return const Failure(
-      ValidationError(code: 'ERR_CLIENTE_DOCUMENTO_INVALIDO', message: 'CPF ou CNPJ inválido.'),
+      ValidationError(code: CustomerFailureCodes.invalidDocument, message: 'CPF ou CNPJ inválido.'),
     );
   }
 
@@ -60,7 +62,7 @@ final class CustomerPhone {
     final digits = raw.replaceAll(RegExp(r'\D'), '');
     if (!PhoneBrValidator.hasValidShape(digits)) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_WHATSAPP_INVALIDO', message: 'Informe um WhatsApp válido com DDD.'),
+        ValidationError(code: CustomerFailureCodes.invalidWhatsapp, message: 'Informe um WhatsApp válido com DDD.'),
       );
     }
     return Success(CustomerPhone._(digits));
@@ -81,7 +83,7 @@ final class CustomerEmail {
     final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(normalized);
     if (!ok) {
       return const Failure(
-        ValidationError(code: 'ERR_CLIENTE_EMAIL_INVALIDO', message: 'E-mail inválido.'),
+        ValidationError(code: CustomerFailureCodes.invalidEmail, message: 'E-mail inválido.'),
       );
     }
     return Success(CustomerEmail._(normalized));
@@ -118,7 +120,7 @@ final class Customer {
     required String notes,
   }) {
     if (id.trim().isEmpty) {
-      return const Failure(ValidationError(code: 'ERR_CLIENTE_ID_INVALIDO', message: 'Identificador inválido.'));
+      return const Failure(ValidationError(code: CustomerFailureCodes.invalidCustomerId, message: 'Identificador inválido.'));
     }
     final nameR = CustomerName.tryCreate(name);
     if (nameR.isFailure) return Failure(nameR.getOrNullFailure()!);

@@ -8,6 +8,8 @@ import 'package:dnolib/brlib/brlib.dart';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/customer_failure_codes.dart';
+
 /// Rótulo do local (ex.: Casa, Escritório).
 final class LocationLabel {
   const LocationLabel._(this.value);
@@ -17,12 +19,12 @@ final class LocationLabel {
     final normalized = raw.trim().replaceAll(RegExp(r'\s+'), ' ');
     if (normalized.isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_ROTULO_INVALIDO', message: 'Informe um rótulo para o local.'),
+        ValidationError(code: CustomerFailureCodes.invalidLocationLabel, message: 'Informe um rótulo para o local.'),
       );
     }
     if (normalized.length > 60) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_ROTULO_INVALIDO', message: 'Rótulo do local muito longo.'),
+        ValidationError(code: CustomerFailureCodes.invalidLocationLabel, message: 'Rótulo do local muito longo.'),
       );
     }
     return Success(LocationLabel._(normalized));
@@ -42,7 +44,7 @@ final class BrazilianCep {
     if (digits.isEmpty) return const Success(null);
     if (!CepValidator.isValid(digits)) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_CEP_INVALIDO', message: 'CEP inválido.'),
+        ValidationError(code: CustomerFailureCodes.invalidCep, message: 'CEP inválido.'),
       );
     }
     return Success(BrazilianCep._(digits));
@@ -92,7 +94,7 @@ final class ServiceLocation {
   }) {
     if (id.trim().isEmpty || customerId.trim().isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_ID_INVALIDO', message: 'Identificador inválido.'),
+        ValidationError(code: CustomerFailureCodes.invalidLocationId, message: 'Identificador inválido.'),
       );
     }
     final labelR = LocationLabel.tryCreate(label);
@@ -104,7 +106,7 @@ final class ServiceLocation {
     final cityN = city.trim();
     if (streetN.isEmpty || cityN.isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_ENDERECO_INVALIDO', message: 'Informe logradouro e cidade.'),
+        ValidationError(code: CustomerFailureCodes.invalidAddress, message: 'Informe logradouro e cidade.'),
       );
     }
 

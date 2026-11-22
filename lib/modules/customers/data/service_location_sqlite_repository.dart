@@ -8,6 +8,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
+import '../domain/ports/customer_failure_codes.dart';
 import '../domain/ports/service_location_repository_port.dart';
 import '../domain/value_objects/service_location.dart';
 import 'service_location_migration.dart';
@@ -50,7 +51,7 @@ final class ServiceLocationSqliteRepository implements IServiceLocationRepositor
       return Success(location);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_PERSISTENCIA', message: 'Não foi possível salvar o local.'),
+        ValidationError(code: CustomerFailureCodes.locationPersistence, message: 'Não foi possível salvar o local.'),
       );
     }
   }
@@ -74,7 +75,7 @@ final class ServiceLocationSqliteRepository implements IServiceLocationRepositor
       return Success(locations);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_PERSISTENCIA', message: 'Não foi possível carregar os locais.'),
+        ValidationError(code: CustomerFailureCodes.locationPersistence, message: 'Não foi possível carregar os locais.'),
       );
     }
   }
@@ -87,7 +88,7 @@ final class ServiceLocationSqliteRepository implements IServiceLocationRepositor
       return const Success(true);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_LOCAL_PERSISTENCIA', message: 'Não foi possível remover o local.'),
+        ValidationError(code: CustomerFailureCodes.locationPersistence, message: 'Não foi possível remover o local.'),
       );
     }
   }
