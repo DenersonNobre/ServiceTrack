@@ -1,4 +1,4 @@
-// Repositório SQLite de Ordens de Serviço (UC-03.01, UC-03.03).
+// Repositório SQLite de Ordens de Serviço (UC-03.01, UC-03.03, UC-03.05).
 //
 // SRP: persistir e carregar OS em SQLite. Não contém UI.
 
@@ -10,6 +10,8 @@ import 'package:dnolib/sqlite/sqlite.dart';
 import '../domain/ports/work_order_repository_port.dart';
 import '../domain/value_objects/check_in_bypass_reason.dart';
 import '../domain/value_objects/check_in_record.dart';
+import '../domain/value_objects/checklist_completion_proof.dart';
+import '../domain/value_objects/digital_signature.dart';
 import '../domain/value_objects/geo_point.dart';
 import '../domain/value_objects/work_order.dart';
 import '../domain/value_objects/work_order_status.dart';
@@ -41,6 +43,13 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         'check_in_source': null,
         'check_in_bypass_reason': null,
         'cancellation_reason': workOrder.cancellationReason,
+        'check_out_lat': null,
+        'check_out_lng': null,
+        'check_out_at': null,
+        'signature_name': null,
+        'signature_image_base64': null,
+        'checklist_mandatory_total': null,
+        'checklist_answered_mandatory': null,
       };
       final checkIn = workOrder.checkIn;
       if (checkIn case CheckInGps(:final point)) {
@@ -53,8 +62,25 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         data['check_in_source'] = 'BYPASS';
         data['check_in_bypass_reason'] = reason.code;
       }
+      final checkOut = workOrder.checkOut;
+      if (checkOut != null) {
+        data['check_out_lat'] = checkOut.latitude;
+        data['check_out_lng'] = checkOut.longitude;
+        data['check_out_at'] = checkOut.timestampUtc.toIso8601String();
+      }
+      final sig = workOrder.signature;
+      if (sig != null) {
+        data['signature_name'] = sig.signerName;
+        data['signature_image_base64'] = sig.imageBase64;
+      }
+      final proof = workOrder.checklistProof;
+      if (proof != null) {
+        data['checklist_mandatory_total'] = proof.mandatoryTotal;
+        data['checklist_answered_mandatory'] = proof.answeredMandatory;
+      }
       final existing = await db.query(
         WorkOrderMigration.table,
+        columns: ['status'],
         where: 'id = ?',
         whereArgs: [workOrder.id],
         limit: 1,
@@ -63,6 +89,12 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         data['created_at'] = now;
         await db.insert(WorkOrderMigration.table, data);
         return Success(workOrder);
+      }
+      final currentStatus = WorkOrderStatus.fromCode((existing.first['status'] ?? '') as String);
+      if (currentStatus == WorkOrderStatus.completed) {
+        return const Failure(
+          ValidationError(code: 'ERR_OS_IMUTAVEL', message: 'OS concluída não pode ser alterada.'),
+        );
       }
       await db.update(WorkOrderMigration.table, data, where: 'id = ?', whereArgs: [workOrder.id]);
       return Success(workOrder);
@@ -116,6 +148,12 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final base = created.getOrNull()!;
     final checkInR = _mapCheckIn(row);
     if (checkInR case Failure<CheckInRecord?, ValidationError>(:final value)) return Failure(value);
+    final checkOutR = _mapCheckOut(row);
+    if (checkOutR case Failure<GeoPoint?, ValidationError>(:final value)) return Failure(value);
+    final sigR = _mapSignature(row);
+    if (sigR case Failure<DigitalSignature?, ValidationError>(:final value)) return Failure(value);
+    final proofR = _mapChecklistProof(row);
+    if (proofR case Failure<ChecklistCompletionProof?, ValidationError>(:final value)) return Failure(value);
     return Success(
       WorkOrder.restore(
         id: base.id,
@@ -126,6 +164,9 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         status: status,
         checkIn: checkInR.getOrNull(),
         cancellationReason: row['cancellation_reason'] as String?,
+        checkOut: checkOutR.getOrNull(),
+        signature: sigR.getOrNull(),
+        checklistProof: proofR.getOrNull(),
       ),
     );
   }
@@ -160,6 +201,59 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       return Success(CheckInBypassed(reason: reason, timestampUtc: at));
     }
     return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+  }
+
+  IResult<GeoPoint?, ValidationError> _mapCheckOut(Map<String, Object?> row) {
+    final lat = _toDouble(row['check_out_lat']);
+    final lng = _toDouble(row['check_out_lng']);
+    final atRaw = row['check_out_at'] as String?;
+    if (lat == null && lng == null && (atRaw == null || atRaw.isEmpty)) return const Success(null);
+    if (lat == null || lng == null || atRaw == null || atRaw.isEmpty) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    final at = DateTime.tryParse(atRaw)?.toUtc();
+    if (at == null) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    final gp = GeoPoint.tryCreate(latitude: lat, longitude: lng, timestampUtc: at);
+    return switch (gp) {
+      Success<GeoPoint, ValidationError>(:final value) => Success(value),
+      Failure<GeoPoint, ValidationError>() => const Failure(
+          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+        ),
+    };
+  }
+
+  IResult<DigitalSignature?, ValidationError> _mapSignature(Map<String, Object?> row) {
+    final name = row['signature_name'] as String?;
+    final img = row['signature_image_base64'] as String?;
+    if ((name == null || name.isEmpty) && (img == null || img.isEmpty)) return const Success(null);
+    if (name == null || img == null) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    final sig = DigitalSignature.tryCreate(signerName: name, imageBase64: img);
+    return switch (sig) {
+      Success<DigitalSignature, ValidationError>(:final value) => Success(value),
+      Failure<DigitalSignature, ValidationError>() => const Failure(
+          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+        ),
+    };
+  }
+
+  IResult<ChecklistCompletionProof?, ValidationError> _mapChecklistProof(Map<String, Object?> row) {
+    final total = row['checklist_mandatory_total'];
+    final answered = row['checklist_answered_mandatory'];
+    if (total == null && answered == null) return const Success(null);
+    if (total is! int || answered is! int) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: total, answeredMandatory: answered);
+    return switch (proof) {
+      Success<ChecklistCompletionProof, ValidationError>(:final value) => Success(value),
+      Failure<ChecklistCompletionProof, ValidationError>() => const Failure(
+          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+        ),
+    };
   }
 
   double? _toDouble(Object? v) {

@@ -1,4 +1,4 @@
-// Agregado Ordem de Serviço (UC-03.01, UC-03.03, UC-03.04).
+// Agregado Ordem de Serviço (UC-03.01, UC-03.03, UC-03.04, UC-03.05).
 //
 // SRP: validar e manter estado consistente da OS. Não persiste, não formata UI.
 //
@@ -9,6 +9,9 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
 import 'check_in_record.dart';
+import 'checklist_completion_proof.dart';
+import 'digital_signature.dart';
+import 'geo_point.dart';
 import 'location_capture.dart';
 import 'work_order_status.dart';
 
@@ -23,6 +26,9 @@ final class WorkOrder {
     required this.status,
     required this.checkIn,
     required this.cancellationReason,
+    required this.checkOut,
+    required this.signature,
+    required this.checklistProof,
   });
 
   final String id;
@@ -37,6 +43,15 @@ final class WorkOrder {
 
   /// Justificativa de cancelamento (UC-03.04).
   final String? cancellationReason;
+
+  /// Check-out georreferenciado (UC-03.05, INV-SEC-24).
+  final GeoPoint? checkOut;
+
+  /// Assinatura do recebedor (UC-03.05, INV-SEC-24).
+  final DigitalSignature? signature;
+
+  /// Prova de checklist obrigatório completo (UC-03.05, INV-SEC-22).
+  final ChecklistCompletionProof? checklistProof;
 
   static IResult<WorkOrder, ValidationError> tryCreate({
     required String id,
@@ -75,11 +90,19 @@ final class WorkOrder {
       status: WorkOrderStatus.scheduled,
       checkIn: null,
       cancellationReason: null,
+      checkOut: null,
+      signature: null,
+      checklistProof: null,
     ));
   }
 
   /// Inicia atendimento com evidência de localização tipada (INV-01/02, INV-SEC-17/19).
   IResult<WorkOrder, ValidationError> startService(LocationCapture capture) {
+    if (status == WorkOrderStatus.completed) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+      );
+    }
     if (status != WorkOrderStatus.scheduled) {
       return const Failure(
         ValidationError(
@@ -104,6 +127,9 @@ final class WorkOrder {
       status: WorkOrderStatus.inProgress,
       checkIn: record,
       cancellationReason: null,
+      checkOut: null,
+      signature: null,
+      checklistProof: null,
     ));
   }
 
@@ -135,6 +161,38 @@ final class WorkOrder {
       status: WorkOrderStatus.cancelled,
       checkIn: checkIn,
       cancellationReason: trimmed,
+      checkOut: checkOut,
+      signature: signature,
+      checklistProof: checklistProof,
+    ));
+  }
+
+  /// Conclui OS com evidências obrigatórias (UC-03.05, INV-01/03/06, INV-SEC-22/23).
+  IResult<WorkOrder, ValidationError> complete({
+    required DigitalSignature signature,
+    required GeoPoint checkOut,
+    required ChecklistCompletionProof checklistProof,
+  }) {
+    if (status != WorkOrderStatus.inProgress) {
+      return const Failure(
+        ValidationError(
+          code: 'ERR_OS_TRANSICAO_INVALIDA',
+          message: 'Transição de estado inválida para a OS.',
+        ),
+      );
+    }
+    return Success(WorkOrder._(
+      id: id,
+      customerId: customerId,
+      serviceDescription: serviceDescription,
+      scheduledAt: scheduledAt,
+      estimatedValue: estimatedValue,
+      status: WorkOrderStatus.completed,
+      checkIn: checkIn,
+      cancellationReason: null,
+      checkOut: checkOut,
+      signature: signature,
+      checklistProof: checklistProof,
     ));
   }
 
@@ -148,6 +206,9 @@ final class WorkOrder {
     required WorkOrderStatus status,
     CheckInRecord? checkIn,
     String? cancellationReason,
+    GeoPoint? checkOut,
+    DigitalSignature? signature,
+    ChecklistCompletionProof? checklistProof,
   }) {
     return WorkOrder._(
       id: id,
@@ -158,6 +219,9 @@ final class WorkOrder {
       status: status,
       checkIn: checkIn,
       cancellationReason: cancellationReason,
+      checkOut: checkOut,
+      signature: signature,
+      checklistProof: checklistProof,
     );
   }
 

@@ -2,12 +2,17 @@
 //
 // SRP: renderizar lista de OS, filtros e ações de check-in. Não contém regra de negócio.
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kortex/kortex.dart';
+import 'package:signature/signature.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
+import '../../domain/value_objects/checklist_completion_proof.dart';
+import '../../domain/value_objects/digital_signature.dart';
 import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
@@ -37,6 +42,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
             if (controller.error.value != null) return Center(child: Text(controller.error.value!));
             final items = controller.filteredItems;
             final startingId = controller.startingId.value;
+            final completingId = controller.completingId.value;
             return Column(
               children: [
                 SingleChildScrollView(
@@ -72,7 +78,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                           separatorBuilder: (_, _) => const Divider(height: 1),
                           itemBuilder: (context, i) {
                             final wo = items[i];
-                            final isStarting = startingId == wo.id;
+                            final isBusy = startingId == wo.id || completingId == wo.id;
                             return ListTile(
                               key: Key('wo-${wo.id}'),
                               title: Text(wo.serviceDescription),
@@ -82,7 +88,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                               minTileHeight: 56,
                               trailing: (wo.status == WorkOrderStatus.scheduled ||
                                       wo.status == WorkOrderStatus.inProgress)
-                                  ? isStarting
+                                  ? isBusy
                                       ? const SizedBox(
                                           width: 48,
                                           height: 48,
@@ -97,6 +103,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                           tooltip: 'Ações',
                                           onSelected: (v) {
                                             if (v == 'start') _startService(context, controller, wo.id);
+                                            if (v == 'complete') _completeWorkOrder(context, controller, wo.id);
                                             if (v == 'cancel') _cancelWorkOrder(context, controller, wo.id);
                                           },
                                           itemBuilder: (_) => [
@@ -104,6 +111,11 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                               const PopupMenuItem(
                                                 value: 'start',
                                                 child: Text('Iniciar atendimento'),
+                                              ),
+                                            if (wo.status == WorkOrderStatus.inProgress)
+                                              const PopupMenuItem(
+                                                value: 'complete',
+                                                child: Text('Concluir OS'),
                                               ),
                                             const PopupMenuItem(
                                               value: 'cancel',
@@ -175,6 +187,125 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     if (bypassResult.isFailure) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(bypassResult.getOrNullFailure()!.message)),
+      );
+    }
+  }
+
+  Future<void> _completeWorkOrder(
+    BuildContext context,
+    WorkOrderListController controller,
+    String workOrderId,
+  ) async {
+    final nameController = TextEditingController();
+    final sigController = SignatureController(
+      penStrokeWidth: 2,
+      penColor: Colors.black,
+      exportBackgroundColor: Colors.white,
+    );
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Concluir OS'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                key: const Key('wo-complete-name'),
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome do recebedor',
+                  hintText: 'Informe o nome de quem recebeu',
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 12),
+              const Text('Assinatura do recebedor', style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Container(
+                height: 160,
+                decoration: BoxDecoration(border: Border.all(color: AppColors.border)),
+                child: Signature(
+                  controller: sigController,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: sigController.clear,
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  child: const Text('Limpar assinatura'),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            key: const Key('wo-complete-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryAction,
+              minimumSize: const Size(48, 48),
+            ),
+            child: const Text('Concluir OS'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) {
+      nameController.dispose();
+      sigController.dispose();
+      return;
+    }
+    final name = nameController.text;
+    final pngBytes = sigController.isEmpty ? null : await sigController.toPngBytes();
+    nameController.dispose();
+    sigController.dispose();
+    if (!context.mounted) return;
+    if (pngBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe a assinatura do recebedor.')),
+      );
+      return;
+    }
+    final sigResult = DigitalSignature.tryCreate(
+      signerName: name,
+      imageBase64: base64Encode(pngBytes),
+    );
+    if (sigResult.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(sigResult.getOrNullFailure()!.message)),
+      );
+      return;
+    }
+    final proofResult = ChecklistCompletionProof.tryCreate(
+      mandatoryTotal: 0,
+      answeredMandatory: 0,
+    );
+    if (proofResult.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(proofResult.getOrNullFailure()!.message)),
+      );
+      return;
+    }
+    final result = await controller.completeWorkOrder(
+      workOrderId,
+      signature: sigResult.getOrNull()!,
+      checklistProof: proofResult.getOrNull()!,
+    );
+    if (!context.mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.getOrNullFailure()!.message)),
       );
     }
   }

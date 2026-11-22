@@ -40,4 +40,15 @@ final class WorkOrderMigration {
   static Migration v5() => Migration(version: 5, scripts: const [
         'ALTER TABLE work_orders ADD COLUMN cancellation_reason TEXT',
       ]);
+
+  /// v6: conclusão/checkout/assinatura (UC-03.05, INV-SEC-23/24).
+  static Migration v6() => Migration(version: 6, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN check_out_lat REAL',
+        'ALTER TABLE work_orders ADD COLUMN check_out_lng REAL',
+        'ALTER TABLE work_orders ADD COLUMN check_out_at TEXT',
+        'ALTER TABLE work_orders ADD COLUMN signature_name TEXT',
+        'ALTER TABLE work_orders ADD COLUMN signature_image_base64 TEXT',
+        'ALTER TABLE work_orders ADD COLUMN checklist_mandatory_total INTEGER',
+        'ALTER TABLE work_orders ADD COLUMN checklist_answered_mandatory INTEGER',
+      ]);
 }

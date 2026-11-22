@@ -9,6 +9,8 @@ import 'package:kortex/kortex.dart';
 import '../../domain/ports/location_service_port.dart';
 import '../../domain/ports/work_order_repository_port.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
+import '../../domain/value_objects/checklist_completion_proof.dart';
+import '../../domain/value_objects/digital_signature.dart';
 import '../../domain/value_objects/location_capture.dart';
 import '../../domain/value_objects/work_order.dart';
 import '../../domain/value_objects/work_order_status.dart';
@@ -27,6 +29,7 @@ final class WorkOrderListController extends IKortexController {
   final KortexSignal<WorkOrderListFilter> filter =
       KortexSignal<WorkOrderListFilter>(WorkOrderListFilter.all);
   final KortexSignal<String?> startingId = KortexSignal<String?>(null);
+  final KortexSignal<String?> completingId = KortexSignal<String?>(null);
   bool _loaded = false;
 
   /// Itens filtrados pelo chip selecionado.
@@ -128,6 +131,51 @@ final class WorkOrderListController extends IKortexController {
     }
   }
 
+  /// Conclui OS com check-out, assinatura e prova de checklist (UC-03.05).
+  Future<IResult<WorkOrder, ValidationError>> completeWorkOrder(
+    String workOrderId, {
+    required DigitalSignature signature,
+    required ChecklistCompletionProof checklistProof,
+  }) async {
+    if (completingId.value != null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe uma conclusão em andamento.'),
+      );
+    }
+    completingId.value = workOrderId;
+    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+    if (wo == null) {
+      completingId.value = null;
+      return const Failure(
+        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+      );
+    }
+    final loc = await locationService.getCurrentLocation();
+    final IResult<WorkOrder, ValidationError> result;
+    switch (loc) {
+      case Failure(:final value):
+        result = Failure(value);
+      case Success(:final value):
+        final completed = wo.complete(
+          signature: signature,
+          checkOut: value,
+          checklistProof: checklistProof,
+        );
+        switch (completed) {
+          case Failure<WorkOrder, ValidationError>(:final value):
+            result = Failure(value);
+          case Success<WorkOrder, ValidationError>(:final value):
+            final saved = await repository.save(value);
+            if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+              items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+            }
+            result = saved;
+        }
+    }
+    completingId.value = null;
+    return result;
+  }
+
   Future<IResult<WorkOrder, ValidationError>> _applyStart(
     String workOrderId,
     Object captureOrFailure,
@@ -162,6 +210,7 @@ final class WorkOrderListController extends IKortexController {
     error.dispose();
     filter.dispose();
     startingId.dispose();
+    completingId.dispose();
   }
 }
 
