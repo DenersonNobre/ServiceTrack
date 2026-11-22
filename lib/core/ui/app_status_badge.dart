@@ -1,8 +1,10 @@
 // Badge semântico de status (Styleguide v2.1 — Soft Badges com borda).
 //
-// SRP: renderizar pílula de status com contraste WCAG AA.
+// SRP: renderizar pílula de status consumindo exclusivamente AppColors.
 
 import 'package:flutter/material.dart';
+
+import '../../app/theme/app_colors.dart';
 
 /// Variantes semânticas de status do Styleguide v2.1.
 enum AppStatusTone {
@@ -60,24 +62,24 @@ final class AppStatusBadge extends StatelessWidget {
   static (Color, Color, Color) _paletteOf(AppStatusTone tone) {
     return switch (tone) {
       AppStatusTone.success => (
-          const Color(0xFFEBF8F0),
-          const Color(0xFFA3E6BA),
-          const Color(0xFF166534),
+          AppColors.successBg,
+          AppColors.successBorder,
+          AppColors.successText,
         ),
       AppStatusTone.info => (
-          const Color(0xFFEBF5FF),
-          const Color(0xFFA5D0FF),
-          const Color(0xFF1E40AF),
+          AppColors.infoBg,
+          AppColors.infoBorder,
+          AppColors.infoText,
         ),
       AppStatusTone.warning => (
-          const Color(0xFFFEF8E7),
-          const Color(0xFFFDE08B),
-          const Color(0xFF854D0E),
+          AppColors.warningBg,
+          AppColors.warningBorder,
+          AppColors.warningText,
         ),
       AppStatusTone.error => (
-          const Color(0xFFFEEFEF),
-          const Color(0xFFFCA5A5),
-          const Color(0xFF991B1B),
+          AppColors.errorBg,
+          AppColors.errorBorder,
+          AppColors.error,
         ),
     };
   }

@@ -1,7 +1,6 @@
 // Tema global do ServiceTrack isolado sobre flex_color_scheme (Styleguide v2.1).
 //
-// SRP: centralizar ThemeData Light/Dark preservando Deep Petrol Green (#115E59),
-// superfícies quentes (#FBF9F5) e raios de borda do DESIGN.md.
+// SRP: centralizar ThemeData Light/Dark consumindo exclusivamente AppColors.
 // Nenhuma outra camada importa flex_color_scheme diretamente.
 
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -19,22 +18,22 @@ abstract final class AppTheme {
 
   static const FlexSchemeColor _lightColors = FlexSchemeColor(
     primary: AppColors.primaryAction,
-    primaryContainer: Color(0xFFCCFBF1),
+    primaryContainer: AppColors.primaryContainer,
     secondary: AppColors.primaryHover,
-    secondaryContainer: Color(0xFFE2DDD5),
-    tertiary: Color(0xFF0369A1),
-    tertiaryContainer: Color(0xFFEBF5FF),
+    secondaryContainer: AppColors.border,
+    tertiary: AppColors.tertiary,
+    tertiaryContainer: AppColors.infoBg,
     error: AppColors.error,
   );
 
   static const FlexSchemeColor _darkColors = FlexSchemeColor(
-    primary: Color(0xFF2DD4BF),
+    primary: AppColors.darkPrimary,
     primaryContainer: AppColors.primaryAction,
-    secondary: Color(0xFF5EEAD4),
-    secondaryContainer: Color(0xFF134E4A),
-    tertiary: Color(0xFF38BDF8),
-    tertiaryContainer: Color(0xFF0C4A6E),
-    error: Color(0xFFEF4444),
+    secondary: AppColors.darkSecondary,
+    secondaryContainer: AppColors.darkSecondaryContainer,
+    tertiary: AppColors.darkTertiary,
+    tertiaryContainer: AppColors.darkTertiaryContainer,
+    error: AppColors.darkError,
   );
 
   static const FlexSubThemesData _subThemes = FlexSubThemesData(
