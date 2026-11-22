@@ -18,6 +18,6 @@
 - Confirma: `flutter test test/modules/work_orders test/modules/evidences/domain test/modules/checklists test/app/adapters/checklist_proof_adapter_test.dart` => `+63 All tests passed`. Inclui C-01/C-03/C-04/C-06/C-07/C-08.
 
 ## Próximo passo
-1. **UC-04.06**: fechar binding/execução ponta-a-ponta remanescente e validação E2E device (pendente).
-2. **EPIC-07**: plugar políticas (checklist obrigatório, documento recebedor) e tratar C-01/D-01 antes de habilitar persistência de documento.
-3. Consolidar release EPIC-04 (gates UC-04.06 pendentes; UC-04.07/08 concluídos).
+1. **E2E device (EPIC-04)**: validar fluxo ponta-a-ponta em device/emulador (template->OS->checklist->conclusão) — pendência de ambiente, não de código.
+2. **EPIC-07**: plugar políticas/config (checklist obrigatório, documento recebedor) e tratar C-01/D-01 antes de habilitar persistência de documento.
+3. Consolidar release EPIC-04 após E2E/gates remanescentes dos UCs 04.01-04.04 conforme matriz.

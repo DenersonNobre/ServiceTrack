@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Reconciliação (UC-04.07/08 concluídos; UC-04.06 pendente ponta-a-ponta/E2E)` |
+| **Status Atual** | `Em Reconciliação (UC-04.06/07/08 concluídos em código; E2E device pendente)` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -226,7 +226,7 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 
 ### 6.2 Lacunas bloqueantes
 1. **D-05**: mitigado em UC-04.07 — prova real via porta/adapter, binding template↔OS, execução/persistência de respostas, guard INV-06, política C (`requireChecklistTemplate` default true, decisão PO 2026-11-22). G2.5 INVOKED, G3 APROVADO (Alta), G4 APROVADO (Alta, `qa-review-v0.18.0.md`). Validação E2E device permanece pendente.
-2. **Persistência de respostas por OS**: `ChecklistAnswerSqliteRepository` + migration v8 criados (UC-04.06 em andamento), mas falta binding template↔OS e integração no fluxo de execução/conclusão.
+2. **Persistência de respostas por OS**: `ChecklistAnswerSqliteRepository` + migration v8 criados; binding template↔OS e integração no fluxo de execução/conclusão entregues no UC-04.07. E2E device pendente.
 3. **Contrato de assinatura duplicado**: `work_orders.domain.DigitalSignature` (base64/nome) vs `evidences.domain.DigitalSignature` (bytes PNG/nome+documento). Definir contrato canônico (M-03) antes de integrar.
 4. **Governança**: atualizar matriz deste épico, `docs/plan/README.md`, `uc-current`, e emitir laudos de gate.
 
@@ -235,7 +235,7 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 | ID | Título | Dependência | Status |
 |---|---|---|---|
 | **UC-04.05** | Contrato Canônico de Assinatura & Decisão de Domínio (ADR/M-03) | UC-04.04 | `Pendente` |
-| **UC-04.06** | Persistência SQLite de Respostas de Checklist por OS (M-04) | UC-04.01, UC-04.02 | `Em Andamento` |
+| **UC-04.06** | Persistência SQLite de Respostas de Checklist por OS (M-04) | UC-04.01, UC-04.02 | `Concluído` |
 | **UC-04.07** | Integração Prova Real de Checklist na Conclusão OS (fecha D-05) | UC-04.06, UC-03.05 | `Concluído` |
 | **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Concluído` |
 
