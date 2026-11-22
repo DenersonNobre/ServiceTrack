@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_touch_target.dart';
 import 'profile_controller.dart';
 
 /// Página de edição de perfil comercial.
@@ -84,7 +85,7 @@ class _LogoSection extends StatelessWidget {
           children: [
             OutlinedButton.icon(
               key: const Key('profile-pick-logo'),
-              style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+              style: OutlinedButton.styleFrom(minimumSize: kMinTouchTargetSize),
               onPressed: onPick,
               icon: const Icon(Icons.photo_library_outlined),
               label: const Text('Selecionar logo'),
@@ -92,7 +93,7 @@ class _LogoSection extends StatelessWidget {
             if (path != null)
               TextButton.icon(
                 key: const Key('profile-remove-logo'),
-                style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
                 onPressed: onRemove,
                 icon: const Icon(Icons.delete_outline),
                 label: const Text('Remover'),
@@ -214,7 +215,7 @@ class _ProfileFormState extends State<_ProfileForm> {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primaryAction,
                     foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(48),
+                    minimumSize: kMinTouchTargetHeight,
                   ),
                   onPressed: controller.saving.value ? null : controller.save,
                   child: controller.saving.value

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_touch_target.dart';
 import 'service_location_form_controller.dart';
 
 final class ServiceLocationFormPage extends StatefulWidget {
@@ -119,7 +120,7 @@ class _FormState extends State<_Form> {
         const SizedBox(height: 20),
         SizedBox(height: 52, child: FilledButton(
           key: const Key('location-save'),
-          style: FilledButton.styleFrom(backgroundColor: AppColors.primaryAction, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
+          style: FilledButton.styleFrom(backgroundColor: AppColors.primaryAction, foregroundColor: Colors.white, minimumSize: kMinTouchTargetHeight),
           onPressed: c.saving.value ? null : c.save,
           child: c.saving.value ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Salvar local'),
         )),

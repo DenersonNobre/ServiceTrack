@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import 'app_touch_target.dart';
 
 /// Botão primário canônico do ServiceTrack (alvo tátil >= 48dp).
 final class AppPrimaryButton extends StatelessWidget {
@@ -58,7 +59,7 @@ final class AppPrimaryButton extends StatelessWidget {
           );
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+      constraints: kMinTouchTargetConstraints,
       child: FilledButton(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primaryAction,
@@ -67,7 +68,7 @@ final class AppPrimaryButton extends StatelessWidget {
           disabledForegroundColor: loading ? Colors.white : null,
           overlayColor: AppColors.primaryHover,
           elevation: 1,
-          minimumSize: const Size(48, 48),
+          minimumSize: kMinTouchTargetSize,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
