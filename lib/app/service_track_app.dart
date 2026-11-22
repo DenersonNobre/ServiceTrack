@@ -12,7 +12,7 @@ import '../modules/profile/domain/ports/.index.dart';
 import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
 import 'app_entry.dart';
-import 'theme/app_colors.dart';
+import 'theme/app_theme.dart';
 
 /// Aplicativo raiz do ServiceTrack (standalone).
 class ServiceTrackApp extends StatelessWidget {
@@ -63,11 +63,9 @@ class ServiceTrackApp extends StatelessWidget {
     final location = locationService ?? GeolocatorLocationService();
     return MaterialApp(
       title: 'ServiceTrack',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryAction),
-        scaffoldBackgroundColor: AppColors.surface,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.light,
       home: AppEntry(
         repo: repo,
         bio: bio,
