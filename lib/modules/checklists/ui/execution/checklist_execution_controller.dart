@@ -9,6 +9,7 @@ import 'package:kortex/kortex.dart';
 import '../../domain/entities/checklist_answer.dart';
 import '../../domain/entities/checklist_template.dart';
 import '../../domain/ports/checklist_answer_repository_port.dart';
+import '../../domain/ports/checklist_failure_codes.dart';
 import '../../domain/ports/checklist_template_repository_port.dart';
 
 final class ChecklistExecutionController extends IKortexController {
@@ -74,7 +75,7 @@ final class ChecklistExecutionController extends IKortexController {
       savingItemId.value = null;
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_IMUTAVEL',
+          code: ChecklistFailureCodes.workOrderImmutable,
           message: 'Ordem de Serviço concluída ou cancelada não pode ser alterada.',
         ),
       );

@@ -5,6 +5,7 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/checklist_failure_codes.dart';
 import 'checklist_template.dart';
 
 /// Estado tri-estado de um item de checklist técnico.
@@ -56,7 +57,7 @@ final class ChecklistAnswer {
     if (!isWorkOrderMutable) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_IMUTAVEL',
+          code: ChecklistFailureCodes.workOrderImmutable,
           message: 'Ordem de Serviço concluída ou cancelada não pode ser alterada.',
         ),
       );
@@ -64,7 +65,7 @@ final class ChecklistAnswer {
     if (workOrderId.trim().isEmpty || itemId.trim().isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_RESPOSTA_INVALIDA',
+          code: ChecklistFailureCodes.invalidAnswer,
           message: 'Identificadores da OS e do item são obrigatórios.',
         ),
       );
@@ -73,7 +74,7 @@ final class ChecklistAnswer {
     if (normalizedNotes.length > 500) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_OBSERVACAO_LONGA',
+          code: ChecklistFailureCodes.notesTooLong,
           message: 'Observação excede o limite de 500 caracteres.',
         ),
       );
@@ -100,7 +101,7 @@ IResult<bool, ValidationError> validateChecklistCompleteness({
     if (item.isRequired && !answeredIds.contains(item.id)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_INCOMPLETO',
+          code: ChecklistFailureCodes.incomplete,
           message: 'Responda todos os itens obrigatórios do checklist antes de concluir.',
         ),
       );

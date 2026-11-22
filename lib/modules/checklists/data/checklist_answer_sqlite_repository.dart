@@ -9,6 +9,7 @@ import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/entities/checklist_answer.dart';
 import '../domain/ports/checklist_answer_repository_port.dart';
+import '../domain/ports/checklist_failure_codes.dart';
 import 'checklist_migration.dart';
 
 /// Adapter SQLite da porta [IChecklistAnswerRepositoryPort].
@@ -48,7 +49,7 @@ final class ChecklistAnswerSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível salvar a resposta do checklist.',
         ),
       );
@@ -77,7 +78,7 @@ final class ChecklistAnswerSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível carregar as respostas do checklist.',
         ),
       );
@@ -94,7 +95,7 @@ final class ChecklistAnswerSqliteRepository
     if (status == null) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Resposta de checklist com status inválido.',
         ),
       );
@@ -104,7 +105,7 @@ final class ChecklistAnswerSqliteRepository
     if (answeredAt == null) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Resposta de checklist com data inválida.',
         ),
       );

@@ -7,6 +7,7 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/entities/checklist_template.dart';
+import '../domain/ports/checklist_failure_codes.dart';
 import '../domain/ports/checklist_template_repository_port.dart';
 import 'checklist_migration.dart';
 
@@ -68,7 +69,7 @@ final class ChecklistTemplateSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível salvar o modelo de checklist.',
         ),
       );
@@ -100,7 +101,7 @@ final class ChecklistTemplateSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível carregar os modelos de checklist.',
         ),
       );
@@ -136,7 +137,7 @@ final class ChecklistTemplateSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível carregar o modelo de checklist.',
         ),
       );
@@ -163,7 +164,7 @@ final class ChecklistTemplateSqliteRepository
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_PERSISTENCIA',
+          code: ChecklistFailureCodes.persistence,
           message: 'Não foi possível remover o modelo de checklist.',
         ),
       );

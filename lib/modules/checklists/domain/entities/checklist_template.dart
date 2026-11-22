@@ -6,6 +6,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/checklist_failure_codes.dart';
+
 /// Item individual de um modelo de checklist.
 final class ChecklistItem {
   const ChecklistItem._({
@@ -37,7 +39,7 @@ final class ChecklistItem {
     if (id.trim().isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_ITEM_ID_INVALIDO',
+          code: ChecklistFailureCodes.invalidItemId,
           message: 'Identificador do item inválido.',
         ),
       );
@@ -46,7 +48,7 @@ final class ChecklistItem {
     if (normalized.isEmpty || normalized.length > 160) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_ITEM_TITULO_INVALIDO',
+          code: ChecklistFailureCodes.invalidItemTitle,
           message: 'Informe uma descrição válida para o item (1 a 160 caracteres).',
         ),
       );
@@ -54,7 +56,7 @@ final class ChecklistItem {
     if (order < 0) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_ITEM_ORDEM_INVALIDA',
+          code: ChecklistFailureCodes.invalidItemOrder,
           message: 'Ordem do item não pode ser negativa.',
         ),
       );
@@ -96,7 +98,7 @@ final class ChecklistTemplate {
     if (id.trim().isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_ID_INVALIDO',
+          code: ChecklistFailureCodes.invalidTemplateId,
           message: 'Identificador do checklist inválido.',
         ),
       );
@@ -105,7 +107,7 @@ final class ChecklistTemplate {
     if (normalized.isEmpty || normalized.length > 120) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_TITULO_INVALIDO',
+          code: ChecklistFailureCodes.invalidTemplateTitle,
           message: 'Informe um título válido para o checklist (1 a 120 caracteres).',
         ),
       );
@@ -113,7 +115,7 @@ final class ChecklistTemplate {
     if (items.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_CHECKLIST_SEM_ITENS',
+          code: ChecklistFailureCodes.emptyItems,
           message: 'O checklist precisa ter pelo menos um item.',
         ),
       );
@@ -123,7 +125,7 @@ final class ChecklistTemplate {
       if (!seenIds.add(item.id)) {
         return const Failure(
           ValidationError(
-            code: 'ERR_CHECKLIST_ITEM_ID_DUPLICADO',
+            code: ChecklistFailureCodes.duplicateItemId,
             message: 'Existem itens duplicados no checklist.',
           ),
         );
