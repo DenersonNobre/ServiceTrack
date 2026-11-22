@@ -38,6 +38,7 @@ class _WorkOrderFormPageState extends State<WorkOrderFormPage> {
             }
             controller.error.value; controller.saving.value; controller.customerId.value;
             controller.description.value; controller.estimatedValue.value; controller.scheduledAt.value;
+            controller.templates.value; controller.checklistTemplateId.value;
             return _Form(controller: controller);
           },
         ),
@@ -89,6 +90,20 @@ class _FormState extends State<_Form> {
           decoration: dec('Cliente'),
           items: customers.map((cu) => DropdownMenuItem<String>(value: cu.id, child: Text(cu.name.value))).toList(),
           onChanged: (v) => c.customerId.value = v,
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String?>(
+          key: const Key('wo-checklist-template'),
+          // ignore: deprecated_member_use
+          value: c.checklistTemplateId.value,
+          decoration: dec('Checklist (opcional)'),
+          items: [
+            const DropdownMenuItem<String?>(value: null, child: Text('Sem checklist')),
+            ...c.templates.value.map(
+              (t) => DropdownMenuItem<String?>(value: t.id, child: Text(t.title)),
+            ),
+          ],
+          onChanged: (v) => c.checklistTemplateId.value = v,
         ),
         const SizedBox(height: 12),
         TextField(key: const Key('wo-description'), controller: description, onChanged: (v) => c.description.value = v, decoration: dec('Descrição do serviço'), maxLines: 3),

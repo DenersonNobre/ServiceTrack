@@ -98,6 +98,8 @@ class ServiceTrackApp extends StatelessWidget {
         workOrderRepo: workOrderRepo,
         locationService: location,
         checklistProofPort: proofPort,
+        checklistTemplateRepository: checklistTemplateRepo,
+        checklistAnswerRepository: checklistAnswerRepo,
       ),
     );
   }

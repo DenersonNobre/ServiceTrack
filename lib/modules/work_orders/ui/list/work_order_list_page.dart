@@ -17,8 +17,9 @@ import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
 final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
-  const WorkOrderListPage({super.key, this.onAdd});
+  const WorkOrderListPage({super.key, this.onAdd, this.onChecklist});
   final VoidCallback? onAdd;
+  final void Function(String workOrderId, String templateId)? onChecklist;
 
   @override
   Widget buildPage(BuildContext context, WorkOrderListController controller) {
@@ -113,6 +114,10 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                             if (v == 'resume') _resumeWorkOrder(context, controller, wo.id);
                                             if (v == 'complete') _completeWorkOrder(context, controller, wo.id);
                                             if (v == 'cancel') _cancelWorkOrder(context, controller, wo.id);
+                                            if (v == 'checklist') {
+                                              final tpl = wo.checklistTemplateId;
+                                              if (tpl != null) onChecklist?.call(wo.id, tpl);
+                                            }
                                           },
                                           itemBuilder: (_) => [
                                             if (wo.status == WorkOrderStatus.scheduled)
@@ -121,6 +126,11 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                                 child: Text('Iniciar atendimento'),
                                               ),
                                             if (wo.status == WorkOrderStatus.inProgress) ...[
+                                              if (wo.checklistTemplateId != null)
+                                                const PopupMenuItem(
+                                                  value: 'checklist',
+                                                  child: Text('Checklist'),
+                                                ),
                                               const PopupMenuItem(value: 'pause', child: Text('Pausar OS')),
                                               const PopupMenuItem(value: 'complete', child: Text('Concluir OS')),
                                             ],

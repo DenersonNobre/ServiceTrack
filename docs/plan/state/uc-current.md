@@ -8,7 +8,7 @@
 - **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **O que foi feito**: Removido hardcode `ChecklistCompletionProof(0,0)` da UI; `WorkOrderListController` calcula prova real via `IChecklistProofPort` (fallback legado quando porta ausente). Criado `ChecklistProofAdapter` (app) compondo template+respostas SQLite. `WorkOrder` ganhou `checklistTemplateId` (domínio + migration v9 + repo SQLite). Wiring em `ServiceTrackApp/AppEntry/main` com repos SQLite de checklist.
+- **O que foi feito**: Removido hardcode `ChecklistCompletionProof(0,0)`; prova real via `IChecklistProofPort` + `ChecklistProofAdapter`. `WorkOrder.checklistTemplateId` (domínio+migration v9+repo). Binding de template na criação de OS (`WorkOrderForm`), tela `ChecklistExecutionPage/Controller` com persistência SQLite por item, ação "Checklist" na OS em andamento. Wiring app/main.
 - **Gate 2.5 (Segurança)**: Gate 2.5: INVOKED — análise estática do slice (sem subagente separado): sem nova PII/LGPD/dependência; mudança reforça integridade INV-03/INV-06/INV-SEC-22 (fail-closed) ao usar prova real. Risco residual: OS sem `checklistTemplateId` vinculado retorna 0/0 (sem itens obrigatórios) — requer decisão de produto/binding obrigatório antes do fechamento ponta-a-ponta. Sem criptografia nova (C5/D-01 permanecem).
 - **Gates 3/4**: pendentes no fechamento do slice.
 
@@ -18,6 +18,6 @@
 - Confirma: `flutter test test/app/adapters/checklist_proof_adapter_test.dart test/modules/work_orders/ui/work_order_list_controller_test.dart test/modules/work_orders/data/work_order_sqlite_repository_test.dart test/modules/checklists` => `+26 All tests passed`.
 
 ## Próximo passo
-1. Implementar binding template↔OS (UI/fluxo) e execução de checklist por OS usando `ChecklistAnswerSqliteRepository`.
-2. Decidir regra: template obrigatório ou opcional na conclusão (impacta 0/0).
-3. Fechar UC-04.07 com Gate 3/4 e atualizar D-05 para Fechado quando ponta-a-ponta.
+1. Validar ponta-a-ponta (bind template -> preencher checklist -> concluir OS falha se incompleto/passa se completo).
+2. Decidir regra de produto: template obrigatório na conclusão ou opcional (OS sem template ainda permite 0/0).
+3. Fechar UC-04.07 com Gate 3/4; seguir UC-04.08 (DigitalSignature) conforme ADR-001.

@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../modules/auth/domain/ports/.index.dart';
+import '../modules/checklists/domain/ports/checklist_answer_repository_port.dart';
+import '../modules/checklists/domain/ports/checklist_template_repository_port.dart';
+import '../modules/checklists/ui/execution/checklist_execution_controller.dart';
+import '../modules/checklists/ui/execution/checklist_execution_page.dart';
 import '../modules/auth/features/app_entry/.index.dart';
 import '../modules/auth/features/biometric_unlock/.index.dart';
 import '../modules/auth/features/recovery/.index.dart';
@@ -35,6 +39,8 @@ class AppEntry extends StatefulWidget {
     required this.workOrderRepo,
     required this.locationService,
     required this.checklistProofPort,
+    required this.checklistTemplateRepository,
+    required this.checklistAnswerRepository,
   });
 
   final IAuthCredentialRepositoryPort repo;
@@ -45,6 +51,8 @@ class AppEntry extends StatefulWidget {
   final IWorkOrderRepositoryPort workOrderRepo;
   final ILocationServicePort locationService;
   final IChecklistProofPort checklistProofPort;
+  final IChecklistTemplateRepositoryPort checklistTemplateRepository;
+  final IChecklistAnswerRepositoryPort checklistAnswerRepository;
 
   @override
   State<AppEntry> createState() => _AppEntryState();
@@ -263,6 +271,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
               create: (_) => WorkOrderFormController(
                 repository: widget.workOrderRepo,
                 customerRepository: widget.customerRepo,
+                checklistTemplateRepository: widget.checklistTemplateRepository,
               ),
               dispose: (c) => c.dispose(),
             ),
@@ -273,6 +282,31 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
               onSaved?.call();
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  void _goChecklistExecution({
+    required String workOrderId,
+    required String templateId,
+  }) {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => KortexScope(
+          providers: [
+            KortexProvider<ChecklistExecutionController>(
+              create: (_) => ChecklistExecutionController(
+                templateRepository: widget.checklistTemplateRepository,
+                answerRepository: widget.checklistAnswerRepository,
+                workOrderId: workOrderId,
+                templateId: templateId,
+              ),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: const ChecklistExecutionPage(),
         ),
       ),
     );
@@ -298,6 +332,8 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
               final list = ctx.readKortex<WorkOrderListController>();
               return WorkOrderListPage(
                 onAdd: () => _goWorkOrderForm(onSaved: list.load),
+                onChecklist: (woId, tplId) =>
+                    _goChecklistExecution(workOrderId: woId, templateId: tplId),
               );
             },
           ),

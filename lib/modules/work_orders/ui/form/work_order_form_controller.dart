@@ -8,20 +8,30 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../checklists/domain/entities/checklist_template.dart';
+import '../../../checklists/domain/ports/checklist_template_repository_port.dart';
 import '../../../customers/domain/ports/customer_repository_port.dart';
 import '../../../customers/domain/value_objects/customer.dart';
 import '../../domain/ports/work_order_repository_port.dart';
 import '../../domain/value_objects/work_order.dart';
 
 final class WorkOrderFormController extends IKortexController {
-  WorkOrderFormController({required this.repository, required this.customerRepository});
+  WorkOrderFormController({
+    required this.repository,
+    required this.customerRepository,
+    this.checklistTemplateRepository,
+  });
   final IWorkOrderRepositoryPort repository;
   final ICustomerRepositoryPort customerRepository;
+  final IChecklistTemplateRepositoryPort? checklistTemplateRepository;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<bool> saving = KortexSignal<bool>(false);
   final KortexSignal<List<Customer>> customers = KortexSignal<List<Customer>>([]);
+  final KortexSignal<List<ChecklistTemplate>> templates =
+      KortexSignal<List<ChecklistTemplate>>([]);
   final KortexSignal<String?> customerId = KortexSignal<String?>(null);
+  final KortexSignal<String?> checklistTemplateId = KortexSignal<String?>(null);
   final KortexSignal<String> description = KortexSignal<String>('');
   final KortexSignal<DateTime> scheduledAt = KortexSignal<DateTime>(DateTime.now());
   final KortexSignal<String> estimatedValue = KortexSignal<String>('');
@@ -33,6 +43,13 @@ final class WorkOrderFormController extends IKortexController {
     if (_loaded) return;
     _loaded = true;
     final result = await customerRepository.findAll();
+    final tplRepo = checklistTemplateRepository;
+    if (tplRepo != null) {
+      final tplResult = await tplRepo.findAll();
+      if (tplResult case Success<List<ChecklistTemplate>, ValidationError>(:final value)) {
+        templates.value = value;
+      }
+    }
     loading.value = false;
     if (result case Success<List<Customer>, ValidationError>(:final value)) {
       customers.value = value;
@@ -70,6 +87,7 @@ final class WorkOrderFormController extends IKortexController {
       serviceDescription: description.value,
       scheduledAt: scheduledAt.value,
       estimatedValue: moneyR.value!,
+      checklistTemplateId: checklistTemplateId.value,
     );
     switch (woR) {
       case Failure<WorkOrder, ValidationError>(:final value):
@@ -93,7 +111,9 @@ final class WorkOrderFormController extends IKortexController {
     loading.dispose();
     saving.dispose();
     customers.dispose();
+    templates.dispose();
     customerId.dispose();
+    checklistTemplateId.dispose();
     description.dispose();
     scheduledAt.dispose();
     estimatedValue.dispose();

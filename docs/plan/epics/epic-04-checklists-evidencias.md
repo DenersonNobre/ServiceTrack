@@ -225,7 +225,7 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 - Ausentes: laudos QA v0.18+ para UC-04.x, atualização de status/gates, integração com conclusão de OS.
 
 ### 6.2 Lacunas bloqueantes
-1. **D-05**: mitigado parcialmente em UC-04.07 — controller usa `IChecklistProofPort`/`ChecklistProofAdapter` (prova real por template+respostas); UI sem hardcode. Falta binding template↔OS e execução de checklist por OS para fechar ponta-a-ponta.
+1. **D-05**: mitigado em UC-04.07 — prova real via porta/adapter, binding de template na OS, tela de execução/persistência de respostas. Falta validação ponta-a-ponta + regra de produto para OS sem template + gates.
 2. **Persistência de respostas por OS**: `ChecklistAnswerSqliteRepository` + migration v8 criados (UC-04.06 em andamento), mas falta binding template↔OS e integração no fluxo de execução/conclusão.
 3. **Contrato de assinatura duplicado**: `work_orders.domain.DigitalSignature` (base64/nome) vs `evidences.domain.DigitalSignature` (bytes PNG/nome+documento). Definir contrato canônico (M-03) antes de integrar.
 4. **Governança**: atualizar matriz deste épico, `docs/plan/README.md`, `uc-current`, e emitir laudos de gate.
