@@ -15,15 +15,15 @@
 
 ## 1. Objetivo de Negócio & Escopo
 
-Permitir o preenchimento de itens de checklist de forma ágil em campo com o polegar, captura de fotos com compressão local compulsória (máx. 6 fotos, < 400KB cada), gravação de metadados de auditoria (data/hora e coordenadas) e coleta de assinatura digital na tela.
+Permitir o preenchimento de itens de checklist de forma ágil em campo com o polegar, captura de fotos com compressão local compulsória (máx. 6 fotos, < 400KB cada), gravação de metadados de auditoria (data/hora UTC e coordenadas) e coleta de assinatura digital na tela.
 
 - **Incluso**:
   - `UC-04.01`: Templates de Checklists Reutilizáveis (Instalação, Manutenção, Vistoria).
   - `UC-04.02`: Execução de Checklist Tri-Estado (`[Conforme]`, `[Não Conforme]`, `[Não se Aplica]`) com alvos táteis de 48dp.
   - `UC-04.03`: Captura e Compressão Local de Fotos com marca d'água de auditoria (`INV-04`).
-  - `UC-04.04`: Coleta de Assinatura Digital do Cliente em Canvas (`SignaturePadWidget`) com Nome e CPF/RG.
+  - `UC-04.04`: Coleta de Assinatura Digital do Cliente em Canvas (`SignaturePadWidget`) com Nome e CPF/RG (`INV-03`).
 - **Não Incluso**:
-  - Gravação de vídeo ou upload em nuvem.
+  - Gravação de vídeo, upload em nuvem ou lógica condicional aninhada (*branching rules*).
 
 ---
 
@@ -40,6 +40,175 @@ Permitir o preenchimento de itens de checklist de forma ágil em campo com o pol
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Invariantes `INV-03` (completude obrigatória) e `INV-04` (cota de 6 fotos) cobertos por testes.
-- [ ] Compressão de imagem executando em Isolate em segundo plano.
+- [ ] Invariantes `INV-03` (completude obrigatória) e `INV-04` (cota de 6 fotos) cobertos por testes unitários.
+- [ ] Compressão de imagem executando em `Isolate.run(...)` sem travar a UI.
 - [ ] Coleta de assinatura rasterizada e vinculada à OS.
+- [ ] `flutter analyze --fatal-infos` e `flutter test` com exit code 0.
+
+---
+
+## 4. Casos de Uso Atômicos
+
+---
+
+### Caso de Uso UC-04.01 — Modelos de Checklists Rápidos
+
+* **Identificador**: `UC-04.01`
+* **Status**: `Pendente`
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.01 -owner <agente> -paths lib/modules/checklists/`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.01`
+
+#### Narrativa
+- **Como** Técnico autônomo
+- **Eu quero** criar e reutilizar modelos de checklist por tipo de serviço (ex.: Instalação Split, Manutenção Preventiva)
+- **Para que** eu não precise redigitar as mesmas verificações em toda Ordem de Serviço.
+
+#### Critérios de Aceitação (Gherkin Executável)
+```gherkin
+Esquema do Cenário: Criação e validação de modelo de checklist
+  Dado que o técnico solicita salvar um template de checklist
+  Quando informar <titulo> e <qtd_itens>
+  Então o domínio deve retornar <resultado>
+
+  Exemplos:
+    | titulo | qtd_itens | resultado |
+    | "Instalação Split" | 3 | "Result.Ok(ChecklistTemplate)" |
+    | "" | 2 | "Result.Fail(ERR_CHECKLIST_TITULO_INVALIDO)" |
+    | "Vistoria Rápida" | 0 | "Result.Fail(ERR_CHECKLIST_SEM_ITENS)" |
+```
+* **Fixture**: `docs/plan/fixtures/uc-04-checklists-evidencias.json`
+
+#### NFRs Mensuráveis
+| UC | NFR | Métrica | Target | Medição |
+| :--- | :--- | :--- | :--- | :--- |
+| `UC-04.01` | Listagem local de templates | Tempo de leitura SQLite | `< 50 ms` | Teste de repositório com 50 templates |
+
+#### Tarefas Técnicas
+1. `TASK-01`: Criar entidades `ChecklistTemplate` e `ChecklistItem` + migration SQLite + testes unitários.
+2. `TASK-02`: Implementar `ChecklistTemplateSqliteRepository` e UI Kortex de cadastro/listagem.
+
+---
+
+### Caso de Uso UC-04.02 — Preenchimento Tátil do Checklist na OS
+
+* **Identificador**: `UC-04.02`
+* **Status**: `Pendente`
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.02 -owner <agente> -paths lib/modules/checklists/`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.02`
+
+#### Narrativa
+- **Como** Técnico executando uma OS em andamento (`IN_PROGRESS`)
+- **Eu quero** responder cada item com toques rápidos (`Conforme`, `Não Conforme`, `Não se Aplica`) e observação opcional
+- **Para que** o laudo técnico documente cada verificação com rapidez em campo.
+
+#### Critérios de Aceitação (Gherkin Executável)
+```gherkin
+Esquema do Cenário: Resposta de item de checklist na OS
+  Dado que a OS está no status <status_os>
+  Quando o técnico responder o item obrigatório com <resposta> e <observacao>
+  Então o sistema deve retornar <resultado>
+
+  Exemplos:
+    | status_os | resposta | observacao | resultado |
+    | "IN_PROGRESS" | "CONFORME" | "" | "Result.Ok(ChecklistAnswer)" |
+    | "COMPLETED" | "CONFORME" | "" | "Result.Fail(ERR_OS_IMUTAVEL)" |
+    | "IN_PROGRESS" | "NAO_CONFORME" | "Dreno obstruído" | "Result.Ok(ChecklistAnswer)" |
+```
+* **Fixture**: `docs/plan/fixtures/uc-04-checklists-evidencias.json`
+
+#### NFRs Mensuráveis
+| UC | NFR | Métrica | Target | Medição |
+| :--- | :--- | :--- | :--- | :--- |
+| `UC-04.02` | Ergonomia tátil | Altura mínima dos botões | `>= 48 dp` | Widget test verificando `getSize` >= 48x48 |
+
+#### Tarefas Técnicas
+1. `TASK-01`: Criar `ChecklistAnswer` + regra de completude (`INV-03`) e imutabilidade (`INV-06`).
+2. `TASK-02`: Implementar `ChecklistItemWidget` tri-estado com botões `>= 48dp` e controller Kortex.
+
+---
+
+### Caso de Uso UC-04.03 — Captura & Compressão de Fotos com Metadados
+
+* **Identificador**: `UC-04.03`
+* **Status**: `Pendente`
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.03 -owner <agente> -paths lib/modules/evidences/`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.03`
+
+#### Narrativa
+- **Como** Técnico em campo
+- **Eu quero** fotografar o serviço antes/depois (até 6 fotos por OS) com compressão automática e carimbo de data/hora UTC + GPS
+- **Para que** as evidências ocupem pouco espaço no aparelho e tenham valor de comprovação.
+
+#### Critérios de Aceitação (Gherkin Executável)
+```gherkin
+Esquema do Cenário: Anexo e limite de evidências fotográficas (INV-04)
+  Dado que a OS já possui <fotos_existentes> evidências
+  Quando o técnico anexar uma nova foto de <tamanho_kb> KB
+  Então o sistema deve retornar <resultado>
+
+  Exemplos:
+    | fotos_existentes | tamanho_kb | resultado |
+    | 0 | 320 | "Result.Ok(PhotoEvidence)" |
+    | 6 | 250 | "Result.Fail(ERR_EVIDENCIA_LIMITE_EXCEDIDO)" |
+    | 5 | 399 | "Result.Ok(PhotoEvidence)" |
+```
+* **Fixture**: `docs/plan/fixtures/uc-04-checklists-evidencias.json`
+
+#### NFRs Mensuráveis
+| UC | NFR | Métrica | Target | Medição |
+| :--- | :--- | :--- | :--- | :--- |
+| `UC-04.03` | Tamanho de foto comprimida | Bytes salvos no disco | `<= 400 KB` | Teste unitário do `ImageCompressorAdapter` em `Isolate.run` |
+
+#### Tarefas Técnicas
+1. `TASK-01`: Criar `PhotoEvidence`, porta `IImageCompressorPort` e adaptador com `package:image` em `Isolate.run`.
+2. `TASK-02`: Persistir arquivos exclusivamente em `getApplicationSupportDirectory()` (isolamento LGPD) + UI de galeria da OS.
+
+---
+
+### Caso de Uso UC-04.04 — Assinatura Digital na Tela do Smartphone
+
+* **Identificador**: `UC-04.04`
+* **Status**: `Pendente`
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.04 -owner <agente> -paths lib/modules/evidences/`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.04`
+
+#### Narrativa
+- **Como** Técnico finalizando o atendimento
+- **Eu quero** colher a assinatura do cliente na tela junto com o nome completo e documento (CPF/RG)
+- **Para que** o cliente confirme formalmente o recebimento do serviço no laudo.
+
+#### Critérios de Aceitação (Gherkin Executável)
+```gherkin
+Esquema do Cenário: Validação de assinatura digital (INV-03)
+  Dado que o técnico está na etapa de encerramento da OS
+  Quando submeter <assinatura_bytes>, <nome_recebedor> e <documento>
+  Então o domínio deve retornar <resultado>
+
+  Exemplos:
+    | assinatura_bytes | nome_recebedor | documento | resultado |
+    | "png-bytes-validos" | "Carlos Eduardo" | "12345678909" | "Result.Ok(DigitalSignature)" |
+    | "" | "Carlos Eduardo" | "12345678909" | "Result.Fail(ERR_ASSINATURA_AUSENTE)" |
+    | "png-bytes-validos" | "" | "12345678909" | "Result.Fail(ERR_ASSINANTE_NOME_OBRIGATORIO)" |
+```
+* **Fixture**: `docs/plan/fixtures/uc-04-checklists-evidencias.json`
+
+#### NFRs Mensuráveis
+| UC | NFR | Métrica | Target | Medição |
+| :--- | :--- | :--- | :--- | :--- |
+| `UC-04.04` | Rasterização do traço | Tamanho do PNG gerado | `<= 150 KB` | Teste unitário de exportação do canvas |
+
+---
+
+## 5. Dados e Configuração
+
+### 5.1 Migrations SQLite (`dnolib/sqlite`)
+| Arquivo | Conteúdo | UCs dependentes |
+| :--- | :--- | :--- |
+| `lib/modules/checklists/data/checklist_migration.dart` | Tabelas `checklist_templates`, `checklist_items`, `checklist_answers` | `UC-04.01`, `UC-04.02` |
+| `lib/modules/evidences/data/evidence_migration.dart` | Tabelas `photo_evidences`, `digital_signatures` | `UC-04.03`, `UC-04.04` |
+
+### 5.2 Seeds
+- Seed inicial embutido no app com 2 templates padrão: `"Manutenção Preventiva"` e `"Instalação Padrão"`.
+
+### 5.3 Config Schema
+- Sem variáveis de ambiente externas (armazenamento 100% local em `getApplicationSupportDirectory()/evidences/`).

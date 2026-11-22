@@ -1,0 +1,26 @@
+{
+  "epic": "EPIC-05",
+  "description": "Fixtures versionadas para UC-05.01..UC-05.04 (Geração On-Device de Laudo PDF e Compartilhamento)",
+  "cases": {
+    "UC-05.01": [
+      { "case": "valido", "status_os": "COMPLETED", "qtd_fotos": 6, "expected": "Result.Ok(Uint8List %PDF- valido)" },
+      { "case": "invalido", "status_os": "SCHEDULED", "qtd_fotos": 0, "expected": "Result.Fail(ERR_OS_NAO_CONCLUIDA)" },
+      { "case": "edge", "status_os": "COMPLETED", "qtd_fotos": 0, "expected": "Result.Ok(Uint8List %PDF- sem galeria)" }
+    ],
+    "UC-05.02": [
+      { "case": "valido", "estado_geracao": "SUCESSO", "expected": "Resumo do laudo + botão Compartilhar PDF (>= 48dp)" },
+      { "case": "invalido", "estado_geracao": "ERRO", "expected": "Mensagem amigável + botão Tentar novamente" },
+      { "case": "edge", "estado_geracao": "CARREGANDO", "expected": "Indicador de geração em andamento" }
+    ],
+    "UC-05.03": [
+      { "case": "valido", "nome_arquivo": "OS-202611-0001.pdf", "resultado_so": "COMPARTILHADO", "expected": "Result.Ok(void)" },
+      { "case": "invalido", "nome_arquivo": "", "resultado_so": "COMPARTILHADO", "expected": "Result.Fail(ERR_LAUDO_ARQUIVO_INVALIDO)" },
+      { "case": "edge", "nome_arquivo": "OS-202611-0001.pdf", "resultado_so": "CANCELADO_PELO_USUARIO", "expected": "Result.Ok(void)" }
+    ],
+    "UC-05.04": [
+      { "case": "valido", "pdf_em_cache": "EXISTE_NO_DISCO", "expected": "Abrir/compartilhar arquivo salvo imediatamente" },
+      { "case": "invalido", "pdf_em_cache": "OS_INEXISTENTE", "expected": "Result.Fail(ERR_OS_NAO_ENCONTRADA)" },
+      { "case": "edge", "pdf_em_cache": "REMOVIDO_DO_DISCO", "expected": "Regenerar PDF a partir da OS imutável e salvar novamente" }
+    ]
+  }
+}

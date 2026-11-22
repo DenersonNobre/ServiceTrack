@@ -1,0 +1,26 @@
+{
+  "epic": "EPIC-04",
+  "description": "Fixtures versionadas para UC-04.01..UC-04.04 (Checklists, Evidências Fotográficas e Assinatura Digital)",
+  "cases": {
+    "UC-04.01": [
+      { "case": "valido", "titulo": "Instalação Split", "qtd_itens": 3, "expected": "Result.Ok(ChecklistTemplate)" },
+      { "case": "invalido", "titulo": "", "qtd_itens": 2, "expected": "Result.Fail(ERR_CHECKLIST_TITULO_INVALIDO)" },
+      { "case": "edge", "titulo": "Vistoria Rápida", "qtd_itens": 0, "expected": "Result.Fail(ERR_CHECKLIST_SEM_ITENS)" }
+    ],
+    "UC-04.02": [
+      { "case": "valido", "status_os": "IN_PROGRESS", "resposta": "CONFORME", "observacao": "", "expected": "Result.Ok(ChecklistAnswer)" },
+      { "case": "invalido", "status_os": "COMPLETED", "resposta": "CONFORME", "observacao": "", "expected": "Result.Fail(ERR_OS_IMUTAVEL)" },
+      { "case": "edge", "status_os": "IN_PROGRESS", "resposta": "NAO_CONFORME", "observacao": "Dreno obstruído", "expected": "Result.Ok(ChecklistAnswer)" }
+    ],
+    "UC-04.03": [
+      { "case": "valido", "fotos_existentes": 0, "tamanho_kb": 320, "expected": "Result.Ok(PhotoEvidence)" },
+      { "case": "invalido", "fotos_existentes": 6, "tamanho_kb": 250, "expected": "Result.Fail(ERR_EVIDENCIA_LIMITE_EXCEDIDO)" },
+      { "case": "edge", "fotos_existentes": 5, "tamanho_kb": 399, "expected": "Result.Ok(PhotoEvidence)" }
+    ],
+    "UC-04.04": [
+      { "case": "valido", "assinatura_bytes": "png-bytes-validos", "nome_recebedor": "Carlos Eduardo", "documento": "12345678909", "expected": "Result.Ok(DigitalSignature)" },
+      { "case": "invalido", "assinatura_bytes": "", "nome_recebedor": "Carlos Eduardo", "documento": "12345678909", "expected": "Result.Fail(ERR_ASSINATURA_AUSENTE)" },
+      { "case": "edge", "assinatura_bytes": "png-bytes-validos", "nome_recebedor": "", "documento": "12345678909", "expected": "Result.Fail(ERR_ASSINANTE_NOME_OBRIGATORIO)" }
+    ]
+  }
+}
