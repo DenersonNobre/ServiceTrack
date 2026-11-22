@@ -14,6 +14,7 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 
+import '../domain/ports/profile_failure_codes.dart';
 import '../domain/ports/technician_profile_repository_port.dart';
 import '../domain/value_objects/technician_profile.dart';
 
@@ -66,7 +67,7 @@ final class FileTechnicianProfileRepository
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_LEITURA',
+          code: ProfileFailureCodes.readFailed,
           message: 'Não foi possível carregar o perfil.',
         ),
       );
@@ -87,7 +88,7 @@ final class FileTechnicianProfileRepository
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_ESCRITA',
+          code: ProfileFailureCodes.writeFailed,
           message: 'Não foi possível salvar o perfil.',
         ),
       );
@@ -99,7 +100,7 @@ final class FileTechnicianProfileRepository
     if (bytes.isEmpty || bytes.length > _maxInputBytes) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+          code: ProfileFailureCodes.invalidImage,
           message: 'Imagem inválida ou muito grande.',
         ),
       );
@@ -109,7 +110,7 @@ final class FileTechnicianProfileRepository
       if (decoded == null) {
         return const Failure(
           ValidationError(
-            code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+            code: ProfileFailureCodes.invalidImage,
             message: 'Formato de imagem não suportado.',
           ),
         );
@@ -117,7 +118,7 @@ final class FileTechnicianProfileRepository
       if (decoded.width <= 0 || decoded.height <= 0) {
         return const Failure(
           ValidationError(
-            code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+            code: ProfileFailureCodes.invalidImage,
             message: 'Imagem inválida.',
           ),
         );
@@ -141,7 +142,7 @@ final class FileTechnicianProfileRepository
       if (encoded.length > _maxOutputBytes) {
         return const Failure(
           ValidationError(
-            code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+            code: ProfileFailureCodes.invalidImage,
             message: 'Imagem muito grande após normalização.',
           ),
         );
@@ -153,7 +154,7 @@ final class FileTechnicianProfileRepository
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+          code: ProfileFailureCodes.invalidImage,
           message: 'Não foi possível processar a imagem.',
         ),
       );
@@ -172,7 +173,7 @@ final class FileTechnicianProfileRepository
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_ESCRITA',
+          code: ProfileFailureCodes.writeFailed,
           message: 'Não foi possível remover o logo.',
         ),
       );

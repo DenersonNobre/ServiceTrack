@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../domain/ports/profile_failure_codes.dart';
 import '../domain/ports/technician_profile_repository_port.dart';
 import '../domain/value_objects/technician_profile.dart';
 
@@ -31,7 +32,7 @@ final class MemoryTechnicianProfileRepository
     if (bytes.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_IMAGEM_INVALIDA',
+          code: ProfileFailureCodes.invalidImage,
           message: 'Imagem inválida.',
         ),
       );

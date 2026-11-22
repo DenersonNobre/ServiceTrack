@@ -9,6 +9,8 @@ import 'package:dnolib/brlib/brlib.dart';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/profile_failure_codes.dart';
+
 /// Nome comercial/fantasia do técnico.
 final class CommercialName {
   const CommercialName._(this.value);
@@ -22,7 +24,7 @@ final class CommercialName {
     if (normalized.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_NOME_INVALIDO',
+          code: ProfileFailureCodes.invalidName,
           message: 'Informe o nome comercial.',
         ),
       );
@@ -30,7 +32,7 @@ final class CommercialName {
     if (normalized.length > 80) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_NOME_INVALIDO',
+          code: ProfileFailureCodes.invalidName,
           message: 'Nome comercial muito longo.',
         ),
       );
@@ -55,7 +57,7 @@ final class WhatsAppNumber {
     if (!PhoneBrValidator.hasValidShape(digits)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PERFIL_WHATSAPP_INVALIDO',
+          code: ProfileFailureCodes.invalidWhatsapp,
           message: 'Informe um WhatsApp válido com DDD.',
         ),
       );
