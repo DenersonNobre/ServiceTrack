@@ -10,6 +10,7 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:image/image.dart' as img;
 
 import '../domain/entities/photo_evidence.dart';
+import '../domain/ports/evidence_failure_codes.dart';
 import '../domain/ports/image_compressor_port.dart';
 
 /// Implementação on-device de [IImageCompressorPort] usando `package:image`.
@@ -27,7 +28,7 @@ final class ImageCompressorAdapter implements IImageCompressorPort {
     if (rawBytes.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_IMAGEM_VAZIA',
+          code: EvidenceFailureCodes.emptyImage,
           message: 'Arquivo de imagem vazio.',
         ),
       );
@@ -44,7 +45,7 @@ final class ImageCompressorAdapter implements IImageCompressorPort {
       if (compressed == null) {
         return const Failure(
           ValidationError(
-            code: 'ERR_IMAGEM_INVALIDA',
+            code: EvidenceFailureCodes.invalidImage,
             message: 'Não foi possível decodificar a imagem.',
           ),
         );
@@ -52,7 +53,7 @@ final class ImageCompressorAdapter implements IImageCompressorPort {
       if (compressed.length > kMaxPhotoSizeBytes) {
         return const Failure(
           ValidationError(
-            code: 'ERR_EVIDENCIA_TAMANHO_INVALIDO',
+            code: EvidenceFailureCodes.invalidEvidenceSize,
             message: 'Imagem comprimida excedeu o limite de 400 KB.',
           ),
         );
@@ -61,7 +62,7 @@ final class ImageCompressorAdapter implements IImageCompressorPort {
     } on Exception {
       return const Failure(
         ValidationError(
-          code: 'ERR_IMAGEM_COMPRESSAO',
+          code: EvidenceFailureCodes.imageCompressionFailed,
           message: 'Falha ao comprimir a imagem.',
         ),
       );

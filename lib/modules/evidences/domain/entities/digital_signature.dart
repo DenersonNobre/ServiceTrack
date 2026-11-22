@@ -9,6 +9,8 @@ import 'dart:typed_data';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/evidence_failure_codes.dart';
+
 /// Limite máximo em bytes decodificados da assinatura PNG (UC-04.04, C-05).
 const int kMaxSignatureSizeBytes = 150 * 1024;
 
@@ -88,7 +90,7 @@ final class DigitalSignature {
     if (normalizedDoc != null && normalizedDoc.length > 30) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINANTE_DOCUMENTO_INVALIDO',
+          code: EvidenceFailureCodes.invalidSignerDocument,
           message: 'Documento do recebedor inválido.',
         ),
       );
@@ -111,7 +113,7 @@ final class DigitalSignature {
     if (bytes.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINATURA_AUSENTE',
+          code: EvidenceFailureCodes.missingSignature,
           message: 'Colha a assinatura do cliente na tela antes de confirmar.',
         ),
       );
@@ -119,7 +121,7 @@ final class DigitalSignature {
     if (bytes.length > kMaxSignatureSizeBytes) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINATURA_TAMANHO_EXCEDIDO',
+          code: EvidenceFailureCodes.signatureSizeExceeded,
           message: 'Assinatura excedeu o limite máximo de 150 KB.',
         ),
       );
@@ -127,7 +129,7 @@ final class DigitalSignature {
     if (!_hasPngMagic(bytes)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINATURA_INVALIDA',
+          code: EvidenceFailureCodes.invalidSignature,
           message: 'Assinatura inválida.',
         ),
       );
@@ -148,7 +150,7 @@ final class DigitalSignature {
     if (normalizedName.isEmpty || normalizedName.length > 120) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINANTE_NOME_OBRIGATORIO',
+          code: EvidenceFailureCodes.missingSignerName,
           message: 'Informe o nome completo de quem está assinando.',
         ),
       );
@@ -165,7 +167,7 @@ final class DigitalSignature {
     if (requireDocumentByPolicy && normalized == null) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINANTE_DOCUMENTO_OBRIGATORIO',
+          code: EvidenceFailureCodes.missingSignerDocument,
           message: 'Informe o documento do recebedor.',
         ),
       );
@@ -173,7 +175,7 @@ final class DigitalSignature {
     if (normalized != null && normalized.length > 30) {
       return const Failure(
         ValidationError(
-          code: 'ERR_ASSINANTE_DOCUMENTO_INVALIDO',
+          code: EvidenceFailureCodes.invalidSignerDocument,
           message: 'Documento do recebedor inválido.',
         ),
       );

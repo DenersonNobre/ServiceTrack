@@ -5,6 +5,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/evidence_failure_codes.dart';
+
 /// Limite máximo de fotos por Ordem de Serviço no MVP (INV-04).
 const int kMaxPhotosPerWorkOrder = 6;
 
@@ -58,7 +60,7 @@ final class PhotoEvidence {
     if (existingCount >= kMaxPhotosPerWorkOrder) {
       return const Failure(
         ValidationError(
-          code: 'ERR_EVIDENCIA_LIMITE_EXCEDIDO',
+          code: EvidenceFailureCodes.evidenceLimitExceeded,
           message: 'Limite máximo de 6 fotos por Ordem de Serviço atingido.',
         ),
       );
@@ -68,7 +70,7 @@ final class PhotoEvidence {
         filePath.trim().isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_EVIDENCIA_DADOS_INVALIDOS',
+          code: EvidenceFailureCodes.invalidEvidenceData,
           message: 'Dados obrigatórios da evidência ausentes.',
         ),
       );
@@ -76,7 +78,7 @@ final class PhotoEvidence {
     if (sizeBytes <= 0 || sizeBytes > kMaxPhotoSizeBytes) {
       return const Failure(
         ValidationError(
-          code: 'ERR_EVIDENCIA_TAMANHO_INVALIDO',
+          code: EvidenceFailureCodes.invalidEvidenceSize,
           message: 'A foto comprimida deve ter entre 1 byte e 400 KB.',
         ),
       );
@@ -84,7 +86,7 @@ final class PhotoEvidence {
     if (latitude != null && (!latitude.isFinite || latitude < -90 || latitude > 90)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_GEO_INVALIDO_OU_AUSENTE',
+          code: EvidenceFailureCodes.invalidGeo,
           message: 'Latitude fora do intervalo válido.',
         ),
       );
@@ -92,7 +94,7 @@ final class PhotoEvidence {
     if (longitude != null && (!longitude.isFinite || longitude < -180 || longitude > 180)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_GEO_INVALIDO_OU_AUSENTE',
+          code: EvidenceFailureCodes.invalidGeo,
           message: 'Longitude fora do intervalo válido.',
         ),
       );
