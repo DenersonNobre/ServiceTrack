@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dnolib/core/models/money.dart';
 import 'package:dnolib/core/patterns/result.dart';
@@ -130,7 +130,7 @@ void main() {
     await c.load();
     final sig = DigitalSignature.tryCreate(
       signerName: 'Carlos',
-      imageBase64: base64Encode(List<int>.filled(64, 1)),
+      signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
     ).getOrNull()!;
 
     final result = await c.completeWorkOrder('wo1', signature: sig);

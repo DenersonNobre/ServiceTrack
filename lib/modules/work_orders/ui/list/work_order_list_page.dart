@@ -2,7 +2,6 @@
 //
 // SRP: renderizar lista de OS, filtros e ações de check-in. Não contém regra de negócio.
 
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -301,8 +300,8 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       return;
     }
     final sigResult = DigitalSignature.tryCreate(
+      signatureBytes: pngBytes,
       signerName: name,
-      imageBase64: base64Encode(pngBytes),
     );
     if (sigResult.isFailure) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -61,4 +61,11 @@ final class WorkOrderMigration {
   static Migration v9() => Migration(version: 9, scripts: const [
         'ALTER TABLE work_orders ADD COLUMN checklist_template_id TEXT',
       ]);
+
+  /// v10: metadados canônicos de assinatura (UC-04.08, ADR-001, C-04/C-10).
+  /// Aditiva; sem backfill/fabricação; sem UPDATE em COMPLETED.
+  static Migration v10() => Migration(version: 10, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN signature_signed_at_utc TEXT',
+        'ALTER TABLE work_orders ADD COLUMN signature_document_number TEXT',
+      ]);
 }

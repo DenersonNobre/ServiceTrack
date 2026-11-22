@@ -1,6 +1,6 @@
+import 'dart:typed_data';
 import 'dart:io';
 
-import 'dart:convert';
 
 import 'package:dnolib/core/models/money.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
@@ -30,7 +30,7 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_wo.db',
-        dbVersion: 9,
+        dbVersion: 10,
         migrations: [
           WorkOrderMigration.v3(),
           WorkOrderMigration.v4(),
@@ -38,6 +38,7 @@ void main() {
           WorkOrderMigration.v6(),
           WorkOrderMigration.v7(),
           WorkOrderMigration.v9(),
+          WorkOrderMigration.v10(),
         ],
         factory: databaseFactoryFfi,
       );
@@ -141,7 +142,7 @@ void main() {
       await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
-        imageBase64: base64Encode(List<int>.filled(64, 1)),
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
       ).getOrNull()!;
       final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
       final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
@@ -171,7 +172,7 @@ void main() {
       await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
-        imageBase64: base64Encode(List<int>.filled(64, 1)),
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
       ).getOrNull()!;
       final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
       final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
@@ -204,7 +205,7 @@ void main() {
       ).getOrNull()!;
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
-        imageBase64: base64Encode(List<int>.filled(64, 1)),
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
       ).getOrNull()!;
       final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
       final fabricated = WorkOrder.restore(
@@ -243,6 +244,31 @@ void main() {
 
       final loaded = (await repo.findAll()).getOrNull()!.first;
       expect(loaded.checklistTemplateId, 'tpl-1');
+    });
+
+    test('UC-04.08/C-01 - repo fail-closed ao persistir documentNumber sem proteção em repouso', () async {
+      final wo = WorkOrder.tryCreate(
+        id: 'wo-sig-doc',
+        customerId: 'c1',
+        serviceDescription: 'Manutenção',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+      ).getOrNull()!;
+      final point = GeoPoint.tryCreate(
+        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+      ).getOrNull()!;
+      final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
+      await repo.save(inProgress);
+      final sig = DigitalSignature.tryCreate(
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
+        signerName: 'Carlos Silva',
+        documentNumber: '12345678909',
+      ).getOrNull()!;
+      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
+      final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
+      final res = await repo.save(completed);
+      expect(res.isFailure, isTrue);
+      expect(res.getOrNullFailure()!.code, 'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL');
     });
   });
 }

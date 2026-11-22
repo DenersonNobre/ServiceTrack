@@ -2,6 +2,9 @@
 //
 // SRP: persistir e carregar OS em SQLite. Não contém UI.
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dnolib/core/models/money.dart';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
@@ -72,8 +75,18 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       }
       final sig = workOrder.signature;
       if (sig != null) {
+        if (sig.documentNumber != null) {
+          return const Failure(
+            ValidationError(
+              code: 'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL',
+              message:
+                  'Documento do recebedor não pode ser persistido sem proteção em repouso (D-01/C-01).',
+            ),
+          );
+        }
         data['signature_name'] = sig.signerName;
-        data['signature_image_base64'] = sig.imageBase64;
+        data['signature_image_base64'] = sig.toBase64();
+        data['signature_signed_at_utc'] = sig.signedAtUtc?.toIso8601String();
       }
       final proof = workOrder.checklistProof;
       if (proof != null) {
@@ -241,7 +254,23 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     if (name == null || img == null) {
       return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
     }
-    final sig = DigitalSignature.tryCreate(signerName: name, imageBase64: img);
+    final Uint8List bytes;
+    try {
+      bytes = base64Decode(img);
+    } catch (_) {
+      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    }
+    final signedAtRaw = row['signature_signed_at_utc'] as String?;
+    DateTime? signedAtUtc;
+    if (signedAtRaw != null && signedAtRaw.isNotEmpty) {
+      signedAtUtc = DateTime.tryParse(signedAtRaw)?.toUtc();
+    }
+    final sig = DigitalSignature.restore(
+      signatureBytes: bytes,
+      signerName: name,
+      documentNumber: row['signature_document_number'] as String?,
+      signedAtUtc: signedAtUtc,
+    );
     return switch (sig) {
       Success<DigitalSignature, ValidationError>(:final value) => Success(value),
       Failure<DigitalSignature, ValidationError>() => const Failure(

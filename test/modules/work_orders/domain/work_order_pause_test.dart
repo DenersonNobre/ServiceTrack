@@ -1,8 +1,8 @@
+import 'dart:typed_data';
 // Testes de pausa/retomada de OS (UC-03.04).
 //
 // SRP: validar transições de pausa/retomada e justificativa obrigatória.
 
-import 'dart:convert';
 
 import 'package:dnolib/core/models/money.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,8 +32,8 @@ void main() {
       scheduled().startService(LocationCaptured(point())).getOrNull()!;
 
   DigitalSignature signature() => DigitalSignature.tryCreate(
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
         signerName: 'Carlos Silva',
-        imageBase64: base64Encode(List<int>.filled(64, 1)),
       ).getOrNull()!;
 
   ChecklistCompletionProof proofOk() =>

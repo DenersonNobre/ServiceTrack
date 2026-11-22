@@ -237,6 +237,6 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 | **UC-04.05** | Contrato Canônico de Assinatura & Decisão de Domínio (ADR/M-03) | UC-04.04 | `Pendente` |
 | **UC-04.06** | Persistência SQLite de Respostas de Checklist por OS (M-04) | UC-04.01, UC-04.02 | `Em Andamento` |
 | **UC-04.07** | Integração Prova Real de Checklist na Conclusão OS (fecha D-05) | UC-04.06, UC-03.05 | `Concluído` |
-| **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Pendente` |
+| **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Em Andamento` |
 
 > Gate 2.5 obrigatório em UC-04.05/07/08 (PII/LGPD, imutabilidade, validação). Gate 4 deve incluir evidência de `flutter analyze --fatal-infos` e `flutter test` completo.

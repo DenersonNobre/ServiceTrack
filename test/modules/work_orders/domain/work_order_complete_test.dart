@@ -1,8 +1,8 @@
+import 'dart:typed_data';
 // Testes de conclusão e imutabilidade de OS (UC-03.05, INV-01/INV-03/INV-06).
 //
 // SRP: validar complete/check-out/assinatura e travamento pós-conclusão.
 
-import 'dart:convert';
 
 import 'package:dnolib/core/models/money.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,8 +33,8 @@ void main() {
       .getOrNull()!;
 
   DigitalSignature signature() => DigitalSignature.tryCreate(
+        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
         signerName: 'Carlos Silva',
-        imageBase64: base64Encode(List<int>.filled(64, 1)),
       ).getOrNull()!;
 
   ChecklistCompletionProof proofOk() =>
