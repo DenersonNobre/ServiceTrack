@@ -111,6 +111,7 @@ void main() {
         latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
+      await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
         imageBase64: base64Encode(List<int>.filled(64, 1)),
@@ -140,6 +141,7 @@ void main() {
         latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
+      await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
         imageBase64: base64Encode(List<int>.filled(64, 1)),
@@ -167,6 +169,35 @@ void main() {
 
       final loaded = (await repo.findAll()).getOrNull()!.first;
       expect(loaded.serviceDescription, 'Manutenção');
+    });
+
+    test('UC-03.05 - repo bloqueia insert fabricado de OS COMPLETED (INV-SEC-23)', () async {
+      final point = GeoPoint.tryCreate(
+        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+      ).getOrNull()!;
+      final sig = DigitalSignature.tryCreate(
+        signerName: 'Carlos Silva',
+        imageBase64: base64Encode(List<int>.filled(64, 1)),
+      ).getOrNull()!;
+      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
+      final fabricated = WorkOrder.restore(
+        id: 'wo-fabricated',
+        customerId: 'c1',
+        serviceDescription: 'Fabricada',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        status: WorkOrderStatus.completed,
+        checkIn: null,
+        cancellationReason: null,
+        checkOut: point,
+        signature: sig,
+        checklistProof: proof,
+      );
+      final res = await repo.save(fabricated);
+      expect(res.isFailure, isTrue);
+      expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
+      final all = await repo.findAll();
+      expect(all.getOrNull()!, isEmpty);
     });
   });
 }

@@ -143,37 +143,37 @@ final class WorkOrderListController extends IKortexController {
       );
     }
     completingId.value = workOrderId;
-    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
-    if (wo == null) {
-      completingId.value = null;
-      return const Failure(
-        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
-      );
-    }
-    final loc = await locationService.getCurrentLocation();
-    final IResult<WorkOrder, ValidationError> result;
-    switch (loc) {
-      case Failure(:final value):
-        result = Failure(value);
-      case Success(:final value):
-        final completed = wo.complete(
-          signature: signature,
-          checkOut: value,
-          checklistProof: checklistProof,
+    try {
+      final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+      if (wo == null) {
+        return const Failure(
+          ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
         );
-        switch (completed) {
-          case Failure<WorkOrder, ValidationError>(:final value):
-            result = Failure(value);
-          case Success<WorkOrder, ValidationError>(:final value):
-            final saved = await repository.save(value);
-            if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-              items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
-            }
-            result = saved;
-        }
+      }
+      final loc = await locationService.getCurrentLocation();
+      switch (loc) {
+        case Failure(:final value):
+          return Failure(value);
+        case Success(:final value):
+          final completed = wo.complete(
+            signature: signature,
+            checkOut: value,
+            checklistProof: checklistProof,
+          );
+          switch (completed) {
+            case Failure<WorkOrder, ValidationError>(:final value):
+              return Failure(value);
+            case Success<WorkOrder, ValidationError>(:final value):
+              final saved = await repository.save(value);
+              if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+                items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+              }
+              return saved;
+          }
+      }
+    } finally {
+      completingId.value = null;
     }
-    completingId.value = null;
-    return result;
   }
 
   Future<IResult<WorkOrder, ValidationError>> _applyStart(

@@ -86,12 +86,17 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         limit: 1,
       );
       if (existing.isEmpty) {
+        if (workOrder.status == WorkOrderStatus.completed) {
+          return const Failure(
+            ValidationError(code: 'ERR_OS_IMUTAVEL', message: 'OS concluída não pode ser alterada.'),
+          );
+        }
         data['created_at'] = now;
         await db.insert(WorkOrderMigration.table, data);
         return Success(workOrder);
       }
       final currentStatus = WorkOrderStatus.fromCode((existing.first['status'] ?? '') as String);
-      if (currentStatus == WorkOrderStatus.completed) {
+      if (currentStatus == null || currentStatus == WorkOrderStatus.completed) {
         return const Failure(
           ValidationError(code: 'ERR_OS_IMUTAVEL', message: 'OS concluída não pode ser alterada.'),
         );

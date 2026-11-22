@@ -221,6 +221,11 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 12),
+              const Text(
+                'Checklist obrigatório: sem itens pendentes (EPIC-04 pendente; ver D-05).',
+                style: TextStyle(fontSize: 12, color: AppColors.gray500),
+              ),
+              const SizedBox(height: 12),
               const Text('Assinatura do recebedor', style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Container(
