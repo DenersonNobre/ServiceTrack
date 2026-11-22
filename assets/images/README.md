@@ -12,4 +12,6 @@ Arquivos:
 - `empty_customers.webp` — empty state de Clientes
 - `empty_checklists.webp` — empty state de Checklists/templates
 
-Observação: verificar tamanho/licença/adequação antes de distribuição comercial; otimizar peso se necessário (alvo < 150 KB por imagem).
+Otimização: recomprimidas com `cwebp` (libwebp 1.6.0, q72, resize 1024/768w) em 2026-11-22 — tamanhos finais ~2.6–14.5 KB.
+
+Observação: verificar adequação visual/licença antes de distribuição comercial.
