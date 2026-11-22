@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
-import '../../../../core/ui/app_scoped_route.dart';
+import '../../../core/ui/app_scoped_route.dart';
 import '../domain/ports/auth_credential_repository_port.dart';
 import '../domain/ports/biometric_auth_port.dart';
 import '../features/biometric_unlock/biometric_unlock_use_case.dart';

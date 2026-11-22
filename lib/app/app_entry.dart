@@ -1,14 +1,9 @@
 // Gate de entrada, observador de ciclo de vida e roteamento de módulos.
 
 import 'package:flutter/material.dart';
-import 'package:kortex/kortex.dart';
 
 import '../modules/auth/features/app_entry/.index.dart';
-import '../modules/auth/features/biometric_unlock/.index.dart';
-import '../modules/auth/features/recovery/.index.dart';
-import '../modules/auth/ui/lock/.index.dart';
-import '../modules/auth/ui/onboarding/.index.dart';
-import '../modules/auth/ui/recovery/.index.dart';
+import '../modules/auth/ui/auth_routes.dart';
 import '../modules/customers/ui/customers_routes.dart';
 import '../modules/profile/ui/profile_routes.dart';
 import '../modules/work_orders/ui/work_orders_routes.dart';
@@ -27,6 +22,7 @@ class AppEntry extends StatefulWidget {
 
 class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
+  late final AuthRoutes _authRoutes;
   late final CustomersRoutes _customersRoutes;
   late final ProfileRoutes _profileRoutes;
   late final WorkOrdersRoutes _workOrdersRoutes;
@@ -38,6 +34,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _authRoutes = AuthRoutes(
+      credentialRepository: widget.deps.credentialRepository,
+      biometricAuth: widget.deps.biometricAuth,
+    );
     _customersRoutes = CustomersRoutes(
       customerRepository: widget.deps.customerRepository,
       locationRepository: widget.deps.locationRepository,
@@ -115,27 +115,12 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   void _goRecovery() {
     if (!mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<PinRecoveryController>(
-              create: (_) => PinRecoveryController(
-                useCase: PinRecoveryUseCase(
-                  repository: widget.deps.credentialRepository,
-                  biometricAuth: widget.deps.biometricAuth,
-                ),
-                repository: widget.deps.credentialRepository,
-                onRecovered: () {
-                  if (!mounted) return;
-                  Navigator.of(context).pop();
-                  _goHome();
-                },
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: const PinRecoveryPage(),
-        ),
+      _authRoutes.recovery(
+        onRecovered: () {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          _goHome();
+        },
       ),
     );
   }
@@ -144,24 +129,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     if (!mounted) return;
     _isLockVisible = true;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<LockController>(
-              create: (_) => LockController(
-                biometricUnlock: BiometricUnlockUseCase(
-                  biometricAuth: widget.deps.biometricAuth,
-                ),
-                repository: widget.deps.credentialRepository,
-                onUnlocked: _goHome,
-                onForgotPin: _goRecovery,
-              ),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: const LockPage(),
-        ),
-      ),
+      _authRoutes.lock(onUnlocked: _goHome, onForgotPin: _goRecovery),
     );
   }
 
@@ -181,37 +149,12 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           _isLockVisible = false;
         }
         return switch (route) {
-          AppEntryRoute.onboarding => KortexScope(
-            providers: [
-              KortexProvider<OnboardingController>(
-                create: (_) => OnboardingController(
-                  repository: widget.deps.credentialRepository,
-                  onCompleted: () {
-                    // ignore: discarded_futures
-                    widget.deps.credentialRepository.markUnlocked();
-                    _goHome();
-                  },
-                ),
-                dispose: (c) => c.dispose(),
-              ),
-            ],
-            child: const OnboardingPage(),
+          AppEntryRoute.onboarding => _authRoutes.onboardingWidget(
+            onCompleted: _goHome,
           ),
-          AppEntryRoute.lock => KortexScope(
-            providers: [
-              KortexProvider<LockController>(
-                create: (_) => LockController(
-                  biometricUnlock: BiometricUnlockUseCase(
-                    biometricAuth: widget.deps.biometricAuth,
-                  ),
-                  repository: widget.deps.credentialRepository,
-                  onUnlocked: _goHome,
-                  onForgotPin: _goRecovery,
-                ),
-                dispose: (c) => c.dispose(),
-              ),
-            ],
-            child: const LockPage(),
+          AppEntryRoute.lock => _authRoutes.lockWidget(
+            onUnlocked: _goHome,
+            onForgotPin: _goRecovery,
           ),
           AppEntryRoute.home => HomePage(
             onProfile: _goProfile,
