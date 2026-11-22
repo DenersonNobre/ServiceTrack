@@ -18,6 +18,6 @@
 - Confirma: `flutter test test/app/adapters/checklist_proof_adapter_test.dart test/modules/work_orders/ui/work_order_list_controller_test.dart test/modules/work_orders/data/work_order_sqlite_repository_test.dart test/modules/checklists` => `+26 All tests passed`.
 
 ## Próximo passo
-1. Validar ponta-a-ponta (bind template -> preencher checklist -> concluir OS falha se incompleto/passa se completo).
-2. Decidir regra de produto: template obrigatório na conclusão ou opcional (OS sem template ainda permite 0/0).
-3. Fechar UC-04.07 com Gate 3/4; seguir UC-04.08 (DigitalSignature) conforme ADR-001.
+1. **Decisão de produto (pendente PO)**: adotado default fail-closed em código (`ERR_CHECKLIST_TEMPLATE_OBRIGATORIO` quando OS sem template) — PO pode confirmar ou relaxar para política/configuração.
+2. Validar ponta-a-ponta (bind template -> preencher checklist -> concluir OS) e fechar UC-04.07 com Gate 3/4.
+3. Seguir UC-04.08 (DigitalSignature unificação conforme ADR-001), Gate 2.5 obrigatório.

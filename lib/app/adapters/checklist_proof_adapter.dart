@@ -28,7 +28,12 @@ final class ChecklistProofAdapter implements IChecklistProofPort {
   }) async {
     final tplId = templateId?.trim();
     if (tplId == null || tplId.isEmpty) {
-      return ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0);
+      return const Failure(
+        ValidationError(
+          code: 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO',
+          message: 'Vincule um checklist à OS antes de concluir.',
+        ),
+      );
     }
 
     final templateResult = await templateRepository.findById(tplId);

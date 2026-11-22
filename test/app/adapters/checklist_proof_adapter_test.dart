@@ -30,14 +30,14 @@ class _AnsRepo implements IChecklistAnswerRepositoryPort {
 }
 
 void main() {
-  test('UC-04.07 - prova real: sem template retorna 0/0', () async {
+  test('UC-04.07 - prova real: sem template falha (fail-closed)', () async {
     final adapter = ChecklistProofAdapter(
       templateRepository: _TplRepo(null),
       answerRepository: _AnsRepo(const []),
     );
     final r = await adapter.getProof(workOrderId: 'wo1', templateId: null);
-    expect(r.isSuccess, isTrue);
-    expect(r.getOrNull()!.mandatoryTotal, 0);
+    expect(r.isFailure, isTrue);
+    expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO');
   });
 
   test('UC-04.07 - prova real: template com obrigatório não respondido falha', () async {
