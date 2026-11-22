@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Reconciliação (UC-04.07 concluído; UC-04.08 pendente)` |
+| **Status Atual** | `Em Reconciliação (UC-04.07/08 concluídos; UC-04.06 pendente ponta-a-ponta/E2E)` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -237,6 +237,6 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 | **UC-04.05** | Contrato Canônico de Assinatura & Decisão de Domínio (ADR/M-03) | UC-04.04 | `Pendente` |
 | **UC-04.06** | Persistência SQLite de Respostas de Checklist por OS (M-04) | UC-04.01, UC-04.02 | `Em Andamento` |
 | **UC-04.07** | Integração Prova Real de Checklist na Conclusão OS (fecha D-05) | UC-04.06, UC-03.05 | `Concluído` |
-| **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Em Andamento` |
+| **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Concluído` |
 
 > Gate 2.5 obrigatório em UC-04.05/07/08 (PII/LGPD, imutabilidade, validação). Gate 4 deve incluir evidência de `flutter analyze --fatal-infos` e `flutter test` completo.
