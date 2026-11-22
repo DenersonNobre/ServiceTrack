@@ -142,6 +142,17 @@ abstract class IAuthCredentialRepositoryPort {
 
 Decisão completa e plano de migração: [ADR-002](adr-002-app-shell-di-route-bindings.md).
 
+### 5.2 Configurações Locais Tipadas
+
+- **Catálogo**: `SettingKey` (`lib/modules/settings/domain/value_objects`) mapeia chave persistida, tipo e default seguro (`require_checklist_template=true`, `require_receiver_document=false`).
+- **Snapshot**: `SettingsSnapshot` imutável, preenche defaults para chaves ausentes e expõe getters tipados.
+- **Porta/use cases**: `ISettingsRepositoryPort.load()/update()`, `GetSettings` e `UpdateSetting` (chave validada contra o catálogo).
+- **Persistência**: tabela `app_settings (key, value, updated_at_utc)` na migration `v11`; `app_database` em `dbVersion: 11`.
+- **Falhas tipadas**: `ERR_CONFIGURACAO_CHAVE_INVALIDA`, `ERR_CONFIGURACAO_VALOR_INVALIDO`, `ERR_CONFIGURACAO_PERSISTENCIA`.
+- **Consumidores**: devem usar os use cases/porta; nunca acessar a tabela ou strings de chave diretamente.
+
+Decisão completa: [ADR-003](adr-003-settings-locais-tipadas.md).
+
 ---
 
 ## 6. Taxonomia de Falhas & Padrão Result

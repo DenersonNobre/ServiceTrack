@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00` (fundação), `EPIC01` (perfil/auth local) |
 | **Prioridade** | Média (habilita políticas transversais; D2/ADR-001) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Planejado (fatiado; pronto para execução após priorização)` |
+| **Status Atual** | `Em Andamento (UC-07.01 concluído; UC-07.02/03 pendentes)` |
 | **Referências** | [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [SPEC](../../architecture/SPEC.md) \| [DESIGN](../../architecture/DESIGN.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
@@ -34,7 +34,7 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Gate 2.5 | Status |
 | :--- | :--- | :--- | :---: | :---: |
-| **UC-07.01** | Fundação do Módulo de Configurações Locais | Nenhuma | PULADO (sem superfície sensível nova; sem PII, sem nova dependência) | `Pendente` |
+| **UC-07.01** | Fundação do Módulo de Configurações Locais | Nenhuma | PULADO (sem superfície sensível nova; sem PII, sem nova dependência) | `Concluído (código+testes)` |
 | **UC-07.02** | UI de Configurações Locais | UC-07.01 | PULADO (UI lê/escreve por use case; sem PII nova; D2 já decidido) | `Pendente` |
 | **UC-07.03** | Integração de Políticas de Conclusão/Evidência | UC-07.01, UC-07.02 | INVOKED (D2/PII: documento do recebedor; respeitar C-01/D-01, minimização, fail-closed) | `Pendente` |
 
@@ -42,14 +42,19 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Catálogo tipado de configurações com defaults explícitos (sem string mágica de chave fora do catálogo).
-- [ ] Persistência local SQLite via `dnolib/sqlite` com migration versionada e idempotente.
+- [x] Catálogo tipado de configurações com defaults explícitos (sem string mágica de chave fora do catálogo).
+- [x] Persistência local SQLite via `dnolib/sqlite` com migration versionada e idempotente (`SettingsMigration.v11`, `dbVersion: 11`).
 - [ ] Consumidores acessam políticas por porta/use case, não por storage direto nem bool hardcoded em `app_entry`.
 - [ ] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
 - [ ] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, fluxo exige documento e respeita C-01/D-01 (fail-closed se persistência de documento não protegida).
 - [ ] `require_checklist_template` default `true` (política C, D-05) configurável.
-- [ ] `flutter analyze --fatal-infos` e `flutter test` com exit code 0.
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`190 passed`).
 - [ ] Gates 2.5/3/4 conforme sensibilidade (UC-07.03 com G2.5 obrigatório).
+
+### 3.1 Status de Execução (2026-11-22)
+
+- **UC-07.01 (concluído)**: `SettingKey`, `SettingsSnapshot`, `ISettingsRepositoryPort`, `SettingsSqliteRepository`, `MemorySettingsRepository`, `GetSettings`, `UpdateSetting` e `SettingsMigration.v11` entregues; `app_database` em `dbVersion: 11`; 10 testes do módulo verdes. Decisão em [ADR-003](../../architecture/adr-003-settings-locais-tipadas.md).
+- **UC-07.02/03**: pendentes (UI e integração das políticas nos consumidores).
 
 ---
 
@@ -58,7 +63,7 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 ### Caso de Uso UC-07.01 — Fundação do Módulo de Configurações Locais
 
 * **Identificador**: `UC-07.01`
-* **Status**: `Pendente`
+* **Status**: `Concluído (código+testes)`
 * **Gate 2.5**: `PULADO — sem superfície sensível nova, sem PII, sem nova dependência; persistência local SQLite padrão do projeto`.
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-07.01 -owner <agente> -paths lib/modules/settings,...`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-07.01`

@@ -115,6 +115,7 @@ O documento PDF gerado pelo pacote `package:pdf` no celular segue estritamente a
 | `ADR-04` | **Compartilhamento via Share Nativo do SO** | Envio direto por SMTP/Servidor | Aproveita os apps já instalados no celular do técnico (WhatsApp, Gmail, Telegram), garantindo entrega instantânea na conversa do cliente. |
 | `ADR-05` | **Smartphones Portrait-Only vs Tablets Híbridos (Landscape)** | Rotação livre em todos os aparelhos | Rotação em celular durante serviços de campo gera toques acidentais e perda de contexto. No tablet, a paisagem destrava produtividade Master-Detail de alta densidade. |
 | `ADR-06` | **Composition Root & Route Bindings por Módulo** (`AppDependencies` + `*Routes` + `appScopedRoute`) | GetX Bindings / service locator / manter composição no `AppEntry` | Dependências explícitas, módulo autocontido e shell estável. GetX é proibido; service locator esconde dependências; centralizar no shell viola SRP e gera shotgun surgery. Detalhe: [ADR-002](adr-002-app-shell-di-route-bindings.md). |
+| `ADR-07` | **Configurações Locais Tipadas** (`SettingKey` + `SettingsSnapshot` + `app_settings` key/value) | SharedPreferences / colunas explícitas / config remota | Catálogo único, defaults explícitos e persistência SQLite consistente. SharedPreferences duplicaria storage; colunas explícitas exigem migration por política; backend está fora do escopo. Detalhe: [ADR-003](adr-003-settings-locais-tipadas.md). |
 
 ---
 

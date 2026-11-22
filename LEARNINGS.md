@@ -67,3 +67,22 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - Gate de fronteira (T3) deve falhar se `AppEntry` voltar a conter `KortexProvider<` de controller de módulo.
 - **Execução real**: subagentes de T1/T2 atingiram o limite de passos antes do commit; T1 foi concluído por `agy01@59993bf1` e T2/T3/T4 pelo orquestrador. O desenho de paths disjuntos evitou colisão; o fallback serial não invalidou a divisão.
 - **Gotcha de path**: `import '../../../../core/ui/...'` em `lib/modules/<m>/ui/` funciona por *clamp* de URI do Dart, mas o caminho explícito correto é `../../../core/ui/...` (3 níveis). Normalizado em customers/profile/auth; usar 3 níveis em novos módulos.
+
+## 2026-11-22 — UC-07.01: fundação de configurações locais
+
+### 1. Decisão
+- `app_settings` key/value (`key`, `value`, `updated_at_utc`) na migration `v11`; `app_database` em `dbVersion: 11`.
+- Catálogo `SettingKey` com defaults seguros (`require_checklist_template=true`, `require_receiver_document=false`), `SettingsSnapshot` imutável, porta e use cases `GetSettings`/`UpdateSetting`.
+- Valores persistidos como `'true'`/`'false'`; valor inválido falha com `ERR_CONFIGURACAO_VALOR_INVALIDO`; chave desconhecida com `ERR_CONFIGURACAO_CHAVE_INVALIDA`.
+- Decisão registrada em `docs/architecture/adr-003-settings-locais-tipadas.md`.
+
+### 2. Barrels
+- `settings/.index.dart` reexporta apenas `data/`, `domain/` e `features/`; `domain/.index.dart` reexporta entities/ports/value_objects.
+- Arquivos de `data/` e `features/` importam somente `../domain/.index.dart`; `app_database` importa `settings/data/.index.dart`.
+- **Dívida global**: há ~183 imports relativos profundos em `lib/modules`; migrar por módulo em fatia de hardening separada, sem misturar com UC funcional.
+
+### 3. Evidência
+- `flutter test test/modules/settings` => `+10 All tests passed!`; `flutter analyze --fatal-infos` => `No issues found!`; suíte completa => `+190 All tests passed!`.
+
+### 4. Gotcha de teste
+- `group(..., timeout: ...)` **não** existe no wrapper do `flutter_test` (só `skip`/`retry`); timeout é por `test`. Testes pesados de PBKDF2 estouravam 30s sob carga paralela; helper `_slowTest` com `Timeout(2min)` estabilizou `credential_recovery_test.dart` (commit `cd2c6c7`).

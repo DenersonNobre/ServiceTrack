@@ -8,13 +8,14 @@ import 'package:dnolib/sqlite/sqlite.dart';
 import '../../modules/checklists/data/checklist_migration.dart';
 import '../../modules/customers/data/customer_migration.dart';
 import '../../modules/customers/data/service_location_migration.dart';
+import '../../modules/settings/data/.index.dart';
 import '../../modules/work_orders/data/work_order_migration.dart';
 
 /// Cria o provider SQLite do app.
 SqliteProvider createAppDatabase({String dbName = 'service_track.db'}) {
   return SqliteProvider(
     dbName: dbName,
-    dbVersion: 10,
+    dbVersion: 11,
     migrations: [
       CustomerMigration.v1(),
       ServiceLocationMigration.v2(),
@@ -26,6 +27,7 @@ SqliteProvider createAppDatabase({String dbName = 'service_track.db'}) {
       ChecklistMigration.v8(),
       WorkOrderMigration.v9(),
       WorkOrderMigration.v10(),
+      SettingsMigration.v11(),
     ],
   );
 }
