@@ -8,44 +8,48 @@
 | **Dependências Diretas** | `EPIC00` (fundação), `EPIC01` (perfil/auth local) |
 | **Prioridade** | Média (habilita políticas transversais; D2/ADR-001) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Planejado` |
-| **Referências** | [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [SPEC](../../architecture/SPEC.md) \| [DESIGN](../../architecture/DESIGN.md) |
+| **Status Atual** | `Planejado (fatiado; pronto para execução após priorização)` |
+| **Referências** | [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [SPEC](../../architecture/SPEC.md) \| [DESIGN](../../architecture/DESIGN.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
 
 ## 1. Objetivo de Negócio & Escopo
 
-Centralizar configurações e políticas locais do app em módulo dedicado, evitando flags espalhadas em `profile`, `auth` ou regras hardcoded em fluxos de negócio.
+Centralizar configurações e políticas locais do app em módulo dedicado, evitando flags espalhadas em `app_entry`, controllers ou regras hardcoded em fluxos de negócio.
 
 - **Incluso**:
-  - `UC-07.01`: Fundação do módulo de configurações (persistência local tipada, porta, UI de configurações).
-  - `UC-07.02`: Política de documento do recebedor na assinatura (D2/ADR-001): obrigatório por política/configuração, default seguro/minimização.
-  - `UC-07.03`: Preferências operacionais locais (base para futuros toggles: backup/export, compliance), com catálogo extensível.
+  - `UC-07.01`: Fundação do módulo `settings` (catálogo tipado, ports, persistência SQLite, defaults seguros, get/update use cases).
+  - `UC-07.02`: UI de Configurações (tela acessível, Kortex, leitura/edição por use case).
+  - `UC-07.03`: Integração de políticas existentes (`require_checklist_template`, `require_receiver_document`) nos consumidores, substituindo bools hardcoded por leitura do settings; respeitando D-01/C-01.
 - **Não Incluso**:
   - Sincronização remota de configurações.
   - Gestão de credenciais/cofre (EPIC-01).
   - Dados comerciais do técnico (EPIC-01/Profile).
+  - Criptografia em repouso do SQLite (D-01) — pré-requisito para habilitar persistência de documento do recebedor.
+  - Backup/export seguro com PII (C-11/C-12, EPIC-05/EPIC-07 futuro).
 
 ---
 
 ## 2. Matriz de Casos de Uso (Feature Matrix)
 
-| ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
-| :--- | :--- | :--- | :---: |
-| **UC-07.01** | Fundação do Módulo de Configurações Locais | Nenhuma | `Pendente` |
-| **UC-07.02** | Política de Documento do Recebedor (D2) | UC-07.01 | `Pendente` |
-| **UC-07.03** | Catálogo Extensível de Preferências Locais | UC-07.01 | `Pendente` |
+| ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Gate 2.5 | Status |
+| :--- | :--- | :--- | :---: | :---: |
+| **UC-07.01** | Fundação do Módulo de Configurações Locais | Nenhuma | PULADO (sem superfície sensível nova; sem PII, sem nova dependência) | `Pendente` |
+| **UC-07.02** | UI de Configurações Locais | UC-07.01 | PULADO (UI lê/escreve por use case; sem PII nova; D2 já decidido) | `Pendente` |
+| **UC-07.03** | Integração de Políticas de Conclusão/Evidência | UC-07.01, UC-07.02 | INVOKED (D2/PII: documento do recebedor; respeitar C-01/D-01, minimização, fail-closed) | `Pendente` |
 
 ---
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Configurações persistidas localmente com tipagem/validação (sem strings mágicas de chave fora de catálogo).
-- [ ] UI acessível (>=48dp, #115E59, Stateless/Kortex).
-- [ ] Consumidores acessam políticas por porta/use case, não por storage direto.
-- [ ] D2 implementado com default seguro (minimização) e comportamento fail-closed quando política exigir documento.
+- [ ] Catálogo tipado de configurações com defaults explícitos (sem string mágica de chave fora do catálogo).
+- [ ] Persistência local SQLite via `dnolib/sqlite` com migration versionada e idempotente.
+- [ ] Consumidores acessam políticas por porta/use case, não por storage direto nem bool hardcoded em `app_entry`.
+- [ ] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
+- [ ] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, fluxo exige documento e respeita C-01/D-01 (fail-closed se persistência de documento não protegida).
+- [ ] `require_checklist_template` default `true` (política C, D-05) configurável.
 - [ ] `flutter analyze --fatal-infos` e `flutter test` com exit code 0.
-- [ ] Gates 2.5/3/4 conforme sensibilidade (D2 toca PII/LGPD).
+- [ ] Gates 2.5/3/4 conforme sensibilidade (UC-07.03 com G2.5 obrigatório).
 
 ---
 
@@ -55,11 +59,14 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 
 * **Identificador**: `UC-07.01`
 * **Status**: `Pendente`
+* **Gate 2.5**: `PULADO — sem superfície sensível nova, sem PII, sem nova dependência; persistência local SQLite padrão do projeto`.
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-07.01 -owner <agente> -paths lib/modules/settings,...`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-07.01`
 
 #### Narrativa
 - **Como** técnico autônomo
-- **Eu quero** acessar configurações do app em um local único
-- **Para que** ajustar políticas/comportamentos sem depender de suporte ou código.
+- **Eu quero** que o app tenha configurações locais tipadas com defaults seguros
+- **Para que** políticas de operação sejam consistentes e evoluam sem espalhar flags hardcoded.
 
 #### Critérios de Aceitação (Gherkin Executável)
 ```gherkin
@@ -67,71 +74,161 @@ Cenário: Carregar configurações padrão no primeiro acesso
   Dado que o app não possui configurações persistidas
   Quando o módulo de configurações é inicializado
   Então retorna Result.Ok com defaults tipados
-  E não expõe chaves mágicas na UI
+  E require_checklist_template = true
+  E require_receiver_document = false
+
+Esquema do Cenário: Atualizar política tipada
+  Dado que o catálogo contém a chave <chave>
+  Quando o técnico atualiza o valor para <valor>
+  Então o sistema persiste e retorna <resultado>
+
+  Exemplos:
+    | chave | valor | resultado |
+    | "require_checklist_template" | false | "Result.Ok(SettingsSnapshot)" |
+    | "require_receiver_document" | true | "Result.Ok(SettingsSnapshot)" |
+    | "chave_inexistente" | true | "Result.Fail(ERR_CONFIGURACAO_CHAVE_INVALIDA)" |
 ```
 
+#### NFRs Mensuráveis
+| NFR | Métrica | Target | Medição |
+| :--- | :--- | :--- | :--- |
+| Leitura local | Tempo de leitura SQLite | `< 50 ms` | Teste de repositório SQLite em memória |
+| Tipagem | Chaves fora do catálogo | `0` uso em UI/consumidor | Revisão/gate + teste de chave inválida |
+
 #### Tarefas Técnicas
-1. `TASK-01`: Criar `lib/modules/settings/` (domain/data/features/ui) com `ISettingsRepositoryPort`.
-2. `TASK-02`: Persistência SQLite (`dnolib/sqlite`) ou storage local tipado; migration.
-3. `TASK-03`: UI Kortex com lista de configurações e acessibilidade.
+1. `TASK-01`: Criar `lib/modules/settings/domain/` com catálogo tipado (`SettingKey`/enum ou VO), `SettingsSnapshot`, falhas tipadas e porta `ISettingsRepositoryPort`.
+2. `TASK-02`: Criar `lib/modules/settings/data/` com `SettingsSqliteRepository` + migration versionada (tabela key/value tipada ou colunas explícitas; decisão no slice com justificativa).
+3. `TASK-03`: Criar `lib/modules/settings/features/` com `GetSettings`/`UpdateSetting` (ou equivalente) retornando `Result<T>`.
+4. `TASK-04`: Testes unitários domínio + integração SQLite (defaults, update, chave inválida, idempotência migration).
+
+#### Impacto & Arquivos Alvo
+- `lib/modules/settings/**` [NEW]
+- `test/modules/settings/**` [NEW]
+- `docs/plan/epics/epic-07-configuracoes-politicas.md` [MODIFY]
 
 ---
 
-### Caso de Uso UC-07.02 — Política de Documento do Recebedor (D2)
+### Caso de Uso UC-07.02 — UI de Configurações Locais
 
 * **Identificador**: `UC-07.02`
 * **Status**: `Pendente`
-* **Dependência**: UC-07.01, ADR-001
+* **Dependência**: UC-07.01
+* **Gate 2.5**: `PULADO — UI consome use cases; não coleta PII nova; exibe/edita flags de política já definidas (D2 decidido)`.
+* **Gate DoR**: `tools/bin/claims claim -path . -slice UC-07.02 -owner <agente> -paths lib/modules/settings/ui,...`
+* **Gate DoD**: `tools/bin/claims release -path . -slice UC-07.02`
 
 #### Narrativa
-- **Como** responsável pelo uso do app
-- **Eu quero** configurar se o documento do recebedor é obrigatório na assinatura
-- **Para que** adequar a coleta de PII à política do meu contexto.
+- **Como** técnico autônomo
+- **Eu quero** acessar e ajustar configurações do app em um local único
+- **Para que** configurar políticas operacionais sem depender de suporte ou código.
 
 #### Critérios de Aceitação (Gherkin Executável)
 ```gherkin
-Esquema do Cenário: Exigência de documento por política
-  Dado que a política "require_receiver_document" está <estado>
-  Quando o técnico conclui assinatura com documento <doc>
-  Então o resultado deve ser <resultado>
+Cenário: Exibir configurações com defaults
+  Dado que o técnico abre a tela de Configurações
+  Quando o módulo carrega o snapshot
+  Então exibe toggles com estado atual
+  E alvos táteis possuem >= 48dp
+  E a tela usa Kortex/StatelessWidget por padrão
 
-  Exemplos:
-    | estado | doc | resultado |
-    | "DESABILITADA" | "" | "Result.Ok (documento opcional)" |
-    | "HABILITADA" | "" | "Result.Fail(ERR_ASSINANTE_DOCUMENTO_OBRIGATORIO)" |
-    | "HABILITADA" | "12345678909" | "Result.Ok" |
+Cenário: Alterar política pela UI
+  Dado que o técnico altera "Exigir checklist na conclusão"
+  Quando confirma a alteração
+  Então o sistema persiste via use case
+  E exibe feedback de sucesso/falha com AppFeedback
 ```
 
-#### NFRs / Segurança
-- Gate 2.5 obrigatório (PII/LGPD): default seguro/minimização, redaction, sem log de documento.
-- Alinhar com C-01..C-07/C-11 da ADR-001.
+#### NFRs / Acessibilidade
+- Alvos táteis `>= 48dp`; contraste/tema `#115E59`.
+- Sem `setState` para estado de tela; Kortex.
+- Sem string mágica de chave na UI (usa catálogo/tipos).
+
+#### Tarefas Técnicas
+1. `TASK-01`: Criar `lib/modules/settings/ui/` (controller Kortex, page StatelessWidget, widgets).
+2. `TASK-02`: Integrar navegação/entrada em configurações (ponto de acesso a definir no slice, sem espalhar regra).
+3. `TASK-03`: Testes de widget/controller para renderização, toggle e feedback.
+
+#### Impacto & Arquivos Alvo
+- `lib/modules/settings/ui/**` [NEW]
+- `lib/app/app_entry.dart` [MODIFY] (injeção/navegação, se necessário)
+- `test/modules/settings/ui/**` [NEW]
 
 ---
 
-### Caso de Uso UC-07.03 — Catálogo Extensível de Preferências Locais
+### Caso de Uso UC-07.03 — Integração de Políticas de Conclusão/Evidência
 
 * **Identificador**: `UC-07.03`
 * **Status**: `Pendente`
-* **Dependência**: UC-07.01
+* **Dependência**: UC-07.01, UC-07.02, ADR-001 D2
+* **Gate 2.5**: `INVOKED — D2 toca PII/LGPD (documento do recebedor). Respeitar C-01/D-01 (sem persistência de documento em claro; fail-closed se habilitado sem proteção), minimização (default false), redaction, sem log de documento. Checklist policy não é PII.`
 
 #### Narrativa
-- **Como** mantenedor
-- **Eu quero** um catálogo tipado de preferências
-- **Para que** adicionar novas políticas sem espalhar chaves/booleans mágicos.
+- **Como** responsável pelo uso do app
+- **Eu quero** que as políticas de checklist e documento do recebedor sejam lidas de configurações
+- **Para que** o comportamento de conclusão da OS reflita a política configurada, com segurança por padrão.
 
 #### Critérios de Aceitação (Gherkin Executável)
 ```gherkin
-Cenário: Preferência desconhecida falha de forma segura
-  Dado que uma chave de configuração não está no catálogo
-  Quando o sistema tenta lê-la
-  Então retorna Result.Fail tipado ou default explícito documentado
-  E não usa string mágica fora do catálogo
+Esquema do Cenário: Exigência de documento por política configurada
+  Dado que a política "require_receiver_document" está <estado>
+  E a proteção de repouso D-01 está <d01>
+  Quando o técnico conclui OS com assinatura e documento <doc>
+  Então o resultado deve ser <resultado>
+
+  Exemplos:
+    | estado | d01 | doc | resultado |
+    | "DESABILITADA" | "NAO_APLICA" | "" | "Result.Ok (documento opcional)" |
+    | "HABILITADA" | "INDISPONIVEL" | "12345678909" | "Result.Fail(ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL)" |
+    | "HABILITADA" | "DISPONIVEL" | "" | "Result.Fail(ERR_ASSINANTE_DOCUMENTO_OBRIGATORIO)" |
+    | "HABILITADA" | "DISPONIVEL" | "12345678909" | "Result.Ok" |
+
+Esquema do Cenário: Exigência de checklist por política configurada
+  Dado que a política "require_checklist_template" está <estado>
+  Quando o técnico conclui OS sem template/checklist exigido
+  Então o resultado deve ser <resultado>
+
+  Exemplos:
+    | estado | resultado |
+    | "HABILITADA" | "Result.Fail(ERR_CHECKLIST_TEMPLATE_OBRIGATORIO)" |
+    | "DESABILITADA" | "Result.Ok (se demais invariantes ok)" |
 ```
+
+#### NFRs / Segurança
+- Gate 2.5 obrigatório antes do coder (PII/LGPD/D2).
+- Não persistir `documentNumber` em claro (C-01/D-01); guard fail-closed existente deve permanecer.
+- Sem log/telemetria de documento; `toString` redigido (já coberto em VO canônico).
+- Remover bools hardcoded de `app_entry/service_track_app/work_order_list_controller` em favor de leitura por porta/use case (ou provider de settings injetado).
+
+#### Tarefas Técnicas
+1. `TASK-01`: Definir porta de leitura de políticas para consumidores (`IWorkOrderPolicyPort` ou leitura de `SettingsSnapshot` por use case; escolher menor acoplamento).
+2. `TASK-02`: Adaptar `app_entry.dart`, `service_track_app.dart`, `work_order_list_controller/page` para consumir política configurada; manter defaults seguros.
+3. `TASK-03`: Garantir comportamento D-01 fail-closed quando `require_receiver_document=true` e proteção indisponível.
+4. `TASK-04`: Testes de integração/controle cobrindo matriz D2 + checklist policy + D-01 guard; regressão dos testes existentes.
+
+#### Impacto & Arquivos Alvo
+- `lib/modules/settings/**` [MODIFY]
+- `lib/app/app_entry.dart` [MODIFY]
+- `lib/app/service_track_app.dart` [MODIFY]
+- `lib/modules/work_orders/ui/list/work_order_list_controller.dart` [MODIFY]
+- `lib/modules/work_orders/ui/list/work_order_list_page.dart` [MODIFY]
+- `test/modules/settings/**` [MODIFY/NEW]
+- `test/modules/work_orders/**` [MODIFY]
+
+---
 
 ## 5. Riscos & Dependências
 
 | Risco | Prob. | Impacto | Mitigação |
 | :--- | :--- | :--- | :--- |
-| Configuração virar “god module” | Média | Médio | Catálogo tipado, UCs pequenos, ports claros. |
-| PII em política de documento (D2) | Alta | Alto | Gate 2.5, minimização, redaction, default seguro. |
-| Colisão com profile/auth | Baixa | Médio | Separar claramente: credenciais (auth), perfil comercial (profile), políticas (settings). |
+| Configuração virar “god module” | Média | Médio | Catálogo tipado, UCs pequenos, ports claros, sem storage direto no consumidor. |
+| PII em política de documento (D2) | Alta | Alto | Gate 2.5 no UC-07.03; minimização default false; C-01/D-01 fail-closed; redaction. |
+| Colisão com profile/auth | Baixa | Médio | Separar: credenciais (auth), perfil comercial (profile), políticas (settings). |
+| Habilitar documento sem D-01 | Média | Alto | Guard fail-closed já existente; UI deve sinalizar restrição; teste de regressão. |
+| Mudança em wiring quebrar fluxo de conclusão | Média | Médio | Testes existentes de work order/checklist como rede de segurança; integração por slice. |
+
+## 6. Observações de Planejamento
+
+- **Defaults canônicos**: `require_checklist_template=true` (D-05/política C), `require_receiver_document=false` (D2/minimização).
+- **D-01**: enquanto aberto, persistir `documentNumber` em claro é proibido; política pode ser configurada, mas a efetivação com persistência depende de proteção em repouso.
+- **Ordem sugerida**: UC-07.01 → UC-07.02 → G2.5 UC-07.03 → UC-07.03.
+- **Claim paths**: definir paths por UC no DoR (não pré-reivindicar `lib/app/**` inteiro; expandir por arquivos existentes).
