@@ -9,10 +9,11 @@ import 'package:service_track/modules/auth/features/biometric_unlock/.index.dart
 import 'package:service_track/modules/auth/ui/lock/.index.dart';
 
 final class _FakeBio implements IBiometricAuthPort {
-  _FakeBio(this.result);
+  _FakeBio(this.result, {this.supported = true});
   BiometricAuthResult result;
+  bool supported;
   @override
-  Future<bool> canAuthenticate() async => true;
+  Future<bool> canAuthenticate() async => supported;
   @override
   Future<BiometricAuthResult> authenticate() async => result;
 
@@ -118,14 +119,30 @@ void main() {
     expect(find.text('Digite seu PIN'), findsOneWidget);
   });
 
-  testWidgets('CANCELADO -> permanece na tela de PIN', (tester) async {
+  testWidgets('CANCELADO -> permanece na tela de PIN e mostra Ativar biometria', (tester) async {
     var unlocked = false;
+    final repo = _FakeRepo()..biometricsEnabled = false;
     await tester.pumpWidget(
-      _build(_FakeBio(BiometricAuthResult.canceled), _FakeRepo(),
+      _build(_FakeBio(BiometricAuthResult.canceled, supported: true), repo,
           onUnlocked: () => unlocked = true),
     );
     await tester.pumpAndSettle();
     expect(unlocked, isFalse);
     expect(find.text('Digite seu PIN'), findsOneWidget);
+    expect(find.byKey(const Key('lock-toggle-biometrics')), findsOneWidget);
+    expect(find.byKey(const Key('lock-toggle-remember-me')), findsNothing);
+    await tester.tap(find.byKey(const Key('lock-toggle-biometrics')));
+    await tester.pumpAndSettle();
+    expect(repo.biometricsEnabled, isTrue);
+  });
+
+  testWidgets('Sem hardware biometrico -> mostra Lembrar de mim', (tester) async {
+    final repo = _FakeRepo()..biometricsEnabled = false;
+    await tester.pumpWidget(
+      _build(_FakeBio(BiometricAuthResult.unavailable, supported: false), repo),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('lock-toggle-remember-me')), findsOneWidget);
+    expect(find.byKey(const Key('lock-toggle-biometrics')), findsNothing);
   });
 }

@@ -33,6 +33,11 @@ final class PinRecoveryPage extends IKortexPage<PinRecoveryController> {
               constraints: const BoxConstraints(maxWidth: 480),
               child: KortexWatch(
                 builder: (context, _) {
+                  // Rastreia sinais lidos pelos subwidgets na árvore.
+                  controller.loading.value;
+                  controller.pinError.value;
+                  controller.passwordError.value;
+                  controller.newPin.value;
                   return switch (controller.step.value) {
                     PinRecoveryStep.chooseMethod => _ChooseMethod(controller: controller),
                     PinRecoveryStep.masterPassword => _MasterPassword(controller: controller),

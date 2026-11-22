@@ -122,5 +122,17 @@ void main() {
       expect(recovered, isTrue);
       expect(repo.resetCalled, isTrue);
     });
+
+    testWidgets('BIOMETRIA_NAO_CONFIRMADA nao avanca para tela de novo PIN', (tester) async {
+      final repo = _FakeRepo();
+      final bio = _FakeBio()..deviceResult = BiometricAuthResult.canceled;
+      await tester.pumpWidget(_build(repo, bio));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('recover-device-credential')));
+      await tester.pumpAndSettle();
+      expect(find.text('Cadastre um novo PIN'), findsNothing);
+      expect(find.text('Autenticação do dispositivo não confirmada.'), findsOneWidget);
+    });
   });
 }

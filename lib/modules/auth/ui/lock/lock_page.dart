@@ -85,6 +85,31 @@ final class LockPage extends IKortexPage<LockController> {
                           onSubmit: controller.submitPin,
                         ),
                       const SizedBox(height: 8),
+                      if (controller.canUseBiometrics.value)
+                        CheckboxListTile(
+                          key: const Key('lock-toggle-biometrics'),
+                          value: controller.biometricsEnabled.value,
+                          activeColor: AppColors.primaryAction,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: const Text('Ativar biometria'),
+                          onChanged: controller.submittingPin.value
+                              ? null
+                              : (v) => controller.toggleBiometrics(v ?? false),
+                        )
+                      else
+                        CheckboxListTile(
+                          key: const Key('lock-toggle-remember-me'),
+                          value: controller.rememberMeEnabled.value,
+                          activeColor: AppColors.primaryAction,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: const Text('Lembrar de mim'),
+                          onChanged: controller.submittingPin.value
+                              ? null
+                              : (v) => controller.toggleRememberMe(v ?? false),
+                        ),
+                      const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.center,
                         child: TextButton(
@@ -94,7 +119,7 @@ final class LockPage extends IKortexPage<LockController> {
                             foregroundColor: AppColors.primaryAction,
                           ),
                           onPressed: controller.forgotPin,
-                          child: const Text('Esqueci meu PIN'),
+                          child: const Text('Esqueci meu PIN / senha'),
                         ),
                       ),
                     ],

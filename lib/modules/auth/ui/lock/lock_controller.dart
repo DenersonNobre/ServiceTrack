@@ -49,8 +49,29 @@ final class LockController extends IKortexController {
   /// Valor atual do PIN digitado.
   final KortexSignal<String> pin = KortexSignal<String>('');
 
+  /// Indica se o dispositivo possui hardware biométrico disponível.
+  final KortexSignal<bool> canUseBiometrics = KortexSignal<bool>(false);
+
+  /// Preferência "Ativar biometria".
+  final KortexSignal<bool> biometricsEnabled = KortexSignal<bool>(false);
+
+  /// Preferência "Lembrar de mim" (quando não há hardware biométrico).
+  final KortexSignal<bool> rememberMeEnabled = KortexSignal<bool>(false);
+
   bool _unlocked = false;
   bool _initialized = false;
+
+  /// Alterna preferência de biometria.
+  Future<void> toggleBiometrics(bool enabled) async {
+    biometricsEnabled.value = enabled;
+    await repository.setBiometricsEnabled(enabled);
+  }
+
+  /// Alterna preferência "Lembrar de mim".
+  Future<void> toggleRememberMe(bool enabled) async {
+    rememberMeEnabled.value = enabled;
+    await repository.setRememberMe(enabled);
+  }
 
   /// Adiciona um dígito ao PIN (UC-01.03).
   void appendDigit(String digit) {
@@ -80,8 +101,16 @@ final class LockController extends IKortexController {
   Future<void> init() async {
     checkingBiometric.value = true;
     try {
+      final hasHardware = await biometricUnlock.biometricAuth.canAuthenticate();
+      canUseBiometrics.value = hasHardware;
       final enabledResult = await repository.isBiometricsEnabled();
       final enabled = switch (enabledResult) {
+        Success<bool, ValidationError>(:final value) => value,
+        Failure<bool, ValidationError>() => false,
+      };
+      biometricsEnabled.value = enabled;
+      final rememberResult = await repository.isRememberMeEnabled();
+      rememberMeEnabled.value = switch (rememberResult) {
         Success<bool, ValidationError>(:final value) => value,
         Failure<bool, ValidationError>() => false,
       };
@@ -137,5 +166,8 @@ final class LockController extends IKortexController {
     pinError.dispose();
     submittingPin.dispose();
     pin.dispose();
+    canUseBiometrics.dispose();
+    biometricsEnabled.dispose();
+    rememberMeEnabled.dispose();
   }
 }

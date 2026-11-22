@@ -11,6 +11,7 @@ import 'package:kortex/kortex.dart';
 
 import '../../domain/ports/auth_credential_repository_port.dart';
 import '../../domain/value_objects/auth_credentials.dart';
+import '../../domain/value_objects/biometric_auth_result.dart';
 import '../../features/recovery/pin_recovery_use_case.dart';
 
 /// Etapas do fluxo de recuperação.
@@ -76,12 +77,21 @@ final class PinRecoveryController extends IKortexController {
     step.value = PinRecoveryStep.masterPassword;
   }
 
-  /// Seleciona recuperação por credencial do SO (auth acontece no submit).
-  void chooseDeviceCredential() {
+  /// Seleciona recuperação por credencial do SO: autentica ANTES de pedir novo PIN.
+  Future<void> chooseDeviceCredential() async {
+    if (loading.value) return;
+    loading.value = true;
     pinError.value = null;
     newPin.value = '';
-    _pendingDeviceCredential = true;
     _authenticatedByPassword = false;
+    _pendingDeviceCredential = false;
+    final auth = await useCase.biometricAuth.authenticateDeviceCredential();
+    loading.value = false;
+    if (auth != BiometricAuthResult.success) {
+      pinError.value = 'Autenticação do dispositivo não confirmada.';
+      return;
+    }
+    _pendingDeviceCredential = true;
     step.value = PinRecoveryStep.newPin;
   }
 
@@ -143,7 +153,7 @@ final class PinRecoveryController extends IKortexController {
             newPin: value,
           );
         } else {
-          result = await useCase.recoverWithDeviceCredential(newPin: value);
+          result = await repository.resetPin(newPin: value);
         }
         loading.value = false;
         switch (result) {
