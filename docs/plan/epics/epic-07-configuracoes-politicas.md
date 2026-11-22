@@ -48,14 +48,14 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 - [x] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
 - [x] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, o fluxo falha fail-closed enquanto D-01 não protege o documento.
 - [x] `require_checklist_template` default `true` (política C, D-05) configurável.
-- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`199 passed`).
-- [ ] Gates 3/4 formais do épico (G2.5 do UC-07.03 aprovado com condicionantes SEC-01..SEC-08).
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`202 passed`).
+- [ ] Gate 4 formal do épico (G2.5 aprovado com condicionantes; G3 aprovado com ressalvas; ressalvas de follow-up registradas).
 
 ### 3.1 Status de Execução (2026-11-22)
 
 - **UC-07.01 (concluído)**: `SettingKey`, `SettingsSnapshot`, `ISettingsRepositoryPort`, `SettingsSqliteRepository`, `MemorySettingsRepository`, `GetSettings`, `UpdateSetting` e `SettingsMigration.v11` entregues; `app_database` em `dbVersion: 11`; 10 testes do módulo verdes. Decisão em [ADR-003](../../architecture/adr-003-settings-locais-tipadas.md).
 - **UC-07.02 (concluído)**: `SettingsController` (Kortex), `SettingsPage` (`SwitchListTile` >=48dp, `KortexListener` + `AppFeedback`), `SettingsRoutes` e entrada na Home; `AppDependencies`/`ServiceTrackApp`/`main.dart` injetam `ISettingsRepositoryPort` (SQLite no app real, memória no fallback). 4 testes de UI/controller verdes.
-- **UC-07.03 (concluído)**: `GetSettings` é a fonte única no `WorkOrderListController`; políticas lidas por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01 estiver aberto; UI não coleta documento nesse estado. Gate 2.5 **INVOKED — aprovado com condicionantes (Média)**, SEC-01..SEC-08; invariantes INV-SEC-28..32. 5 testes de política/segurança adicionais; suíte **199 verdes**. Gates 3/4 formais pendentes.
+- **UC-07.03 (concluído)**: `GetSettings` é a fonte única no `WorkOrderListController`; políticas lidas por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01 estiver aberto; UI não coleta documento nesse estado. Gate 2.5 **INVOKED — aprovado com condicionantes (Média)**, SEC-01..SEC-08; invariantes INV-SEC-28..32. 4 testes nomeados de política/segurança + 1 widget test de não-coleta; suíte **202 verdes**. Gate 3 aprovado com ressalvas; Gate 4 pendente.
 
 ---
 
@@ -206,17 +206,23 @@ Esquema do Cenário: Exigência de checklist por política configurada
 - Remover bools hardcoded de `app_entry/service_track_app/work_order_list_controller` em favor de leitura por porta/use case (ou provider de settings injetado).
 
 #### Tarefas Técnicas
-1. `TASK-01`: Definir porta de leitura de políticas para consumidores (`IWorkOrderPolicyPort` ou leitura de `SettingsSnapshot` por use case; escolher menor acoplamento).
+1. `TASK-01`: Usar `GetSettings` como fonte única de política no consumidor (menor acoplamento que porta dedicada; SEC-01).
 2. `TASK-02`: Adaptar `app_entry.dart`, `service_track_app.dart`, `work_order_list_controller/page` para consumir política configurada; manter defaults seguros.
 3. `TASK-03`: Garantir comportamento D-01 fail-closed quando `require_receiver_document=true` e proteção indisponível.
 4. `TASK-04`: Testes de integração/controle cobrindo matriz D2 + checklist policy + D-01 guard; regressão dos testes existentes.
 
 #### Impacto & Arquivos Alvo
 - `lib/modules/settings/**` [MODIFY]
+- `lib/modules/work_orders/domain/value_objects/document_protection.dart` [NEW]
 - `lib/app/app_entry.dart` [MODIFY]
 - `lib/app/service_track_app.dart` [MODIFY]
+- `lib/app/app_dependencies.dart` [MODIFY]
+- `lib/app/home_page.dart` [MODIFY]
+- `lib/app/database/app_database.dart` [MODIFY]
+- `lib/main.dart` [MODIFY]
 - `lib/modules/work_orders/ui/list/work_order_list_controller.dart` [MODIFY]
 - `lib/modules/work_orders/ui/list/work_order_list_page.dart` [MODIFY]
+- `lib/modules/work_orders/ui/work_orders_routes.dart` [MODIFY]
 - `test/modules/settings/**` [MODIFY/NEW]
 - `test/modules/work_orders/**` [MODIFY]
 

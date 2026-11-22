@@ -12,7 +12,6 @@ import '../../../../core/.index.dart';
 import '../../domain/ports/work_order_failure_codes.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/digital_signature.dart';
-import '../../domain/value_objects/document_protection.dart';
 import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
@@ -305,7 +304,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       return;
     }
     final requireDoc = policyResult.getOrNull()!.requireReceiverDocument;
-    if (requireDoc && !kDocumentAtRestProtectionAvailable) {
+    if (requireDoc && !controller.documentAtRestProtectionAvailable) {
       AppFeedback.showError(
         context,
         'Documento do recebedor indisponível: proteção em repouso (D-01) não configurada.',

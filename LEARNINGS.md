@@ -128,5 +128,12 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - SEC-08: `require_checklist_template=false` não relaxa INV-03.
 
 ### 3. Evidência
-- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **199 passed**.
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **202 passed**.
 - Gate 2.5: APROVADO COM CONDICIONANTES (Média); SEC-01..SEC-08; INV-SEC-28..32.
+- CI GitHub run `45081277660` verde.
+
+### 4. Gate 3 (review)
+- Veredito: APROVADO COM RESSALVAS (Média). Nada bloqueava merge; SEC-01..08 conformes.
+- Corrigidos: M-01 (`SettingsSnapshot.==` itera todo o catálogo), M-02 (UI usa a mesma capacidade do controller), M-04 (testes de falha de load/update da UI), B-02/B-03/B-04 (docs/UX).
+- Deferidos: M-03 (recuperação de settings corrompido), M-05 (método `completeWorkOrder` longo), B-01 (fallback de settings em produção).
+- Ressalva de processo: Red-Before-Green sem prova temporal nos commits; registrar `[RED]` no corpo do commit no próximo UC.

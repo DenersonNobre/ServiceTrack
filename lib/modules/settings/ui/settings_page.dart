@@ -87,7 +87,8 @@ final class SettingsPage extends IKortexPage<SettingsController> {
                       title: const Text('Exigir documento do recebedor'),
                       subtitle: const Text(
                         'Coleta CPF/RG na assinatura. Default: desativado (minimização LGPD). '
-                        'A persistência depende da proteção em repouso (D-01).',
+                        'Enquanto a proteção em repouso (D-01) não estiver concluída, '
+                        'habilitar esta política bloqueia a conclusão.',
                       ),
                       value: snapshot.requireReceiverDocument,
                       onChanged: saving

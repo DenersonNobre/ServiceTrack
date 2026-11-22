@@ -33,12 +33,15 @@ final class SettingsSnapshot {
       SettingsSnapshot({..._values, key: value});
 
   @override
-  bool operator ==(Object other) =>
-      other is SettingsSnapshot &&
-      other.requireChecklistTemplate == requireChecklistTemplate &&
-      other.requireReceiverDocument == requireReceiverDocument;
+  bool operator ==(Object other) {
+    if (other is! SettingsSnapshot) return false;
+    for (final key in SettingKey.values) {
+      if (other.valueFor(key) != valueFor(key)) return false;
+    }
+    return true;
+  }
 
   @override
   int get hashCode =>
-      Object.hash(requireChecklistTemplate, requireReceiverDocument);
+      Object.hashAll([for (final key in SettingKey.values) valueFor(key)]);
 }
