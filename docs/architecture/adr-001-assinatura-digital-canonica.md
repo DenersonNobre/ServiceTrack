@@ -1,6 +1,6 @@
 # ADR-001 — Contrato Canônico de Assinatura Digital
 
-> **Status**: Proposto (aguardando aprovação PO/Arch + Gate 2.5)  
+> **Status**: Proposto — Gate 2.5 APROVADO COM CONDICIONANTES (Média, 2026-11-22); aguardando decisão PO D2 + aprovação Arch  
 > **Data**: 2026-11-22  
 > **Autores**: `opc01@e03ff640`  
 > **Relacionado**: UC-04.04, UC-04.05, UC-04.08, UC-03.05, D-05, INV-03, INV-SEC-24/25/26/27, LGPD
@@ -75,14 +75,28 @@ Negativas/riscos:
 4. Atualizar UI/controller de conclusão para usar contrato canônico.
 5. Remover VO duplicado após migração verde.
 
-## Gate 2.5 (a executar)
+## Gate 2.5 — Veredito (2026-11-22)
 
-Checklist mínimo:
-- PII: `signerName`, `documentNumber`, imagem de assinatura — redigidos em logs/toString/erros.
-- Armazenamento: SQLite local; avaliar criptografia em repouso (risco já registrado).
-- Retenção/minimização: documento obrigatório? se não, não coletar.
-- Validação: tamanho máximo, formato PNG/base64 válido, normalização.
-- Imutabilidade: assinatura de OS concluída não pode ser alterada (INV-06/INV-SEC-23).
+**Gate 2.5: INVOKED — Aprovado com condicionantes (Confiança Média, `ses_dfc96c088ffePqylwAxJpMhMTK`)**. Não pronto para implementação antes de C-01..C-12.
+
+| ID | Sev. | Condicionante | Status |
+|---|---|---|---|
+| C-01 | Alta | Antes de persistir `documentNumber`, definir base legal/finalidade/minimização/retenção (LGPD) e proteção em repouso (cifra DB/campo, chave Keystore/Keychain; segredos fora do SQLite). | Aberto |
+| C-02 | Alta | Endurecer backup: Android `allowBackup="false"` enquanto sem backup cifrado controlado; excluir DB/artefatos sensíveis; tratar iOS equivalente. (D-01) | Aberto |
+| C-03 | Alta | Decisão PO D2 com justificativa documentada; recomendação segurança: não coletar documento por padrão (minimização). | Aberto |
+| C-04 | Média | Migração bidirecional na leitura/unidirecional na escrita; não fabricar `signedAtUtc`/documento ausente; semântica explícita (`nullable`/`migratedAtUtc`). | Aberto |
+| C-05 | Média | Limite por bytes reais decodificados (não comprimento base64); política para legado acima do limite: preservar imutável ou marcar, nunca truncar. | Aberto |
+| C-06 | Média | Proibir `toJson` com PII/imagem crus; DTOs de borda explícitos; `toString` redigido só com metadados não sensíveis. | Aberto |
+| C-07 | Média | Testes de redaction em toString/erros/logs/DTOs/debug; gate/grep sem PII em logs. | Aberto |
+| C-08 | Média | PNG canônico válido (magic bytes), limite único em bytes pós-decodificação, validação na entrada/reidratação. | Aberto |
+| C-09 | Média | Validar antes de persistir/renderizar/exportar; erros tipados sem ecoar payload. | Aberto |
+| C-10 | Média | Preservar INV-SEC-23 em novo schema/migração; testes update/insert bloqueado, migração não altera OS concluída, status nulo fail-closed. | Aberto |
+| C-11 | Média | Antes de EPIC-05/RF-13, definir política de dados em PDF/share; mínimo necessário, mascaramento documento se exibido, limpar temporários. | Aberto |
+| C-12 | Média | Backup/exportação com PII sensível só cifrado, chave sob controle do usuário, escopo documentado; excluir DB/assinaturas de backup automático por padrão. | Aberto |
+
+**Invariantes propostas (Gate 2.5)**: INV-SEC-SIG-01..06 (repouso/backup, minimização, migração sem fabricação, redaction, formato/tamanho, imutabilidade pós-conclusão).
+
+**Risco dominante**: Information Disclosure de PII sensível (assinatura, nome, eventual CPF/RG) em SQLite plain e superfícies de backup/exportação.
 
 ## Aprovação
 
