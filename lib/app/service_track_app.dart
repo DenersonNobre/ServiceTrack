@@ -32,6 +32,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.checklistAnswerRepository,
     this.checklistProofPort,
     this.requireChecklistTemplate = true,
+    this.requireReceiverDocument = false,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -66,6 +67,9 @@ class ServiceTrackApp extends StatelessWidget {
 
   /// Política: exige template vinculado na conclusão (UC-04.07/EPIC-07).
   final bool requireChecklistTemplate;
+
+  /// Política: exige documento do recebedor na assinatura (UC-04.08/C-03).
+  final bool requireReceiverDocument;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +109,7 @@ class ServiceTrackApp extends StatelessWidget {
         checklistTemplateRepository: checklistTemplateRepo,
         checklistAnswerRepository: checklistAnswerRepo,
         requireChecklistTemplate: requireChecklistTemplate,
+        requireReceiverDocument: requireReceiverDocument,
       ),
     );
   }

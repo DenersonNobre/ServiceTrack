@@ -25,6 +25,7 @@ final class WorkOrderListController extends IKortexController {
     required this.locationService,
     required this.checklistProofPort,
     this.requireChecklistTemplate = true,
+    this.requireReceiverDocument = false,
   });
   final IWorkOrderRepositoryPort repository;
   final ILocationServicePort locationService;
@@ -32,6 +33,10 @@ final class WorkOrderListController extends IKortexController {
 
   /// Política: exige template vinculado na conclusão (UC-04.07, EPIC-07).
   final bool requireChecklistTemplate;
+
+  /// Política: exige documento do recebedor na assinatura (UC-04.08/C-03, EPIC-07).
+  /// Default minimização LGPD: false.
+  final bool requireReceiverDocument;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<List<WorkOrder>> items = KortexSignal<List<WorkOrder>>([]);

@@ -214,11 +214,13 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     String workOrderId,
   ) async {
     final nameController = TextEditingController();
+    final docController = TextEditingController();
     final sigController = SignatureController(
       penStrokeWidth: 2,
       penColor: Colors.black,
       exportBackgroundColor: Colors.white,
     );
+    final requireDoc = controller.requireReceiverDocument;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -237,9 +239,20 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                 ),
                 textCapitalization: TextCapitalization.words,
               ),
+              if (requireDoc) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('wo-complete-doc'),
+                  controller: docController,
+                  decoration: const InputDecoration(
+                    labelText: 'Documento do recebedor (CPF/RG)',
+                    hintText: 'Informe o documento',
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               const Text(
-                'Checklist obrigatório: sem itens pendentes (EPIC-04 pendente; ver D-05).',
+                'A conclusão exige checklist válido conforme política (INV-03/D-05).',
                 style: TextStyle(fontSize: 12, color: AppColors.gray500),
               ),
               const SizedBox(height: 12),
@@ -285,12 +298,15 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     );
     if (confirmed != true || !context.mounted) {
       nameController.dispose();
+      docController.dispose();
       sigController.dispose();
       return;
     }
     final name = nameController.text;
+    final doc = docController.text;
     final pngBytes = sigController.isEmpty ? null : await sigController.toPngBytes();
     nameController.dispose();
+    docController.dispose();
     sigController.dispose();
     if (!context.mounted) return;
     if (pngBytes == null) {
@@ -302,6 +318,8 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final sigResult = DigitalSignature.tryCreate(
       signatureBytes: pngBytes,
       signerName: name,
+      documentNumber: doc.isEmpty ? null : doc,
+      requireDocumentByPolicy: requireDoc,
     );
     if (sigResult.isFailure) {
       ScaffoldMessenger.of(context).showSnackBar(
