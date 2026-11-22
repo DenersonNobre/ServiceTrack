@@ -19,8 +19,8 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_checklists.db',
-        dbVersion: 7,
-        migrations: [ChecklistMigration.v7()],
+        dbVersion: 8,
+        migrations: [ChecklistMigration.v8()],
         factory: databaseFactoryFfi,
       );
       repo = ChecklistTemplateSqliteRepository(provider: provider);
