@@ -10,6 +10,7 @@ import 'package:signature/signature.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/.index.dart';
+import '../../domain/ports/work_order_failure_codes.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/digital_signature.dart';
 import '../../domain/value_objects/work_order_status.dart';
@@ -176,11 +177,11 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
           'Este bypass será auditado com motivo explícito.',
         ),
         actions: [
-          if (err.code == 'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE' ||
-              err.code == 'ERR_LOCALIZACAO_SERVICO_DESLIGADO')
+          if (err.code == WorkOrderFailureCodes.locationPermissionDeniedForever ||
+              err.code == WorkOrderFailureCodes.locationServiceDisabled)
             TextButton(
               onPressed: () async {
-                if (err.code == 'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE') {
+                if (err.code == WorkOrderFailureCodes.locationPermissionDeniedForever) {
                   await Geolocator.openAppSettings();
                 } else {
                   await Geolocator.openLocationSettings();
@@ -438,13 +439,17 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
   }
 
   CheckInBypassReason? _bypassReasonForCode(String code) => switch (code) {
-        'ERR_LOCALIZACAO_PERMISSAO_NEGADA' => CheckInBypassReason.permissionDenied,
-        'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE' =>
+        WorkOrderFailureCodes.locationPermissionDenied =>
+          CheckInBypassReason.permissionDenied,
+        WorkOrderFailureCodes.locationPermissionDeniedForever =>
           CheckInBypassReason.permissionDeniedPermanently,
-        'ERR_LOCALIZACAO_SERVICO_DESLIGADO' => CheckInBypassReason.gpsUnavailable,
-        'ERR_LOCALIZACAO_TIMEOUT' => CheckInBypassReason.timeout,
-        'ERR_LOCALIZACAO_INDISPONIVEL' => CheckInBypassReason.gpsUnavailable,
-        'ERR_LOCALIZACAO_DADOS_INVALIDOS' => CheckInBypassReason.gpsUnavailable,
+        WorkOrderFailureCodes.locationServiceDisabled =>
+          CheckInBypassReason.gpsUnavailable,
+        WorkOrderFailureCodes.locationTimeout => CheckInBypassReason.timeout,
+        WorkOrderFailureCodes.locationUnavailable =>
+          CheckInBypassReason.gpsUnavailable,
+        WorkOrderFailureCodes.locationInvalidData =>
+          CheckInBypassReason.gpsUnavailable,
         _ => null,
       };
 

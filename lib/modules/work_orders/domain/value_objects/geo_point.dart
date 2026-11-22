@@ -8,6 +8,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/work_order_failure_codes.dart';
+
 /// Ponto georreferenciado válido para auditoria de atendimento.
 final class GeoPoint {
   const GeoPoint._({
@@ -34,7 +36,7 @@ final class GeoPoint {
     if (!latitude.isFinite || !longitude.isFinite) {
       return const Failure(
         ValidationError(
-          code: 'ERR_GEO_DADOS_INVALIDOS',
+          code: WorkOrderFailureCodes.invalidGeoData,
           message: 'Coordenadas de localização inválidas.',
         ),
       );
@@ -42,7 +44,7 @@ final class GeoPoint {
     if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
       return const Failure(
         ValidationError(
-          code: 'ERR_GEO_DADOS_INVALIDOS',
+          code: WorkOrderFailureCodes.invalidGeoData,
           message: 'Coordenadas de localização inválidas.',
         ),
       );

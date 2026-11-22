@@ -6,6 +6,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/work_order_failure_codes.dart';
+
 /// Prova de completude de checklist obrigatório.
 final class ChecklistCompletionProof {
   const ChecklistCompletionProof._({
@@ -22,13 +24,13 @@ final class ChecklistCompletionProof {
   }) {
     if (mandatoryTotal < 0 || answeredMandatory < 0 || answeredMandatory > mandatoryTotal) {
       return const Failure(ValidationError(
-        code: 'ERR_CHECKLIST_INCOMPLETO',
+        code: WorkOrderFailureCodes.checklistIncomplete,
         message: 'Checklist obrigatório incompleto.',
       ));
     }
     if (answeredMandatory != mandatoryTotal) {
       return const Failure(ValidationError(
-        code: 'ERR_CHECKLIST_INCOMPLETO',
+        code: WorkOrderFailureCodes.checklistIncomplete,
         message: 'Checklist obrigatório incompleto.',
       ));
     }

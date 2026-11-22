@@ -10,6 +10,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
+import '../domain/ports/work_order_failure_codes.dart';
 import '../domain/ports/work_order_repository_port.dart';
 import '../domain/value_objects/check_in_bypass_reason.dart';
 import '../domain/value_objects/check_in_record.dart';
@@ -78,7 +79,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         if (sig.documentNumber != null) {
           return const Failure(
             ValidationError(
-              code: 'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL',
+              code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
               message:
                   'Documento do recebedor não pode ser persistido sem proteção em repouso (D-01/C-01).',
             ),
@@ -103,7 +104,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       if (existing.isEmpty) {
         if (workOrder.status == WorkOrderStatus.completed) {
           return const Failure(
-            ValidationError(code: 'ERR_OS_IMUTAVEL', message: 'OS concluída não pode ser alterada.'),
+            ValidationError(code: WorkOrderFailureCodes.immutable, message: 'OS concluída não pode ser alterada.'),
           );
         }
         data['created_at'] = now;
@@ -113,14 +114,14 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       final currentStatus = WorkOrderStatus.fromCode((existing.first['status'] ?? '') as String);
       if (currentStatus == null || currentStatus == WorkOrderStatus.completed) {
         return const Failure(
-          ValidationError(code: 'ERR_OS_IMUTAVEL', message: 'OS concluída não pode ser alterada.'),
+          ValidationError(code: WorkOrderFailureCodes.immutable, message: 'OS concluída não pode ser alterada.'),
         );
       }
       await db.update(WorkOrderMigration.table, data, where: 'id = ?', whereArgs: [workOrder.id]);
       return Success(workOrder);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_PERSISTENCIA', message: 'Não foi possível salvar a OS.'),
+        ValidationError(code: WorkOrderFailureCodes.persistence, message: 'Não foi possível salvar a OS.'),
       );
     }
   }
@@ -139,7 +140,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       return Success(items);
     } catch (_) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_PERSISTENCIA', message: 'Não foi possível carregar as OS.'),
+        ValidationError(code: WorkOrderFailureCodes.persistence, message: 'Não foi possível carregar as OS.'),
       );
     }
   }
@@ -148,7 +149,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final statusCode = (row['status'] ?? '') as String;
     final status = WorkOrderStatus.fromCode(statusCode);
     if (status == null) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final minor = row['estimated_value_minor'];
     final minorInt = minor is int ? minor : int.tryParse('$minor') ?? 0;
@@ -200,30 +201,30 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final atRaw = row['check_in_at'] as String?;
     final at = DateTime.tryParse(atRaw ?? '')?.toUtc();
     if (at == null) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     if (source == 'GPS') {
       final lat = _toDouble(row['check_in_lat']);
       final lng = _toDouble(row['check_in_lng']);
       if (lat == null || lng == null) {
-        return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+        return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
       }
       final gp = GeoPoint.tryCreate(latitude: lat, longitude: lng, timestampUtc: at);
       return switch (gp) {
         Success<GeoPoint, ValidationError>(:final value) => Success(CheckInGps(value)),
         Failure<GeoPoint, ValidationError>() => const Failure(
-            ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+            ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'),
           ),
       };
     }
     if (source == 'BYPASS') {
       final reason = CheckInBypassReason.fromCode((row['check_in_bypass_reason'] ?? '') as String);
       if (reason == null) {
-        return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+        return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
       }
       return Success(CheckInBypassed(reason: reason, timestampUtc: at));
     }
-    return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+    return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
   }
 
   IResult<GeoPoint?, ValidationError> _mapCheckOut(Map<String, Object?> row) {
@@ -232,17 +233,17 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final atRaw = row['check_out_at'] as String?;
     if (lat == null && lng == null && (atRaw == null || atRaw.isEmpty)) return const Success(null);
     if (lat == null || lng == null || atRaw == null || atRaw.isEmpty) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final at = DateTime.tryParse(atRaw)?.toUtc();
     if (at == null) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final gp = GeoPoint.tryCreate(latitude: lat, longitude: lng, timestampUtc: at);
     return switch (gp) {
       Success<GeoPoint, ValidationError>(:final value) => Success(value),
       Failure<GeoPoint, ValidationError>() => const Failure(
-          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+          ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'),
         ),
     };
   }
@@ -252,13 +253,13 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final img = row['signature_image_base64'] as String?;
     if ((name == null || name.isEmpty) && (img == null || img.isEmpty)) return const Success(null);
     if (name == null || img == null) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final Uint8List bytes;
     try {
       bytes = base64Decode(img);
     } catch (_) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final signedAtRaw = row['signature_signed_at_utc'] as String?;
     DateTime? signedAtUtc;
@@ -274,7 +275,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     return switch (sig) {
       Success<DigitalSignature, ValidationError>(:final value) => Success(value),
       Failure<DigitalSignature, ValidationError>() => const Failure(
-          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+          ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'),
         ),
     };
   }
@@ -284,13 +285,13 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     final answered = row['checklist_answered_mandatory'];
     if (total == null && answered == null) return const Success(null);
     if (total is! int || answered is! int) {
-      return const Failure(ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'));
+      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
     }
     final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: total, answeredMandatory: answered);
     return switch (proof) {
       Success<ChecklistCompletionProof, ValidationError>(:final value) => Success(value),
       Failure<ChecklistCompletionProof, ValidationError>() => const Failure(
-          ValidationError(code: 'ERR_OS_DADOS_INVALIDOS', message: 'Dados de OS inválidos.'),
+          ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'),
         ),
     };
   }

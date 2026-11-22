@@ -8,6 +8,7 @@ import 'package:dnolib/core/models/money.dart';
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/work_order_failure_codes.dart';
 import 'check_in_record.dart';
 import 'checklist_completion_proof.dart';
 import 'digital_signature.dart';
@@ -71,23 +72,23 @@ final class WorkOrder {
   }) {
     if (id.trim().isEmpty || customerId.trim().isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_ID_INVALIDO', message: 'Identificador inválido.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidId, message: 'Identificador inválido.'),
       );
     }
     final desc = serviceDescription.trim();
     if (desc.isEmpty) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_DESCRICAO_INVALIDA', message: 'Informe a descrição do serviço.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidDescription, message: 'Informe a descrição do serviço.'),
       );
     }
     if (estimatedValue.currencyCode != 'BRL' || estimatedValue.scale != 2) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_VALOR_INVALIDO', message: 'Valor estimado inválido.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidAmount, message: 'Valor estimado inválido.'),
       );
     }
     if (estimatedValue.minorUnits.isNegative) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_VALOR_INVALIDO', message: 'Valor estimado não pode ser negativo.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidAmount, message: 'Valor estimado não pode ser negativo.'),
       );
     }
     final tpl = checklistTemplateId?.trim();
@@ -113,13 +114,13 @@ final class WorkOrder {
   IResult<WorkOrder, ValidationError> startService(LocationCapture capture) {
     if (status == WorkOrderStatus.completed) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidTransition, message: 'Transição de estado inválida para a OS.'),
       );
     }
     if (status != WorkOrderStatus.scheduled) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_TRANSICAO_INVALIDA',
+          code: WorkOrderFailureCodes.invalidTransition,
           message: 'Transição de estado inválida para a OS.',
         ),
       );
@@ -154,14 +155,14 @@ final class WorkOrder {
     if (trimmed.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_JUSTIFICATIVA_OBRIGATORIA',
+          code: WorkOrderFailureCodes.justificationRequired,
           message: 'Informe a justificativa da pausa.',
         ),
       );
     }
     if (status != WorkOrderStatus.inProgress) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidTransition, message: 'Transição de estado inválida para a OS.'),
       );
     }
     return Success(WorkOrder._(
@@ -185,7 +186,7 @@ final class WorkOrder {
   IResult<WorkOrder, ValidationError> resume() {
     if (status != WorkOrderStatus.paused) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+        ValidationError(code: WorkOrderFailureCodes.invalidTransition, message: 'Transição de estado inválida para a OS.'),
       );
     }
     return Success(WorkOrder._(
@@ -211,7 +212,7 @@ final class WorkOrder {
     if (trimmed.isEmpty) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_JUSTIFICATIVA_OBRIGATORIA',
+          code: WorkOrderFailureCodes.justificationRequired,
           message: 'Informe a justificativa do cancelamento.',
         ),
       );
@@ -219,7 +220,7 @@ final class WorkOrder {
     if (status == WorkOrderStatus.completed || status == WorkOrderStatus.cancelled) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_TRANSICAO_INVALIDA',
+          code: WorkOrderFailureCodes.invalidTransition,
           message: 'Transição de estado inválida para a OS.',
         ),
       );
@@ -250,7 +251,7 @@ final class WorkOrder {
     if (status != WorkOrderStatus.inProgress) {
       return const Failure(
         ValidationError(
-          code: 'ERR_OS_TRANSICAO_INVALIDA',
+          code: WorkOrderFailureCodes.invalidTransition,
           message: 'Transição de estado inválida para a OS.',
         ),
       );

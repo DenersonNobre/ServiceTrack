@@ -8,6 +8,7 @@ import 'package:kortex/kortex.dart';
 
 import '../../domain/ports/checklist_proof_port.dart';
 import '../../domain/ports/location_service_port.dart';
+import '../../domain/ports/work_order_failure_codes.dart';
 import '../../domain/ports/work_order_repository_port.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/checklist_completion_proof.dart';
@@ -94,7 +95,7 @@ final class WorkOrderListController extends IKortexController {
   Future<IResult<WorkOrder, ValidationError>> startService(String workOrderId) async {
     if (startingId.value != null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe um check-in em andamento.'),
+        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe um check-in em andamento.'),
       );
     }
     startingId.value = workOrderId;
@@ -114,7 +115,7 @@ final class WorkOrderListController extends IKortexController {
   ) async {
     if (startingId.value != null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe um check-in em andamento.'),
+        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe um check-in em andamento.'),
       );
     }
     startingId.value = workOrderId;
@@ -131,7 +132,7 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
       );
     }
     final paused = wo.pause(reason);
@@ -152,7 +153,7 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
       );
     }
     final resumed = wo.resume();
@@ -176,7 +177,7 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
       );
     }
     final cancelled = wo.cancel(reason);
@@ -199,7 +200,7 @@ final class WorkOrderListController extends IKortexController {
   }) async {
     if (completingId.value != null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_OCUPADO', message: 'Já existe uma conclusão em andamento.'),
+        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe uma conclusão em andamento.'),
       );
     }
     completingId.value = workOrderId;
@@ -207,7 +208,7 @@ final class WorkOrderListController extends IKortexController {
       final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
       if (wo == null) {
         return const Failure(
-          ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+          ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
         );
       }
       final proofResult = await checklistProofPort.getProof(
@@ -259,7 +260,7 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
       );
     }
     final started = wo.startService(capture);

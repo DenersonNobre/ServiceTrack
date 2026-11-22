@@ -10,6 +10,7 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../domain/ports/location_service_port.dart';
+import '../domain/ports/work_order_failure_codes.dart';
 import '../domain/value_objects/geo_point.dart';
 
 /// Adapter foreground de localização usando geolocator.
@@ -37,7 +38,7 @@ final class GeolocatorLocationService implements ILocationServicePort {
       final enabled = await _isLocationServiceEnabled();
       if (!enabled) {
         return const Failure(ValidationError(
-          code: 'ERR_LOCALIZACAO_SERVICO_DESLIGADO',
+          code: WorkOrderFailureCodes.locationServiceDisabled,
           message: 'Ative o serviço de localização para fazer check-in.',
         ));
       }
@@ -47,13 +48,13 @@ final class GeolocatorLocationService implements ILocationServicePort {
       }
       if (permission == LocationPermission.denied) {
         return const Failure(ValidationError(
-          code: 'ERR_LOCALIZACAO_PERMISSAO_NEGADA',
+          code: WorkOrderFailureCodes.locationPermissionDenied,
           message: 'Permissão de localização negada.',
         ));
       }
       if (permission == LocationPermission.deniedForever) {
         return const Failure(ValidationError(
-          code: 'ERR_LOCALIZACAO_PERMISSAO_NEGADA_PERMANENTE',
+          code: WorkOrderFailureCodes.locationPermissionDeniedForever,
           message: 'Permissão de localização negada permanentemente. Abra as configurações do app.',
         ));
       }
@@ -71,18 +72,18 @@ final class GeolocatorLocationService implements ILocationServicePort {
       return switch (point) {
         Success<GeoPoint, ValidationError>(:final value) => Success(value),
         Failure<GeoPoint, ValidationError>() => const Failure(ValidationError(
-            code: 'ERR_LOCALIZACAO_DADOS_INVALIDOS',
+            code: WorkOrderFailureCodes.locationInvalidData,
             message: 'Não foi possível obter uma localização válida.',
           )),
       };
     } on TimeoutException {
       return const Failure(ValidationError(
-        code: 'ERR_LOCALIZACAO_TIMEOUT',
+        code: WorkOrderFailureCodes.locationTimeout,
         message: 'Tempo esgotado ao obter localização.',
       ));
     } catch (_) {
       return const Failure(ValidationError(
-        code: 'ERR_LOCALIZACAO_INDISPONIVEL',
+        code: WorkOrderFailureCodes.locationUnavailable,
         message: 'Não foi possível obter a localização.',
       ));
     }
