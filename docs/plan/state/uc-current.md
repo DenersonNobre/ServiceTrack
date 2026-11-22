@@ -2,25 +2,25 @@
 
 ## Metadados
 - **Fatia (Slice)**: `UC-06.05` — Composition Root & Route Bindings
-- **Status**: EM ANDAMENTO (planejamento; T1/T2 a executar)
+- **Status**: CONCLUÍDO (T1/T2/T3/T4; `qa-review-v0.20.0.md`)
 - **Dono**: `opc01@e03ff640`
 - **Épico**: `EPIC-06`
-- **Gate 2.5 (Segurança)**: PULADO — refactor de composição/navegação sem nova superfície sensível ou coleta/persistência de PII; reavaliar se a fatia alterar essas superfícies.
+- **Gate 2.5 (Segurança)**: PULADO — refactor de composição/navegação sem nova superfície sensível ou coleta/persistência de PII.
 - **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **Concluído**: `AppDependencies` (composition root), `CustomersRoutes`, `ProfileRoutes` e helper `appScopedRoute`; `AppEntry` reduzido de 487 para 312 linhas e de 13 para 7 `KortexProvider`. Suíte completa: 174 testes verdes.
-- **Planejado**: T1 `AuthRoutes` (onboarding/lock/recovery) e T2 `WorkOrdersRoutes` (list/form/checklist) em worktrees paralelos; T3 integra os dois no `AppEntry` (somente T3 edita o shell); T4 gate de fronteira + QA.
+- **Concluído**: `AppDependencies` (composition root), `CustomersRoutes`, `ProfileRoutes`, `AuthRoutes` e `WorkOrdersRoutes`; helper `appScopedRoute` adotado; `AppEntry` em **168 linhas/0 `KortexScope`/`KortexProvider`**; gate de fronteira `test/app/app_entry_boundaries_test.dart` ativo.
+- **Evidência**: suíte completa **179 testes verdes**; `flutter analyze --fatal-infos` sem issues; laudo `docs/plan/reviews/qa-review-v0.20.0.md`.
 - **Decisão**: [ADR-002](../../architecture/adr-002-app-shell-di-route-bindings.md); plano detalhado em `docs/plan/epics/epic-06-hardening-qualidade.md` (UC-06.05).
-- **Restrição**: T1/T2 criam apenas arquivos de módulo; `lib/app/app_entry.dart` é exclusivo da T3. Staging por path explícito; sem `git add -A`.
+- **Paralelismo**: T1 por `agy01@59993bf1`; T2/T3/T4 pelo orquestrador. Subagentes de T1/T2 atingiram limite de passos; paths disjuntos evitaram colisão.
+- **Resíduo**: lifecycle/relock permanece no `AppEntry` por `WidgetsBindingObserver` (justificativa técnica).
 
 ## [EVIDENCIA]
-- Leitura: `lib/app/app_entry.dart` (312 linhas/7 providers), `lib/app/app_dependencies.dart`, `lib/core/ui/app_scoped_route.dart`, `lib/modules/customers/ui/customers_routes.dart`, `lib/modules/profile/ui/profile_routes.dart` → composição por módulo e helper em uso.
-- Verifica: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+174 All tests passed!`.
-- Confirma: commits `232c90a` (AppDependencies/CustomersRoutes), `5a36e13` (appScopedRoute) e `8557b66` (helper + ProfileRoutes) → shell reduzido sem mudança de comportamento.
+- Leitura: `lib/app/app_entry.dart` (168 linhas/0 providers), `lib/modules/auth/ui/auth_routes.dart`, `lib/modules/work_orders/ui/work_orders_routes.dart`, `lib/modules/customers/ui/customers_routes.dart`, `lib/modules/profile/ui/profile_routes.dart`, `lib/core/ui/app_scoped_route.dart` → composição por módulo e gate de fronteira.
+- Verifica: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+179 All tests passed!`.
+- Confirma: commits `2a6915a` (AuthRoutes/T1), `d978f3d` (WorkOrdersRoutes/T2), `3e28c30` e `e34ee3d` (integração/T3) → shell enxuto sem mudança de comportamento; `e34ee3d` inclui o gate de fronteira.
 
 ## Próximo passo
-1. **T1 `OPS-AUTH-ROUTES`**: criar `AuthRoutes` + testes em worktree próprio, sem tocar `app_entry.dart`.
-2. **T2 `OPS-WO-ROUTES`**: criar `WorkOrdersRoutes` + testes em worktree próprio, sem tocar `app_entry.dart`.
-3. **T3 `OPS-APP-SHELL-INTEGRATION`**: integrar T1/T2, remover providers manuais e adicionar gate de fronteira; alvo ≤160 linhas/0 providers.
-4. **T4 `QA-APP-SHELL-BOUNDARY`**: suíte completa, laudo QA e atualização de `LEARNINGS.md`.
+1. **EPIC-07**: iniciar `UC-07.01` (settings) → `UC-07.02` (UI) → Gate 2.5/`UC-07.03`.
+2. **EPIC-06 residual**: fechar `UC-06.01` (literais `ERR_*` em auth) e `UC-06.02` (touch targets residuais).
+3. **EPIC-04**: validação E2E device pendente.

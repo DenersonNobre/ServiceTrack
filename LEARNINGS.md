@@ -46,9 +46,9 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 
 ### 2. Decisão
 - GetX é proibido (`AGENTS.md`); o "binding" no Kortex é o `KortexScope`/`KortexProvider`.
-- Introduzido `AppDependencies` (composition root), `CustomersRoutes` e `ProfileRoutes` (rotas + bindings Kortex por módulo), com injeção por construtor.
+- Introduzido `AppDependencies` (composition root), `CustomersRoutes`, `ProfileRoutes`, `AuthRoutes` e `WorkOrdersRoutes` (rotas + bindings Kortex por módulo), com injeção por construtor.
 - O helper `appScopedRoute` (`lib/core/ui`) elimina o boilerplate de `MaterialPageRoute` + `KortexScope` + `KortexProvider` + `readKortex` + auto-dispose nas rotas de módulo.
-- `AppEntry` recebe `deps` e delega a navegação de clientes e perfil aos módulos; o comportamento observável foi preservado.
+- `AppEntry` recebe `deps` e delega a navegação de clientes, perfil, auth e work orders aos módulos; o comportamento observável foi preservado.
 - Decisão registrada em `docs/architecture/adr-002-app-shell-di-route-bindings.md`; plano e divisão paralela em `docs/plan/epics/epic-06-hardening-qualidade.md` (UC-06.05).
 
 ### 3. Regra
@@ -57,10 +57,13 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - Refator é behavior-preserving: a suíte completa é a rede de segurança.
 
 ### 4. Evidência
-- `app_entry.dart`: 487 -> 312 linhas; `KortexProvider` no shell: 13 -> 7 (5 em `CustomersRoutes` + 1 em `ProfileRoutes`).
-- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => `174 passed, 0 failed`.
+- `app_entry.dart`: 487 -> **168 linhas**; `KortexScope`/`KortexProvider` no shell: 13 -> **0**.
+- Gate: `test/app/app_entry_boundaries_test.dart` falha se `AppEntry` voltar a conter `KortexScope(`/`KortexProvider<`.
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **179 passed, 0 failed**.
 
 ### 5. Paralelização segura
 - T1 (`AuthRoutes`) e T2 (`WorkOrdersRoutes`) podem rodar em worktrees separados porque só criam arquivos de módulo e barrels distintos.
 - `lib/app/app_entry.dart` é **exclusivo da T3** (integração); T1/T2 não tocam o shell, eliminando o conflito de índice/merge.
 - Gate de fronteira (T3) deve falhar se `AppEntry` voltar a conter `KortexProvider<` de controller de módulo.
+- **Execução real**: subagentes de T1/T2 atingiram o limite de passos antes do commit; T1 foi concluído por `agy01@59993bf1` e T2/T3/T4 pelo orquestrador. O desenho de paths disjuntos evitou colisão; o fallback serial não invalidou a divisão.
+- **Gotcha de path**: `import '../../../../core/ui/...'` em `lib/modules/<m>/ui/` funciona por *clamp* de URI do Dart, mas o caminho explícito correto é `../../../core/ui/...` (3 níveis). Normalizado em customers/profile/auth; usar 3 níveis em novos módulos.

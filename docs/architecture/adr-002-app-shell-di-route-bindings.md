@@ -55,10 +55,10 @@
 | `appScopedRoute` (helper) | Concluído | commit `5a36e13` |
 | `CustomersRoutes` usando o helper | Concluído | commit `8557b66` |
 | `ProfileRoutes` | Concluído | commit `8557b66` |
-| `AuthRoutes` | Planejado | `EPIC-06`/`UC-06.05` T1 |
-| `WorkOrdersRoutes` | Planejado | `EPIC-06`/`UC-06.05` T2 |
-| Integração no `AppEntry` | Planejado | T3 (depende de T1/T2) |
-| Gate de fronteira + QA | Planejado | T4 |
+| `AuthRoutes` | Concluído | commit `2a6915a` (T1) |
+| `WorkOrdersRoutes` | Concluído | commit `d978f3d` (T2) |
+| Integração no `AppEntry` | Concluído | commits `3e28c30`/`e34ee3d` (T3); 168 linhas/0 providers |
+| Gate de fronteira + QA | Concluído | `test/app/app_entry_boundaries_test.dart` + `qa-review-v0.20.0.md` (T4) |
 
 ## Plano de Implementação Paralela
 
@@ -68,6 +68,7 @@
 | **T1** | `OPS-AUTH-ROUTES` | `lib/modules/auth/ui/auth_routes.dart`, `lib/modules/auth/ui/.index.dart`, `test/modules/auth/ui/auth_routes_test.dart` | `appScopedRoute` | `AuthRoutes` + testes |
 | **T2** | `OPS-WO-ROUTES` | `lib/modules/work_orders/ui/work_orders_routes.dart`, `lib/modules/work_orders/ui/.index.dart`, `test/modules/work_orders/ui/work_orders_routes_test.dart` | `appScopedRoute` | `WorkOrdersRoutes` + testes |
 | **T3** | `OPS-APP-SHELL-INTEGRATION` | `lib/app/app_entry.dart`, `lib/app/app_dependencies.dart` (se necessário), `test/app/app_entry_boundaries_test.dart` | T1 + T2 | Shell integrado + gate de fronteira |
+| **T4** | `QA-APP-SHELL-BOUNDARY` | `docs/plan/reviews/**`, `LEARNINGS.md` | T3 | Laudo QA e evidência final |
 | **T4** | `QA-APP-SHELL-BOUNDARY` | `docs/plan/reviews/**`, `LEARNINGS.md` | T3 | Laudo QA e evidência final |
 
 **Regras de paralelismo**

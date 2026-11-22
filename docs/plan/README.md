@@ -62,5 +62,5 @@ graph TD
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
 5. **EPIC07 (Configurações & Políticas Locais)**: Módulo dedicado para políticas/configurações tipadas (inclui D2 documento do recebedor por política/configuração).
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.08, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.
-7. **EPIC06 (Hardening Técnico & Qualidade)**: Em andamento — FailureCodes/AppFeedback parciais e `UC-06.05` (AppDependencies + `*Routes` + `appScopedRoute`, shell enxuto) com T1 Auth/T2 WorkOrders em paralelo e T3 integração serial.
+7. **EPIC06 (Hardening Técnico & Qualidade)**: Em andamento — **UC-06.05 concluído** (`AppDependencies` + `*Routes` + `appScopedRoute`; `AppEntry` 168 linhas/0 providers; `qa-review-v0.20.0.md`). Restam UC-06.01/02 residuais e UC-06.03/04.
 8. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.
