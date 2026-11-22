@@ -8,8 +8,8 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03` (base de código estável); **não bloqueia** EPIC-04/05, mas deve evitar colisão de diff |
 | **Prioridade** | Média (Qualidade/Manutenibilidade; reduz dívida antes de escalar EPIC-04/05) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Pronto para Iniciar` |
-| **Referências** | [Proposta de Mitigação](../../proposals/proposta-mitigacao-aderencia-dnolib-kortex-core-2026-11-22.md) \| [AGENTS.md](../../../AGENTS.md) \| [SPEC](../../architecture/SPEC.md) |
+| **Status Atual** | `Em Andamento (UC-06.01/02 parciais; UC-06.05 em planejamento)` |
+| **Referências** | [Proposta de Mitigação](../../proposals/proposta-mitigacao-aderencia-dnolib-kortex-core-2026-11-22.md) \| [ADR-002](../../architecture/adr-002-app-shell-di-route-bindings.md) \| [AGENTS.md](../../../AGENTS.md) \| [SPEC](../../architecture/SPEC.md) |
 
 ---
 
@@ -22,9 +22,10 @@ Reduzir dívida técnica transversal identificada na auditoria de 2026-11-22, se
   - `UC-06.02`: Core UI transversal (`AppFeedback`, tokens de touch target, helpers de diálogo/confirmação quando houver 2+ usos).
   - `UC-06.03`: Aderência Stateless/Kortex em widgets com `setState` injustificado (inventário da auditoria; exceções só com justificativa explícita).
   - `UC-06.04`: Gate de qualidade anti-string-mágica `ERR_*` fora de catálogos.
+  - `UC-06.05`: Composition Root & Route Bindings (`AppDependencies`, `*Routes`, `appScopedRoute`, shell enxuto), com implementação paralela T1/T2 e integração serial T3.
 - **Não Incluso**:
-  - Integração D-05 / prova real de checklist na conclusão de OS (fica na reconciliação EPIC-04, M-03/M-04/M-05).
-  - Unificação do contrato `DigitalSignature` (EPIC-04/M-05).
+  - Integração D-05 / prova real de checklist na conclusão de OS (concluída em EPIC-04; não reabrir neste épico).
+  - Unificação do contrato `DigitalSignature` (concluída em EPIC-04/M-05).
   - Hardening de plataforma D-01/D-02/D-03 (débitos separados por ambiente).
 
 ---
@@ -33,10 +34,11 @@ Reduzir dívida técnica transversal identificada na auditoria de 2026-11-22, se
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
-| **UC-06.01** | Catálogos de Falha por Módulo (`*FailureCodes`) | Nenhuma | `Pendente` |
-| **UC-06.02** | Core UI Transversal (Feedback/Touch Target) | Nenhuma | `Pendente` |
+| **UC-06.01** | Catálogos de Falha por Módulo (`*FailureCodes`) | Nenhuma | `Em Andamento (auth residual)` |
+| **UC-06.02** | Core UI Transversal (Feedback/Touch Target) | Nenhuma | `Em Andamento (touch residual)` |
 | **UC-06.03** | Refator Stateless/Kortex em Widgets Justificados | UC-06.02 (opcional) | `Pendente` |
 | **UC-06.04** | Gate Anti-String-Mágica `ERR_*` | UC-06.01 | `Pendente` |
+| **UC-06.05** | Composition Root & Route Bindings | UC-06.02 (helper), EPIC-03/04 | `Em Andamento (planejamento)` |
 
 ---
 
@@ -46,8 +48,17 @@ Reduzir dívida técnica transversal identificada na auditoria de 2026-11-22, se
 - [ ] `AppFeedback`/helpers de core usados onde havia duplicação real; sem “core dump”.
 - [ ] `StatefulWidget/setState` remanescentes têm justificativa técnica explícita documentada no código/proposta.
 - [ ] Gate automatizado (script/test) falha em novo `ERR_*` literal fora de catálogo.
+- [ ] `AppEntry` com **0 `KortexProvider` de controller de módulo** e alvo de **≤ 160 linhas** após T3.
+- [ ] Cada módulo extraído expõe `*Routes` e usa `appScopedRoute` (ou `KortexScope` manual justificado).
+- [ ] Gate de fronteira falha se `AppEntry` voltar a compor controller de módulo.
 - [ ] `flutter analyze --fatal-infos` e `flutter test` com exit code 0.
 - [ ] Laudo QA por UC/épico conforme governança.
+
+### 3.1 Status de Execução (2026-11-22)
+
+- **UC-06.01 (parcial)**: catálogos `CustomerFailureCodes`, `ProfileFailureCodes`, `ChecklistFailureCodes`, `EvidenceFailureCodes`, `WorkOrderFailureCodes` e `AuthFailureCodes` existem. Ainda há literais `ERR_*` inline em value objects/recovery de `auth` (ex.: `ERR_EMAIL_INVALIDO`, `ERR_RECUPERACAO_NAO_AUTORIZADA`), pendentes para fechar o critério “zero literal fora de catálogo”.
+- **UC-06.02 (parcial)**: `AppFeedback` e tokens `kMinTouchTarget*` criados e usados em work_orders/checklists/profile. Ainda há `Size(48, 48)` literal em auth/checklists/evidences; migrar ou justificar.
+- **UC-06.05 (em andamento)**: `AppDependencies`, `CustomersRoutes`, `ProfileRoutes` e `appScopedRoute` entregues; `AppEntry` em 312 linhas/7 providers. Faltam `AuthRoutes`, `WorkOrdersRoutes`, integração e gate de fronteira.
 
 ---
 
@@ -152,10 +163,81 @@ Cenário: Gate reprova literal ERR fora de catálogo
 1. `TASK-01`: Criar script PowerShell/Dart em `scripts/gates/` ou `scripts/` com allowlist explícita.
 2. `TASK-02`: Integrar ao `build-all.ps1`/verificação local; documentar em AGENTS/LEARNINGS.
 
+---
+
+### Caso de Uso UC-06.05 — Composition Root & Route Bindings
+
+* **Identificador**: `UC-06.05`
+* **Status**: `Em Andamento (planejamento; T1/T2 a executar)`
+* **Dependência**: UC-06.02 (`appScopedRoute`), EPIC-03/04 (módulos estáveis)
+* **Gate 2.5**: `PULADO — refactor de composição/navegação sem nova superfície sensível, sem nova coleta/persistência de PII; se a fatia alterar essas superfícies, vira INVOKED.`
+* **Decisão**: [ADR-002](../../architecture/adr-002-app-shell-di-route-bindings.md)
+* **Gate DoR**: claim por track (`OPS-AUTH-ROUTES`, `OPS-WO-ROUTES`, `OPS-APP-SHELL-INTEGRATION`) com paths explícitos.
+* **Gate DoD**: T1/T2 verdes isolados; T3 com `flutter analyze --fatal-infos` + `flutter test` exit 0; T4 laudo.
+
+#### Narrativa
+- **Como** mantenedor do ServiceTrack
+- **Eu quero** que cada módulo componha suas próprias rotas/escopos Kortex
+- **Para que** novas telas não exijam editar o shell nem reintroduzam boilerplate de `MaterialPageRoute + KortexScope + KortexProvider`.
+
+#### Critérios de Aceitação (Gherkin Executável)
+```gherkin
+Cenário: Rota de módulo sem editar o shell
+  Dado que o módulo expõe <Modulo>Routes com appScopedRoute
+  Quando o shell navega para a rota
+  Então o controller é criado no KortexScope e descartado no pop
+  E AppEntry não contém KortexProvider daquele módulo
+
+Cenário: Refactor sem mudança de comportamento
+  Dado que todos os fluxos de auth/work orders são exercitados
+  Quando a suíte completa executa após T3
+  Então flutter analyze --fatal-infos retorna 0
+  E flutter test retorna 0 com a mesma cobertura funcional
+```
+
+#### Plano de Implementação Paralela
+| Track | Slice | Ownership de paths | Dependência | Saída |
+| :--- | :--- | :--- | :--- | :--- |
+| **T0** | `DOC-APP-SHELL-PLAN` | `docs/**`, `AGENTS.md`, `CHECKPOINT.md`, `README.md`, `LEARNINGS.md` | Nenhuma | ADR/plano/documentação |
+| **T1** | `OPS-AUTH-ROUTES` | `lib/modules/auth/ui/auth_routes.dart`, `lib/modules/auth/ui/.index.dart`, `test/modules/auth/ui/auth_routes_test.dart` | `appScopedRoute` | `AuthRoutes` (onboarding/lock/recovery) + testes |
+| **T2** | `OPS-WO-ROUTES` | `lib/modules/work_orders/ui/work_orders_routes.dart`, `lib/modules/work_orders/ui/.index.dart`, `test/modules/work_orders/ui/work_orders_routes_test.dart` | `appScopedRoute` | `WorkOrdersRoutes` (list/form/checklist) + testes |
+| **T3** | `OPS-APP-SHELL-INTEGRATION` | `lib/app/app_entry.dart`, `lib/app/app_dependencies.dart` (se necessário), `test/app/app_entry_boundaries_test.dart` | T1 + T2 | Shell integrado + gate de fronteira |
+| **T4** | `QA-APP-SHELL-BOUNDARY` | `docs/plan/reviews/**`, `LEARNINGS.md` | T3 | Laudo QA e evidência final |
+
+**Regras de paralelismo**
+- T1 e T2 são disjuntos; executar em **worktrees separados** (TOPO-01) com claims independentes.
+- **Somente T3 edita `lib/app/app_entry.dart`**; T1/T2 não tocam o shell.
+- Merge-back serializado: T1 e T2 concluem/commitam; T3 integra os dois; T4 audita.
+- Staging por path explícito; proibido `git add -A`/`git add -u`; commit com `-o`.
+- Gate de fronteira: `test/app/app_entry_boundaries_test.dart` falha se `AppEntry` contiver `KortexProvider<` de controller de módulo.
+
+#### Tarefas Técnicas
+1. `TASK-01 (T1)`: Criar `AuthRoutes` com `onboarding(onCompleted)`, `lock(onUnlocked, onForgotPin)` e `recovery(onRecovered)` usando `appScopedRoute`; testar criação/descarte e callbacks.
+2. `TASK-02 (T2)`: Criar `WorkOrdersRoutes` com `list`, `form(onSaved)` e `checklistExecution(workOrderId, templateId)`; calcular `isWorkOrderMutable` internamente via repositório; testar.
+3. `TASK-03 (T3)`: Integrar T1/T2 no `AppEntry`; remover imports/providers manuais; manter gate/lifecycle/dispatch; alvo ≤160 linhas e 0 providers de módulo.
+4. `TASK-04 (T3)`: Criar gate de fronteira `test/app/app_entry_boundaries_test.dart` e prova negativa (fixture com `KortexProvider` reprova).
+5. `TASK-05 (T4)`: Rodar suíte completa, `flutter analyze --fatal-infos`, emitir laudo QA e atualizar `LEARNINGS.md`/`uc-current`.
+
+#### Impacto & Arquivos Alvo
+- `lib/modules/auth/ui/auth_routes.dart` [NEW]
+- `lib/modules/auth/ui/.index.dart` [MODIFY]
+- `test/modules/auth/ui/auth_routes_test.dart` [NEW]
+- `lib/modules/work_orders/ui/work_orders_routes.dart` [NEW]
+- `lib/modules/work_orders/ui/.index.dart` [MODIFY]
+- `test/modules/work_orders/ui/work_orders_routes_test.dart` [NEW]
+- `lib/app/app_entry.dart` [MODIFY — T3 only]
+- `lib/app/app_dependencies.dart` [MODIFY se necessário — T3 only]
+- `test/app/app_entry_boundaries_test.dart` [NEW]
+- `docs/plan/reviews/qa-review-*.md` [NEW na T4]
+
 ## 5. Riscos & Dependências
 
 | Risco | Prob. | Impacto | Mitigação |
 | :--- | :--- | :--- | :--- |
 | Refator amplo de `ERR_*` gerar churn | Média | Médio | Migrar por módulo, commits atômicos, testes por fatia. |
 | “Core dump” de abstrações | Média | Médio | Só promover para core com 2+ usos reais. |
-| Colisão com EPIC-04 em andamento | Média | Médio | Claims por path, evitar tocar `work_orders` completion até D-05 planejado. |
+| Regressão no fluxo de conclusão de OS (EPIC-04) | Média | Alto | D-05 já mitigado; preservar testes de prova/checklist e não alterar regra na extração de rotas. |
+| Conflito de `app_entry.dart` entre T1/T2 | Alta | Alto | Somente T3 edita o shell; T1/T2 criam apenas arquivos de módulo em worktrees separados. |
+| Regressão no relock/onboarding ao extrair auth | Média | Alto | Testes de rota + smoke test; manter callbacks `onUnlocked`/`onForgotPin`/`onCompleted`. |
+| Regressão de política/D-05 ao extrair work orders | Média | Alto | `WorkOrdersRoutes` reutiliza controller/prova existentes; suíte de conclusão como rede; Gate 2.5 reavaliado se superfície mudar. |
+| Merge-back de worktrees | Média | Médio | Commits atômicos por track; T3 integra por último; diff vazio/status limpo antes do teardown. |

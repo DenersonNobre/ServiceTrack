@@ -11,6 +11,7 @@
 - **Motor Reativo Obrigatório**: Toda gerência de estado de tela deve utilizar **`kortex`** (`KortexSignal`, `IKortexPage`, `KortexWatch`, `KortexScope`). Nunca introduzir GetX, Provider avulso ou ChangeNotifier desgovernado.
 - **Widgets Stateless por Padrão**: Preferir `StatelessWidget`. Evitar `StatefulWidget`/`setState`; estado de tela/local reativo deve ser modelado com Kortex. `StatefulWidget` só com justificativa técnica explícita (ex.: lifecycle nativo de controlador de plataforma).
 - **Infraestrutura**: Utilizar **`dnolib`** para utilitários comuns, regras de validação brasileira (`brlib`) e banco SQLite (exceto o módulo `synapx`, que está vetado).
+- **Composição & Rotas**: `AppDependencies` é o composition root; cada módulo expõe seu `*Routes` usando `appScopedRoute` para rotas com um controller. `AppEntry` não compõe controllers de módulo; `KortexScope` manual só para múltiplos providers, com justificativa. GetX/service locator seguem proibidos. Detalhe: `docs/architecture/adr-002-app-shell-di-route-bindings.md`.
 - **Regra de Orientação de UI**:
   - Smartphones (`< 600dp`): Estritamente Retrato (`Portrait-Only`).
   - Tablets (`>= 600dp`): Suporte a Paisagem (`Landscape`) com layout Master-Detail.
@@ -34,4 +35,5 @@
 - **Design Tokens & Styleguide**: `docs/architecture/DESIGN.md` (Deep Petrol Green `#115E59`).
 - **Plano Mestre & DAG**: `docs/plan/README.md`.
 - **Épico da Fundação**: `docs/plan/epics/epic-00-fundacao.md`.
-- **Próximo Épico**: `docs/plan/epics/epic-01-auth-perfil.md` (Onboarding, Biometria & PIN).
+- **Épico em Andamento**: `docs/plan/epics/epic-06-hardening-qualidade.md` (UC-06.05 — Composition Root & Route Bindings).
+- **Próximo Épico de Produto**: `docs/plan/epics/epic-07-configuracoes-politicas.md` (Configurações & Políticas Locais).

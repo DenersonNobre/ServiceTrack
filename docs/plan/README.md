@@ -1,7 +1,8 @@
 # Plano Mestre de Implementação — ServiceTrack (Mobile Standalone)
 
 > **Responsável do Plano (DevOps / Arch)**: Denerson Nobre  
-> **Status Geral**: `Em Execução (EPIC-00/01/02/03 Concluídos; EPIC-04 implementado em código/testes, E2E device pendente; EPIC-06/07 planejadas)`  
+> **Status Geral**: `Em Execução (EPIC-00/01/02/03 Concluídos; EPIC-04 implementado/E2E device pendente; EPIC-06 em andamento; EPIC-07 fatiado)`
+>
 > **Arquitetura**: Flutter 100% Autocontido (Zero Backend / Zero Infraestrutura de Nuvem)  
 > **Referências**: [PRD](../product/PRD.md) \| [SPEC](../architecture/SPEC.md) \| [DESIGN](../architecture/DESIGN.md)
 
@@ -17,8 +18,8 @@
 | **03 — Ordens de Serviço & Ciclo de Vida** | [epic-03-ordens-servico.md](epics/epic-03-ordens-servico.md) | EPIC00, EPIC02 | Alta | `Concluído` |
 | **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política/defaults) | Alta | `Implementado (E2E device pendente)` |
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Bloqueado` |
-| **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Pronto para Iniciar` |
-| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Planejado` |
+| **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Em Andamento` |
+| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Planejado (fatiado)` |
 
 ---
 
@@ -61,5 +62,5 @@ graph TD
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
 5. **EPIC07 (Configurações & Políticas Locais)**: Módulo dedicado para políticas/configurações tipadas (inclui D2 documento do recebedor por política/configuração).
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.08, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.
-7. **EPIC06 (Hardening Técnico & Qualidade)**: Quick wins transversais (FailureCodes, AppFeedback/touch target, Stateless/Kortex, gate ERR_*) em fatias pequenas sem colidir com D-05.
+7. **EPIC06 (Hardening Técnico & Qualidade)**: Em andamento — FailureCodes/AppFeedback parciais e `UC-06.05` (AppDependencies + `*Routes` + `appScopedRoute`, shell enxuto) com T1 Auth/T2 WorkOrders em paralelo e T3 integração serial.
 8. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.

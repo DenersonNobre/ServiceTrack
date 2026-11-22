@@ -49,6 +49,7 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - Introduzido `AppDependencies` (composition root), `CustomersRoutes` e `ProfileRoutes` (rotas + bindings Kortex por módulo), com injeção por construtor.
 - O helper `appScopedRoute` (`lib/core/ui`) elimina o boilerplate de `MaterialPageRoute` + `KortexScope` + `KortexProvider` + `readKortex` + auto-dispose nas rotas de módulo.
 - `AppEntry` recebe `deps` e delega a navegação de clientes e perfil aos módulos; o comportamento observável foi preservado.
+- Decisão registrada em `docs/architecture/adr-002-app-shell-di-route-bindings.md`; plano e divisão paralela em `docs/plan/epics/epic-06-hardening-qualidade.md` (UC-06.05).
 
 ### 3. Regra
 - Cada módulo deve expor seu route/scope builder e receber apenas as portas que usa; o shell só orquestra gate, lifecycle e rotas.
@@ -58,3 +59,8 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 ### 4. Evidência
 - `app_entry.dart`: 487 -> 312 linhas; `KortexProvider` no shell: 13 -> 7 (5 em `CustomersRoutes` + 1 em `ProfileRoutes`).
 - `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => `174 passed, 0 failed`.
+
+### 5. Paralelização segura
+- T1 (`AuthRoutes`) e T2 (`WorkOrdersRoutes`) podem rodar em worktrees separados porque só criam arquivos de módulo e barrels distintos.
+- `lib/app/app_entry.dart` é **exclusivo da T3** (integração); T1/T2 não tocam o shell, eliminando o conflito de índice/merge.
+- Gate de fronteira (T3) deve falhar se `AppEntry` voltar a conter `KortexProvider<` de controller de módulo.

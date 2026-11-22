@@ -114,3 +114,22 @@ O documento PDF gerado pelo pacote `package:pdf` no celular segue estritamente a
 | `ADR-03` | **Geração de PDF On-Device via Isolate** | Webview HTML-to-PDF ou API externa | Funciona sem internet em menos de 1 segundo e não consome dados móveis nem servidores. Execução em Isolate impede travamento da tela. |
 | `ADR-04` | **Compartilhamento via Share Nativo do SO** | Envio direto por SMTP/Servidor | Aproveita os apps já instalados no celular do técnico (WhatsApp, Gmail, Telegram), garantindo entrega instantânea na conversa do cliente. |
 | `ADR-05` | **Smartphones Portrait-Only vs Tablets Híbridos (Landscape)** | Rotação livre em todos os aparelhos | Rotação em celular durante serviços de campo gera toques acidentais e perda de contexto. No tablet, a paisagem destrava produtividade Master-Detail de alta densidade. |
+| `ADR-06` | **Composition Root & Route Bindings por Módulo** (`AppDependencies` + `*Routes` + `appScopedRoute`) | GetX Bindings / service locator / manter composição no `AppEntry` | Dependências explícitas, módulo autocontido e shell estável. GetX é proibido; service locator esconde dependências; centralizar no shell viola SRP e gera shotgun surgery. Detalhe: [ADR-002](adr-002-app-shell-di-route-bindings.md). |
+
+---
+
+## 7. Composição do Shell & Navegação
+
+Fluxo canônico:
+
+```text
+main -> ServiceTrackApp -> AppDependencies -> AppEntry -> <Modulo>Routes -> appScopedRoute -> KortexScope -> Page
+```
+
+Regras:
+
+- `AppDependencies` agrega portas/adaptadores/políticas; `AppEntry` recebe o objeto e não conhece detalhes de módulo.
+- Cada módulo expõe seu `*Routes` e usa `appScopedRoute` para rotas com um controller.
+- `AppEntry` só orquestra gate de rota inicial, lifecycle/relock e dispatch; não contém `KortexProvider` de controller de módulo.
+- `KortexScope` manual só para múltiplos providers, com justificativa no código.
+- GetX/Provider/ChangeNotifier permanecem proibidos (`AGENTS.md`).

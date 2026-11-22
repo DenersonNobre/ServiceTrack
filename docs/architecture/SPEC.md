@@ -131,6 +131,17 @@ abstract class IAuthCredentialRepositoryPort {
 }
 ```
 
+### 5.1 Composition Root & Route Bindings
+
+- **`AppDependencies`** (`lib/app/app_dependencies.dart`) é o composition root: agrega portas/adaptadores e políticas e é injetado no `AppEntry`. Não é um service locator; dependências continuam explícitas por construtor.
+- **Cada módulo expõe `*Routes`** em `lib/modules/<modulo>/ui/` (ex.: `CustomersRoutes`, `ProfileRoutes`), recebendo apenas as portas que usa.
+- **`appScopedRoute<T, R>`** (`lib/core/ui/app_scoped_route.dart`) é o binding canônico para rota com um controller: encapsula `MaterialPageRoute`, `KortexScope`, `KortexProvider`, `readKortex` e auto-dispose.
+- **`KortexScope` manual** é exceção justificada para rotas com múltiplos providers; não é o padrão.
+- **`AppEntry`** mantém gate de rota inicial, lifecycle/relock e dispatch; não compõe controllers de módulo nem contém regra de negócio.
+- **GetX/service locator** permanecem proibidos (`AGENTS.md`).
+
+Decisão completa e plano de migração: [ADR-002](adr-002-app-shell-di-route-bindings.md).
+
 ---
 
 ## 6. Taxonomia de Falhas & Padrão Result
