@@ -5,6 +5,9 @@ Ilustrações editoriais SaaS (paleta oficial Styleguide v2.1: Deep Petrol Green
 ## Arquivos
 - `app_icon.png` (`1024x1024`) — ícone oficial do aplicativo.
 - `home_hero_empty.png` (`512x512`, transparente) — ilustração hero da Home.
+- `onboarding_welcome.png` (`512x512`, transparente) — cabeçalho da tela de Onboarding.
+- `lock_security.png` (`512x512`, transparente) — ilustração de cofre/biometria na tela de bloqueio.
 - `empty_work_orders.png` (`512x512`, transparente) — empty state de Ordens de Serviço.
 - `empty_customers.png` (`512x512`, transparente) — empty state de Clientes.
+- `empty_locations.png` (`512x512`, transparente) — empty state de Locais de Atendimento.
 - `empty_checklists.png` (`512x512`, transparente) — empty state de Checklists/templates.
