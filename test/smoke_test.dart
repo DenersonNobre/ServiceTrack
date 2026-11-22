@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/main.dart';
 import 'package:service_track/modules/auth/domain/ports/.index.dart';
 import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
+import 'package:service_track/modules/settings/.index.dart';
 
 final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
   @override
@@ -29,8 +30,9 @@ final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
       const Success(false);
 
   @override
-  Future<IResult<bool, ValidationError>> setBiometricsEnabled(bool enabled) async =>
-      const Success(true);
+  Future<IResult<bool, ValidationError>> setBiometricsEnabled(
+    bool enabled,
+  ) async => const Success(true);
 
   @override
   Future<IResult<bool, ValidationError>> isRememberMeEnabled() async =>
@@ -54,7 +56,8 @@ final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
   }) async => const Success(true);
 
   @override
-  Future<IResult<bool, ValidationError>> clearAll() async => const Success(true);
+  Future<IResult<bool, ValidationError>> clearAll() async =>
+      const Success(true);
 }
 
 void main() {
@@ -62,7 +65,10 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      ServiceTrackApp(credentialRepository: _FakeCredentialRepository()),
+      ServiceTrackApp(
+        credentialRepository: _FakeCredentialRepository(),
+        settingsRepository: MemorySettingsRepository(),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Crie seu acesso'), findsOneWidget);

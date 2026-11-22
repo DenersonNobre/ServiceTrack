@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00` (fundação), `EPIC01` (perfil/auth local) |
 | **Prioridade** | Média (habilita políticas transversais; D2/ADR-001) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Andamento (UC-07.01/02/03 concluídos em código; Gates 3/4 pendentes)` |
+| **Status Atual** | `Concluído (G4 aprovado com ressalvas de processo; ver qa-review-v0.21.0.md)` |
 | **Referências** | [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [SPEC](../../architecture/SPEC.md) \| [DESIGN](../../architecture/DESIGN.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
@@ -48,14 +48,14 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 - [x] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
 - [x] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, o fluxo falha fail-closed enquanto D-01 não protege o documento.
 - [x] `require_checklist_template` default `true` (política C, D-05) configurável.
-- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`202 passed`).
-- [ ] Gate 4 formal do épico (G2.5 aprovado com condicionantes; G3 aprovado com ressalvas; ressalvas de follow-up registradas).
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`204 passed`).
+- [x] Gate 4 formal do épico aprovado com ressalvas (`qa-review-v0.21.0.md`); ressalva de processo Red-Before-Green registrada.
 
 ### 3.1 Status de Execução (2026-11-22)
 
 - **UC-07.01 (concluído)**: `SettingKey`, `SettingsSnapshot`, `ISettingsRepositoryPort`, `SettingsSqliteRepository`, `MemorySettingsRepository`, `GetSettings`, `UpdateSetting` e `SettingsMigration.v11` entregues; `app_database` em `dbVersion: 11`; 10 testes do módulo verdes. Decisão em [ADR-003](../../architecture/adr-003-settings-locais-tipadas.md).
-- **UC-07.02 (concluído)**: `SettingsController` (Kortex), `SettingsPage` (`SwitchListTile` >=48dp, `KortexListener` + `AppFeedback`), `SettingsRoutes` e entrada na Home; `AppDependencies`/`ServiceTrackApp`/`main.dart` injetam `ISettingsRepositoryPort` (SQLite no app real, memória no fallback). 4 testes de UI/controller verdes.
-- **UC-07.03 (concluído)**: `GetSettings` é a fonte única no `WorkOrderListController`; políticas lidas por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01 estiver aberto; UI não coleta documento nesse estado. Gate 2.5 **INVOKED — aprovado com condicionantes (Média)**, SEC-01..SEC-08; invariantes INV-SEC-28..32. 4 testes nomeados de política/segurança + 1 widget test de não-coleta; suíte **202 verdes**. Gate 3 aprovado com ressalvas; Gate 4 pendente.
+- **UC-07.02 (concluído)**: `SettingsController` (Kortex), `SettingsPage` (`SwitchListTile` >=48dp, `KortexListener` + `AppFeedback`), `SettingsRoutes` e entrada na Home; `AppDependencies`/`ServiceTrackApp`/`main.dart` injetam `ISettingsRepositoryPort` (SQLite no app real, memória apenas em testes). 7 testes de UI/controller verdes.
+- **UC-07.03 (concluído)**: `GetSettings` é a fonte única no `WorkOrderListController`; políticas lidas por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01 estiver aberto; UI não coleta documento nesse estado. Gate 2.5 **INVOKED — aprovado com condicionantes (Média)**, SEC-01..SEC-08; invariantes INV-SEC-28..32. 4 testes nomeados de política/segurança + 1 widget test de não-coleta; suíte **204 verdes**. Gates 3/4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
 
 ---
 
@@ -164,7 +164,7 @@ Cenário: Alterar política pela UI
 ### Caso de Uso UC-07.03 — Integração de Políticas de Conclusão/Evidência
 
 * **Identificador**: `UC-07.03`
-* **Status**: `Concluído (código+testes; G2.5 aprovado com condicionantes; G3/G4 pendentes)`
+* **Status**: `Concluído (G2.5 c/ condicionantes; G3/G4 aprovados com ressalvas)`
 * **Dependência**: UC-07.01, UC-07.02, ADR-001 D2
 * **Gate 2.5**: `INVOKED — D2 toca PII/LGPD (documento do recebedor). Respeitar C-01/D-01 (sem persistência de documento em claro; fail-closed se habilitado sem proteção), minimização (default false), redaction, sem log de documento. Checklist policy não é PII.`
 
@@ -187,6 +187,8 @@ Esquema do Cenário: Exigência de documento por política configurada
     | "HABILITADA" | "INDISPONIVEL" | "12345678909" | "Result.Fail(ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL)" |
     | "HABILITADA" | "DISPONIVEL" | "" | "Result.Fail(ERR_ASSINANTE_DOCUMENTO_OBRIGATORIO)" |
     | "HABILITADA" | "DISPONIVEL" | "12345678909" | "Result.Ok" |
+
+> **Nota**: a linha `D-01 DISPONIVEL` permanece bloqueada enquanto `kDocumentAtRestProtectionAvailable=false` (D-01/C-01); não há cobertura executável para ela ainda.
 
 Esquema do Cenário: Exigência de checklist por política configurada
   Dado que a política "require_checklist_template" está <estado>

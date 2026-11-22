@@ -12,14 +12,19 @@ class _TplRepo implements IChecklistTemplateRepositoryPort {
   final ChecklistTemplate? tpl;
   final IResult<ChecklistTemplate?, ValidationError>? findByIdResult;
   @override
-  Future<IResult<ChecklistTemplate, ValidationError>> save(ChecklistTemplate template) async => Success(template);
+  Future<IResult<ChecklistTemplate, ValidationError>> save(
+    ChecklistTemplate template,
+  ) async => Success(template);
   @override
-  Future<IResult<List<ChecklistTemplate>, ValidationError>> findAll() async => const Success([]);
+  Future<IResult<List<ChecklistTemplate>, ValidationError>> findAll() async =>
+      const Success([]);
   @override
-  Future<IResult<ChecklistTemplate?, ValidationError>> findById(String id) async =>
-      findByIdResult ?? Success(tpl);
+  Future<IResult<ChecklistTemplate?, ValidationError>> findById(
+    String id,
+  ) async => findByIdResult ?? Success(tpl);
   @override
-  Future<IResult<bool, ValidationError>> delete(String id) async => const Success(true);
+  Future<IResult<bool, ValidationError>> delete(String id) async =>
+      const Success(true);
 }
 
 class _AnsRepo implements IChecklistAnswerRepositoryPort {
@@ -27,10 +32,13 @@ class _AnsRepo implements IChecklistAnswerRepositoryPort {
   final List<ChecklistAnswer> answers;
   final IResult<List<ChecklistAnswer>, ValidationError>? findResult;
   @override
-  Future<IResult<ChecklistAnswer, ValidationError>> save(ChecklistAnswer answer) async => Success(answer);
+  Future<IResult<ChecklistAnswer, ValidationError>> save(
+    ChecklistAnswer answer,
+  ) async => Success(answer);
   @override
-  Future<IResult<List<ChecklistAnswer>, ValidationError>> findByWorkOrder(String workOrderId) async =>
-      findResult ?? Success(answers);
+  Future<IResult<List<ChecklistAnswer>, ValidationError>> findByWorkOrder(
+    String workOrderId,
+  ) async => findResult ?? Success(answers);
 }
 
 void main() {
@@ -49,30 +57,99 @@ void main() {
       templateRepository: _TplRepo(),
       answerRepository: _AnsRepo(),
     );
-    final r = await adapter.getProof(workOrderId: 'wo1', templateId: null, requireTemplate: false);
+    final r = await adapter.getProof(
+      workOrderId: 'wo1',
+      templateId: null,
+      requireTemplate: false,
+    );
     expect(r.isSuccess, isTrue);
     expect(r.getOrNull()!.mandatoryTotal, 0);
   });
 
-  test('UC-04.07 - prova real: template com obrigatório não respondido falha', () async {
-    final tpl = ChecklistTemplate.tryCreate(id: 't1', title: 'T', items: [
-      ChecklistItem.tryCreate(id: 'i1', title: 'Item 1', isRequired: true, order: 0).getOrNull()!,
-      ChecklistItem.tryCreate(id: 'i2', title: 'Item 2', isRequired: false, order: 1).getOrNull()!,
-    ]).getOrNull()!;
-    final adapter = ChecklistProofAdapter(templateRepository: _TplRepo(tpl: tpl), answerRepository: _AnsRepo());
-    final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't1');
-    expect(r.isFailure, isTrue);
-    expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_INCOMPLETO');
-  });
+  test(
+    'UC-07.03 - requireTemplate=false não relaxa template vinculado',
+    () async {
+      final tpl = ChecklistTemplate.tryCreate(
+        id: 't1',
+        title: 'T',
+        items: [
+          ChecklistItem.tryCreate(
+            id: 'i1',
+            title: 'Item 1',
+            isRequired: true,
+            order: 0,
+          ).getOrNull()!,
+        ],
+      ).getOrNull()!;
+      final adapter = ChecklistProofAdapter(
+        templateRepository: _TplRepo(tpl: tpl),
+        answerRepository: _AnsRepo(),
+      );
+
+      final r = await adapter.getProof(
+        workOrderId: 'wo1',
+        templateId: 't1',
+        requireTemplate: false,
+      );
+
+      expect(r.isFailure, isTrue);
+      expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_INCOMPLETO');
+    },
+  );
+
+  test(
+    'UC-04.07 - prova real: template com obrigatório não respondido falha',
+    () async {
+      final tpl = ChecklistTemplate.tryCreate(
+        id: 't1',
+        title: 'T',
+        items: [
+          ChecklistItem.tryCreate(
+            id: 'i1',
+            title: 'Item 1',
+            isRequired: true,
+            order: 0,
+          ).getOrNull()!,
+          ChecklistItem.tryCreate(
+            id: 'i2',
+            title: 'Item 2',
+            isRequired: false,
+            order: 1,
+          ).getOrNull()!,
+        ],
+      ).getOrNull()!;
+      final adapter = ChecklistProofAdapter(
+        templateRepository: _TplRepo(tpl: tpl),
+        answerRepository: _AnsRepo(),
+      );
+      final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't1');
+      expect(r.isFailure, isTrue);
+      expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_INCOMPLETO');
+    },
+  );
 
   test('UC-04.07 - prova real: obrigatório respondido passa', () async {
-    final tpl = ChecklistTemplate.tryCreate(id: 't1', title: 'T', items: [
-      ChecklistItem.tryCreate(id: 'i1', title: 'Item 1', isRequired: true, order: 0).getOrNull()!,
-    ]).getOrNull()!;
-    final ans = ChecklistAnswer.tryCreate(
-      workOrderId: 'wo1', itemId: 'i1', status: ChecklistAnswerStatus.conforme,
+    final tpl = ChecklistTemplate.tryCreate(
+      id: 't1',
+      title: 'T',
+      items: [
+        ChecklistItem.tryCreate(
+          id: 'i1',
+          title: 'Item 1',
+          isRequired: true,
+          order: 0,
+        ).getOrNull()!,
+      ],
     ).getOrNull()!;
-    final adapter = ChecklistProofAdapter(templateRepository: _TplRepo(tpl: tpl), answerRepository: _AnsRepo(answers: [ans]));
+    final ans = ChecklistAnswer.tryCreate(
+      workOrderId: 'wo1',
+      itemId: 'i1',
+      status: ChecklistAnswerStatus.conforme,
+    ).getOrNull()!;
+    final adapter = ChecklistProofAdapter(
+      templateRepository: _TplRepo(tpl: tpl),
+      answerRepository: _AnsRepo(answers: [ans]),
+    );
     final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't1');
     expect(r.isSuccess, isTrue);
     expect(r.getOrNull()!.mandatoryTotal, 1);
@@ -80,15 +157,25 @@ void main() {
   });
 
   test('UC-04.07 - template inexistente falha fail-closed', () async {
-    final adapter = ChecklistProofAdapter(templateRepository: _TplRepo(tpl: null), answerRepository: _AnsRepo());
-    final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't-missing');
+    final adapter = ChecklistProofAdapter(
+      templateRepository: _TplRepo(tpl: null),
+      answerRepository: _AnsRepo(),
+    );
+    final r = await adapter.getProof(
+      workOrderId: 'wo1',
+      templateId: 't-missing',
+    );
     expect(r.isFailure, isTrue);
     expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_NAO_ENCONTRADO');
   });
 
   test('UC-04.07 - falha ao carregar template propaga erro', () async {
     final adapter = ChecklistProofAdapter(
-      templateRepository: _TplRepo(findByIdResult: const Failure(ValidationError(code: 'ERR_DB', message: 'db'))),
+      templateRepository: _TplRepo(
+        findByIdResult: const Failure(
+          ValidationError(code: 'ERR_DB', message: 'db'),
+        ),
+      ),
       answerRepository: _AnsRepo(),
     );
     final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't1');
@@ -97,12 +184,25 @@ void main() {
   });
 
   test('UC-04.07 - falha ao carregar respostas propaga erro', () async {
-    final tpl = ChecklistTemplate.tryCreate(id: 't1', title: 'T', items: [
-      ChecklistItem.tryCreate(id: 'i1', title: 'Item 1', isRequired: true, order: 0).getOrNull()!,
-    ]).getOrNull()!;
+    final tpl = ChecklistTemplate.tryCreate(
+      id: 't1',
+      title: 'T',
+      items: [
+        ChecklistItem.tryCreate(
+          id: 'i1',
+          title: 'Item 1',
+          isRequired: true,
+          order: 0,
+        ).getOrNull()!,
+      ],
+    ).getOrNull()!;
     final adapter = ChecklistProofAdapter(
       templateRepository: _TplRepo(tpl: tpl),
-      answerRepository: _AnsRepo(findResult: const Failure(ValidationError(code: 'ERR_DB', message: 'db'))),
+      answerRepository: _AnsRepo(
+        findResult: const Failure(
+          ValidationError(code: 'ERR_DB', message: 'db'),
+        ),
+      ),
     );
     final r = await adapter.getProof(workOrderId: 'wo1', templateId: 't1');
     expect(r.isFailure, isTrue);

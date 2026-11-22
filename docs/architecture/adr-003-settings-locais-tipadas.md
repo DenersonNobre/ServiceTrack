@@ -1,6 +1,6 @@
 # ADR-003 — Configurações Locais Tipadas
 
-> **Status**: Aceito (UC-07.01/02/03 implementados; Gates 3/4 pendentes)
+> **Status**: Aceito (UC-07.01/02/03 implementados; G3 aprovado com ressalvas; G4 pendente)
 >
 > **Data**: 2026-11-22  
 > **Autor**: `opc01@e03ff640`  
@@ -58,7 +58,7 @@
 | `GetSettings` + `UpdateSetting` | Concluído |
 | Testes de domínio/repositório/use cases | Concluído (10 testes) |
 | UI de configurações (UC-07.02) | Concluído |
-| Integração das políticas nos consumidores (UC-07.03) | Concluído (G2.5 com condicionantes; G3/G4 pendentes) |
+| Integração das políticas nos consumidores (UC-07.03) | Concluído (G2.5 com condicionantes; G3 aprovado com ressalvas; G4 pendente) |
 
 ## Regras de evolução
 
@@ -66,3 +66,4 @@
 2. Consumidor lê por `GetSettings`/porta; não usa string de chave solta.
 3. Valor inválido no storage falha de forma tipada; nunca assume default silencioso para dado corrompido.
 4. Migrations são aditivas e idempotentes; nunca reescrevem configuração existente.
+5. `load()` é forward-compatible: **tolera** chave desconhecida (ignora) para não quebrar rollback; a rejeição `ERR_CONFIGURACAO_CHAVE_INVALIDA` ocorre no `UpdateSetting`/escrita.

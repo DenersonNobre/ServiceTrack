@@ -1,7 +1,7 @@
 # Plano Mestre de Implementação — ServiceTrack (Mobile Standalone)
 
 > **Responsável do Plano (DevOps / Arch)**: Denerson Nobre  
-> **Status Geral**: `Em Execução (EPIC-00/01/02/03 Concluídos; EPIC-04 implementado/E2E device pendente; EPIC-06 em andamento; EPIC-07 em andamento)`
+> **Status Geral**: `Em Execução (EPIC-00/01/02/03/07 Concluídos; EPIC-04 implementado/E2E device pendente; EPIC-06 em andamento)`
 >
 > **Arquitetura**: Flutter 100% Autocontido (Zero Backend / Zero Infraestrutura de Nuvem)  
 > **Referências**: [PRD](../product/PRD.md) \| [SPEC](../architecture/SPEC.md) \| [DESIGN](../architecture/DESIGN.md)
@@ -19,7 +19,7 @@
 | **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política/defaults) | Alta | `Implementado (E2E device pendente)` |
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Bloqueado` |
 | **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Em Andamento` |
-| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Em Andamento (UC-07.01/02/03 concluídos; G3/G4 pendentes)` |
+| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Concluído (G4 c/ ressalvas)` |
 
 ---
 
@@ -60,7 +60,7 @@ graph TD
 2. **EPIC01 (Onboarding & Auth Local)**: Primeiro acesso do técnico, cadastro de perfil e cofre seguro de Biometria/PIN.
 3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `dnolib/sqlite` e validações `brlib`.
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
-5. **EPIC07 (Configurações & Políticas Locais)**: Código concluído (`UC-07.01`: catálogo + SQLite v11 + use cases; `UC-07.02`: UI; `UC-07.03`: integração das políticas com fail-closed D-01/C-01). Próximo: Gates 3/4 formais do épico.
+5. **EPIC07 (Configurações & Políticas Locais)**: Concluído (`UC-07.01`: catálogo + SQLite v11 + use cases; `UC-07.02`: UI; `UC-07.03`: integração com fail-closed D-01/C-01). G3/G4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.08, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.
 7. **EPIC06 (Hardening Técnico & Qualidade)**: Em andamento — **UC-06.05 concluído** (`AppDependencies` + `*Routes` + `appScopedRoute`; `AppEntry` 168 linhas/0 providers; `qa-review-v0.20.0.md`). Restam UC-06.01/02 residuais e UC-06.03/04.
 8. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.

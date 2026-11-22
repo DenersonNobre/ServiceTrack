@@ -39,16 +39,37 @@ final class SettingsPage extends IKortexPage<SettingsController> {
                   );
                 }
                 final loadError = controller.loadError.value;
+                final saving = controller.saving.value;
                 if (loadError != null) {
                   return Center(
-                    child: Text(
-                      loadError,
-                      style: const TextStyle(color: AppColors.error),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            loadError,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: AppColors.error),
+                          ),
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            key: const Key('settings-restore-defaults'),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: kMinTouchTargetSize,
+                            ),
+                            onPressed: saving
+                                ? null
+                                : controller.restoreDefaults,
+                            icon: const Icon(Icons.restore),
+                            label: const Text('Restaurar padrões'),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
                 final snapshot = controller.snapshot.value;
-                final saving = controller.saving.value;
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [

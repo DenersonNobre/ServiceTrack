@@ -10,7 +10,6 @@ import '../modules/customers/data/.index.dart';
 import '../modules/customers/domain/ports/.index.dart';
 import '../modules/profile/data/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
-import '../modules/settings/data/.index.dart';
 import '../modules/settings/domain/.index.dart';
 import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
@@ -34,7 +33,7 @@ class ServiceTrackApp extends StatelessWidget {
     this.checklistTemplateRepository,
     this.checklistAnswerRepository,
     this.checklistProofPort,
-    this.settingsRepository,
+    required this.settingsRepository,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -67,8 +66,8 @@ class ServiceTrackApp extends StatelessWidget {
   /// Porta de prova de checklist para conclusão de OS (injeção para testes).
   final IChecklistProofPort? checklistProofPort;
 
-  /// Repositório de configurações locais (injeção para testes).
-  final ISettingsRepositoryPort? settingsRepository;
+  /// Repositório de configurações locais (obrigatório; SQLite em produção).
+  final ISettingsRepositoryPort settingsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +92,7 @@ class ServiceTrackApp extends StatelessWidget {
           templateRepository: checklistTemplateRepo,
           answerRepository: checklistAnswerRepo,
         );
-    final settingsRepo = settingsRepository ?? MemorySettingsRepository();
+    final settingsRepo = settingsRepository;
     final dependencies = AppDependencies(
       credentialRepository: repo,
       biometricAuth: bio,

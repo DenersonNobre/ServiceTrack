@@ -3,6 +3,29 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/settings/.index.dart';
 
+final class _RecoveringSettingsRepository implements ISettingsRepositoryPort {
+  bool _recovered = false;
+
+  @override
+  Future<IResult<SettingsSnapshot, ValidationError>> load() async => _recovered
+      ? Success(SettingsSnapshot.defaults())
+      : const Failure(
+          ValidationError(
+            code: SettingsFailureCodes.persistence,
+            message: 'Settings corrompido.',
+          ),
+        );
+
+  @override
+  Future<IResult<SettingsSnapshot, ValidationError>> update(
+    SettingKey key,
+    bool value,
+  ) async {
+    _recovered = true;
+    return Success(SettingsSnapshot.defaults());
+  }
+}
+
 final class _FailingUpdateRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> load() async =>
@@ -71,6 +94,23 @@ void main() {
         (await repository.load()).getOrNull()!.requireReceiverDocument,
         isTrue,
       );
+      controller.dispose();
+    });
+
+    test('restaura defaults quando o settings está corrompido', () async {
+      final repository = _RecoveringSettingsRepository();
+      final controller = SettingsController(
+        getSettings: GetSettings(repository: repository),
+        updateSetting: UpdateSetting(repository: repository),
+      );
+      await controller.ensureLoaded();
+      expect(controller.loadError.value, isNotNull);
+
+      await controller.restoreDefaults();
+
+      expect(controller.loadError.value, isNull);
+      expect(controller.snapshot.value.requireChecklistTemplate, isTrue);
+      expect(controller.snapshot.value.requireReceiverDocument, isFalse);
       controller.dispose();
     });
 

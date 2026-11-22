@@ -53,6 +53,28 @@ final class SettingsController extends IKortexController {
   Future<void> setRequireReceiverDocument(bool value) =>
       _update(SettingKey.requireReceiverDocument, value);
 
+  /// Restaura os defaults do catálogo (recuperação de settings corrompido).
+  Future<void> restoreDefaults() async {
+    if (saving.value) return;
+    saving.value = true;
+    error.value = null;
+    success.value = null;
+    for (final key in SettingKey.values) {
+      final result = await updateSetting.execute(
+        key: key.storageKey,
+        value: key.defaultValue,
+      );
+      if (result case Failure(:final value)) {
+        saving.value = false;
+        error.value = value.message;
+        return;
+      }
+    }
+    saving.value = false;
+    success.value = 'Configurações restauradas.';
+    await load();
+  }
+
   Future<void> _update(SettingKey key, bool value) async {
     if (saving.value) return;
     saving.value = true;

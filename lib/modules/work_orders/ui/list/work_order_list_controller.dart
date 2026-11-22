@@ -266,23 +266,8 @@ final class WorkOrderListController extends IKortexController {
         case Failure(:final value):
           return Failure(value);
       }
-      if (policy.requireReceiverDocument &&
-          !documentAtRestProtectionAvailable) {
-        return const Failure(
-          ValidationError(
-            code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
-            message: 'Documento do recebedor não pode ser coletado/persistido sem proteção em repouso (D-01/C-01).',
-          ),
-        );
-      }
-      if (policy.requireReceiverDocument && signature.documentNumber == null) {
-        return const Failure(
-          ValidationError(
-            code: EvidenceFailureCodes.missingSignerDocument,
-            message: 'Informe o documento do recebedor.',
-          ),
-        );
-      }
+      final policyError = _policyError(policy, signature);
+      if (policyError != null) return Failure(policyError);
       final proofResult = await checklistProofPort.getProof(
         workOrderId: workOrderId,
         templateId: wo.checklistTemplateId,
@@ -323,6 +308,25 @@ final class WorkOrderListController extends IKortexController {
     } finally {
       completingId.value = null;
     }
+  }
+
+  ValidationError? _policyError(
+    SettingsSnapshot policy,
+    DigitalSignature signature,
+  ) {
+    if (policy.requireReceiverDocument && !documentAtRestProtectionAvailable) {
+      return const ValidationError(
+        code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
+        message: kDocumentProtectionUnavailableMessage,
+      );
+    }
+    if (policy.requireReceiverDocument && signature.documentNumber == null) {
+      return const ValidationError(
+        code: EvidenceFailureCodes.missingSignerDocument,
+        message: 'Informe o documento do recebedor.',
+      );
+    }
+    return null;
   }
 
   Future<IResult<WorkOrder, ValidationError>> _applyStart(
