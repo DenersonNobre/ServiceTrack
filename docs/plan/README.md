@@ -1,7 +1,7 @@
 # Plano Mestre de Implementação — ServiceTrack (Mobile Standalone)
 
 > **Responsável do Plano (DevOps / Arch)**: Denerson Nobre  
-> **Status Geral**: `Em Execução (EPIC-00/01/02/03 Concluídos; EPIC-04 em reconciliação; EPIC-06 planejada)`  
+> **Status Geral**: `Em Execução (EPIC-00/01/02/03 Concluídos; EPIC-04 em reconciliação; EPIC-06/07 planejadas)`  
 > **Arquitetura**: Flutter 100% Autocontido (Zero Backend / Zero Infraestrutura de Nuvem)  
 > **Referências**: [PRD](../product/PRD.md) \| [SPEC](../architecture/SPEC.md) \| [DESIGN](../architecture/DESIGN.md)
 
@@ -15,9 +15,10 @@
 | **01 — Onboarding, Auth Local & Perfil** | [epic-01-auth-perfil.md](epics/epic-01-auth-perfil.md) | EPIC00 | Alta | `Concluído` |
 | **02 — Gestão Local de Clientes** | [epic-02-clientes.md](epics/epic-02-clientes.md) | EPIC00, EPIC01 | Alta | `Concluído` |
 | **03 — Ordens de Serviço & Ciclo de Vida** | [epic-03-ordens-servico.md](epics/epic-03-ordens-servico.md) | EPIC00, EPIC02 | Alta | `Concluído` |
-| **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03 | Alta | `Bloqueado` |
+| **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política) | Alta | `Bloqueado` |
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Bloqueado` |
 | **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Pronto para Iniciar` |
+| **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Planejado` |
 
 ---
 
@@ -37,6 +38,7 @@ graph TD
     EPIC04["EPIC-04: Checklists Rápidos & Evidências com GPS"]:::blocked
     EPIC05["EPIC-05: Geração On-Device de Laudo PDF & Envio WhatsApp"]:::core
     EPIC06["EPIC-06: Hardening Técnico & Qualidade Transversal"]:::ready
+    EPIC07["EPIC-07: Configurações & Políticas Locais"]:::blocked
 
     EPIC00 --> EPIC01
     EPIC01 --> EPIC02
@@ -45,6 +47,8 @@ graph TD
     EPIC03 --> EPIC05
     EPIC04 --> EPIC05
     EPIC03 --> EPIC06
+    EPIC01 --> EPIC07
+    EPIC07 --> EPIC04
 ```
 
 ---
@@ -55,6 +59,7 @@ graph TD
 2. **EPIC01 (Onboarding & Auth Local)**: Primeiro acesso do técnico, cadastro de perfil e cofre seguro de Biometria/PIN.
 3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `dnolib/sqlite` e validações `brlib`.
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
-5. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Captura de evidências, respostas persistidas por OS, prova real de checklist na conclusão e unificação de assinatura canônica.
-6. **EPIC06 (Hardening Técnico & Qualidade)**: Quick wins transversais (FailureCodes, AppFeedback/touch target, Stateless/Kortex, gate ERR_*) em fatias pequenas sem colidir com D-05.
-7. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.
+5. **EPIC07 (Configurações & Políticas Locais)**: Módulo dedicado para políticas/configurações tipadas (inclui D2 documento do recebedor por política/configuração).
+6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Captura de evidências, respostas persistidas por OS, prova real de checklist na conclusão e unificação de assinatura canônica.
+7. **EPIC06 (Hardening Técnico & Qualidade)**: Quick wins transversais (FailureCodes, AppFeedback/touch target, Stateless/Kortex, gate ERR_*) em fatias pequenas sem colidir com D-05.
+8. **EPIC05 (Laudo PDF & WhatsApp)**: Núcleo de maior valor perceptível (laudo executivo on-device e compartilhamento com 1 toque), consumindo dados reais consolidados.
