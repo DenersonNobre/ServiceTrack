@@ -24,10 +24,14 @@ final class WorkOrderListController extends IKortexController {
     required this.repository,
     required this.locationService,
     this.checklistProofPort,
+    this.requireChecklistTemplate = true,
   });
   final IWorkOrderRepositoryPort repository;
   final ILocationServicePort locationService;
   final IChecklistProofPort? checklistProofPort;
+
+  /// Política: exige template vinculado na conclusão (UC-04.07, EPIC-07).
+  final bool requireChecklistTemplate;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<List<WorkOrder>> items = KortexSignal<List<WorkOrder>>([]);
@@ -208,6 +212,7 @@ final class WorkOrderListController extends IKortexController {
         proofResult = await proofPort.getProof(
           workOrderId: workOrderId,
           templateId: wo.checklistTemplateId,
+          requireTemplate: requireChecklistTemplate,
         );
       } else if (checklistProof != null) {
         proofResult = Success(checklistProof);

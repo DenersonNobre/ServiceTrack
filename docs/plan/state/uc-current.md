@@ -18,6 +18,6 @@
 - Confirma: `flutter test test/app/adapters/checklist_proof_adapter_test.dart test/modules/work_orders/ui/work_order_list_controller_test.dart test/modules/work_orders/data/work_order_sqlite_repository_test.dart test/modules/checklists` => `+26 All tests passed`.
 
 ## Próximo passo
-1. **Decisão de produto (pendente PO)**: adotado default fail-closed em código (`ERR_CHECKLIST_TEMPLATE_OBRIGATORIO` quando OS sem template) — PO pode confirmar ou relaxar para política/configuração.
-2. Validar ponta-a-ponta (bind template -> preencher checklist -> concluir OS) e fechar UC-04.07 com Gate 3/4.
+1. **Decisão PO registrada (2026-11-22)**: opção C — checklist obrigatório por política/configuração. Código wired (`requireChecklistTemplate`, default `true` fail-closed; EPIC-07 fornecerá política).
+2. Validar ponta-a-ponta e executar Gate 3/4 para UC-04.07.
 3. Seguir UC-04.08 (DigitalSignature unificação conforme ADR-001), Gate 2.5 obrigatório.

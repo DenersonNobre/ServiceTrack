@@ -39,13 +39,16 @@ class _FakeChecklistProofPort implements IChecklistProofPort {
   String? lastWorkOrderId;
   String? lastTemplateId;
 
+  bool? lastRequireTemplate;
   @override
   Future<IResult<ChecklistCompletionProof, ValidationError>> getProof({
     required String workOrderId,
     required String? templateId,
+    bool requireTemplate = true,
   }) async {
     lastWorkOrderId = workOrderId;
     lastTemplateId = templateId;
+    lastRequireTemplate = requireTemplate;
     return result;
   }
 }

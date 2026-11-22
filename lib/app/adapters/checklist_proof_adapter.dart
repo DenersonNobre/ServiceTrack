@@ -25,14 +25,21 @@ final class ChecklistProofAdapter implements IChecklistProofPort {
   Future<IResult<ChecklistCompletionProof, ValidationError>> getProof({
     required String workOrderId,
     required String? templateId,
+    bool requireTemplate = true,
   }) async {
     final tplId = templateId?.trim();
     if (tplId == null || tplId.isEmpty) {
-      return const Failure(
-        ValidationError(
-          code: 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO',
-          message: 'Vincule um checklist à OS antes de concluir.',
-        ),
+      if (requireTemplate) {
+        return const Failure(
+          ValidationError(
+            code: 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO',
+            message: 'Vincule um checklist à OS antes de concluir.',
+          ),
+        );
+      }
+      return ChecklistCompletionProof.tryCreate(
+        mandatoryTotal: 0,
+        answeredMandatory: 0,
       );
     }
 

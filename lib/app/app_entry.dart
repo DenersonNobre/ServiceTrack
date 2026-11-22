@@ -41,6 +41,7 @@ class AppEntry extends StatefulWidget {
     required this.checklistProofPort,
     required this.checklistTemplateRepository,
     required this.checklistAnswerRepository,
+    this.requireChecklistTemplate = true,
   });
 
   final IAuthCredentialRepositoryPort repo;
@@ -53,6 +54,7 @@ class AppEntry extends StatefulWidget {
   final IChecklistProofPort checklistProofPort;
   final IChecklistTemplateRepositoryPort checklistTemplateRepository;
   final IChecklistAnswerRepositoryPort checklistAnswerRepository;
+  final bool requireChecklistTemplate;
 
   @override
   State<AppEntry> createState() => _AppEntryState();
@@ -323,6 +325,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
                 repository: widget.workOrderRepo,
                 locationService: widget.locationService,
                 checklistProofPort: widget.checklistProofPort,
+                requireChecklistTemplate: widget.requireChecklistTemplate,
               ),
               dispose: (c) => c.dispose(),
             ),

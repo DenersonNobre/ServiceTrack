@@ -40,6 +40,16 @@ void main() {
     expect(r.getOrNullFailure()!.code, 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO');
   });
 
+  test('UC-04.07 - política C: sem template permitido quando requireTemplate=false', () async {
+    final adapter = ChecklistProofAdapter(
+      templateRepository: _TplRepo(null),
+      answerRepository: _AnsRepo(const []),
+    );
+    final r = await adapter.getProof(workOrderId: 'wo1', templateId: null, requireTemplate: false);
+    expect(r.isSuccess, isTrue);
+    expect(r.getOrNull()!.mandatoryTotal, 0);
+  });
+
   test('UC-04.07 - prova real: template com obrigatório não respondido falha', () async {
     final tpl = ChecklistTemplate.tryCreate(id: 't1', title: 'T', items: [
       ChecklistItem.tryCreate(id: 'i1', title: 'Item 1', isRequired: true, order: 0).getOrNull()!,

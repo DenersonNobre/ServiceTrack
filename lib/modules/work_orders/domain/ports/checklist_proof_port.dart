@@ -12,9 +12,11 @@ import '../value_objects/checklist_completion_proof.dart';
 abstract interface class IChecklistProofPort {
   /// Calcula prova para [workOrderId] dado [templateId] vinculado.
   ///
-  /// Se [templateId] for null/vazio, retorna prova 0/0 (sem checklist obrigatório).
+  /// Se [templateId] for null/vazio, aplica política [requireTemplate]:
+  /// quando true, falha fail-closed; quando false, retorna prova 0/0.
   Future<IResult<ChecklistCompletionProof, ValidationError>> getProof({
     required String workOrderId,
     required String? templateId,
+    bool requireTemplate = true,
   });
 }
