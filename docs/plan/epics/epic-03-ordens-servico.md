@@ -21,7 +21,7 @@ Governar a criação, agendamento e transições da Ordem de Serviço (`WorkOrde
   - `UC-03.01`: Criação Rápida de Ordem de Serviço (Seleção de Cliente, Descrição do Serviço, Data/Hora e Valor Estimado com `dnolib/core` Money).
   - `UC-03.02`: Agenda & Lista de Visitas (Filtros por chip: Hoje, Agendadas, Em Andamento, Concluídas).
   - `UC-03.03`: Início do Atendimento (Check-in pontual com captura de geolocalização `GeoPoint` e transição para `IN_PROGRESS`).
-  - `UC-03.04`: Pausa e Cancelamento com Justificativa Obrigatória.
+  - `UC-03.04`: Pausa e Cancelamento com Justificativa Obrigatória (pausa/retomada sem GPS, por ora; motivo obrigatório na pausa/cancelamento).
   - `UC-03.05`: Trava de Imutabilidade e Conclusão (`INV-01`, `INV-06`).
 - **Não Incluso**:
   - Telemetria de rastreamento contínuo de rota em background.
@@ -35,7 +35,7 @@ Governar a criação, agendamento e transições da Ordem de Serviço (`WorkOrde
 | **UC-03.01** | Criação Rápida de Ordem de Serviço | Nenhuma | `Concluído` |
 | **UC-03.02** | Painel de Visitas & Filtros Rápidos | UC-03.01 | `Concluído` |
 | **UC-03.03** | Check-in de Atendimento & Georreferenciamento | UC-03.01, UC-03.02 | `Concluído` |
-| **UC-03.04** | Pausa e Cancelamento com Justificativa | UC-03.01 | `Parcial` |
+| **UC-03.04** | Pausa e Cancelamento com Justificativa | UC-03.01 | `Em Andamento` |
 | **UC-03.05** | Fechamento e Travamento Imutável da OS | UC-03.03 | `Concluído` |
 
 ---

@@ -26,6 +26,7 @@ final class WorkOrder {
     required this.status,
     required this.checkIn,
     required this.cancellationReason,
+    required this.pauseReason,
     required this.checkOut,
     required this.signature,
     required this.checklistProof,
@@ -43,6 +44,9 @@ final class WorkOrder {
 
   /// Justificativa de cancelamento (UC-03.04).
   final String? cancellationReason;
+
+  /// Justificativa de pausa (UC-03.04).
+  final String? pauseReason;
 
   /// Check-out georreferenciado (UC-03.05, INV-SEC-24).
   final GeoPoint? checkOut;
@@ -90,6 +94,7 @@ final class WorkOrder {
       status: WorkOrderStatus.scheduled,
       checkIn: null,
       cancellationReason: null,
+      pauseReason: null,
       checkOut: null,
       signature: null,
       checklistProof: null,
@@ -127,9 +132,65 @@ final class WorkOrder {
       status: WorkOrderStatus.inProgress,
       checkIn: record,
       cancellationReason: null,
+      pauseReason: null,
       checkOut: null,
       signature: null,
       checklistProof: null,
+    ));
+  }
+
+  /// Pausa OS com justificativa obrigatória (UC-03.04).
+  IResult<WorkOrder, ValidationError> pause(String reason) {
+    final trimmed = reason.trim();
+    if (trimmed.isEmpty) {
+      return const Failure(
+        ValidationError(
+          code: 'ERR_OS_JUSTIFICATIVA_OBRIGATORIA',
+          message: 'Informe a justificativa da pausa.',
+        ),
+      );
+    }
+    if (status != WorkOrderStatus.inProgress) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+      );
+    }
+    return Success(WorkOrder._(
+      id: id,
+      customerId: customerId,
+      serviceDescription: serviceDescription,
+      scheduledAt: scheduledAt,
+      estimatedValue: estimatedValue,
+      status: WorkOrderStatus.paused,
+      checkIn: checkIn,
+      cancellationReason: null,
+      pauseReason: trimmed,
+      checkOut: checkOut,
+      signature: signature,
+      checklistProof: checklistProof,
+    ));
+  }
+
+  /// Retoma OS pausada sem GPS (UC-03.04).
+  IResult<WorkOrder, ValidationError> resume() {
+    if (status != WorkOrderStatus.paused) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_TRANSICAO_INVALIDA', message: 'Transição de estado inválida para a OS.'),
+      );
+    }
+    return Success(WorkOrder._(
+      id: id,
+      customerId: customerId,
+      serviceDescription: serviceDescription,
+      scheduledAt: scheduledAt,
+      estimatedValue: estimatedValue,
+      status: WorkOrderStatus.inProgress,
+      checkIn: checkIn,
+      cancellationReason: null,
+      pauseReason: null,
+      checkOut: checkOut,
+      signature: signature,
+      checklistProof: checklistProof,
     ));
   }
 
@@ -161,6 +222,7 @@ final class WorkOrder {
       status: WorkOrderStatus.cancelled,
       checkIn: checkIn,
       cancellationReason: trimmed,
+      pauseReason: pauseReason,
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
@@ -190,6 +252,7 @@ final class WorkOrder {
       status: WorkOrderStatus.completed,
       checkIn: checkIn,
       cancellationReason: null,
+      pauseReason: pauseReason,
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
@@ -206,6 +269,7 @@ final class WorkOrder {
     required WorkOrderStatus status,
     CheckInRecord? checkIn,
     String? cancellationReason,
+    String? pauseReason,
     GeoPoint? checkOut,
     DigitalSignature? signature,
     ChecklistCompletionProof? checklistProof,
@@ -219,6 +283,7 @@ final class WorkOrder {
       status: status,
       checkIn: checkIn,
       cancellationReason: cancellationReason,
+      pauseReason: pauseReason,
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,

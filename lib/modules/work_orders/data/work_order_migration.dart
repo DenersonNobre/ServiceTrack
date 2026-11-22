@@ -51,4 +51,9 @@ final class WorkOrderMigration {
         'ALTER TABLE work_orders ADD COLUMN checklist_mandatory_total INTEGER',
         'ALTER TABLE work_orders ADD COLUMN checklist_answered_mandatory INTEGER',
       ]);
+
+  /// v7: pausa com justificativa (UC-03.04).
+  static Migration v7() => Migration(version: 7, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN pause_reason TEXT',
+      ]);
 }

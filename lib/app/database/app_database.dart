@@ -13,7 +13,7 @@ import '../../modules/work_orders/data/work_order_migration.dart';
 SqliteProvider createAppDatabase({String dbName = 'service_track.db'}) {
   return SqliteProvider(
     dbName: dbName,
-    dbVersion: 6,
+    dbVersion: 7,
     migrations: [
       CustomerMigration.v1(),
       ServiceLocationMigration.v2(),
@@ -21,6 +21,7 @@ SqliteProvider createAppDatabase({String dbName = 'service_track.db'}) {
       WorkOrderMigration.v4(),
       WorkOrderMigration.v5(),
       WorkOrderMigration.v6(),
+      WorkOrderMigration.v7(),
     ],
   );
 }

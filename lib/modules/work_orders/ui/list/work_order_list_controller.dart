@@ -15,8 +15,8 @@ import '../../domain/value_objects/location_capture.dart';
 import '../../domain/value_objects/work_order.dart';
 import '../../domain/value_objects/work_order_status.dart';
 
-/// Filtros rápidos do painel de visitas (UC-03.02).
-enum WorkOrderListFilter { all, today, scheduled, inProgress, completed }
+/// Filtros rápidos do painel de visitas (UC-03.02, UC-03.04).
+enum WorkOrderListFilter { all, today, scheduled, inProgress, paused, completed }
 
 final class WorkOrderListController extends IKortexController {
   WorkOrderListController({required this.repository, required this.locationService});
@@ -44,6 +44,7 @@ final class WorkOrderListController extends IKortexController {
         WorkOrderListFilter.today => _isSameLocalDay(wo.scheduledAt, now),
         WorkOrderListFilter.scheduled => wo.status == WorkOrderStatus.scheduled,
         WorkOrderListFilter.inProgress => wo.status == WorkOrderStatus.inProgress,
+        WorkOrderListFilter.paused => wo.status == WorkOrderStatus.paused,
         WorkOrderListFilter.completed => wo.status == WorkOrderStatus.completed,
       };
     }).toList();
@@ -105,6 +106,51 @@ final class WorkOrderListController extends IKortexController {
     final result = await _applyStart(workOrderId, LocationBypassed(reason: reason));
     startingId.value = null;
     return result;
+  }
+
+  /// Pausa OS com justificativa obrigatória (UC-03.04).
+  Future<IResult<WorkOrder, ValidationError>> pause(
+    String workOrderId,
+    String reason,
+  ) async {
+    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+    if (wo == null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+      );
+    }
+    final paused = wo.pause(reason);
+    switch (paused) {
+      case Failure<WorkOrder, ValidationError>(:final value):
+        return Failure(value);
+      case Success<WorkOrder, ValidationError>(:final value):
+        final saved = await repository.save(value);
+        if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+        }
+        return saved;
+    }
+  }
+
+  /// Retoma OS pausada sem GPS (UC-03.04).
+  Future<IResult<WorkOrder, ValidationError>> resume(String workOrderId) async {
+    final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
+    if (wo == null) {
+      return const Failure(
+        ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
+      );
+    }
+    final resumed = wo.resume();
+    switch (resumed) {
+      case Failure<WorkOrder, ValidationError>(:final value):
+        return Failure(value);
+      case Success<WorkOrder, ValidationError>(:final value):
+        final saved = await repository.save(value);
+        if (saved case Success<WorkOrder, ValidationError>(:final value)) {
+          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+        }
+        return saved;
+    }
   }
 
   /// Cancela OS com justificativa obrigatória (UC-03.04).

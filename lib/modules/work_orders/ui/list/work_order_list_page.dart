@@ -87,7 +87,8 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                               ),
                               minTileHeight: 56,
                               trailing: (wo.status == WorkOrderStatus.scheduled ||
-                                      wo.status == WorkOrderStatus.inProgress)
+                                      wo.status == WorkOrderStatus.inProgress ||
+                                      wo.status == WorkOrderStatus.paused)
                                   ? isBusy
                                       ? const SizedBox(
                                           width: 48,
@@ -103,6 +104,8 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                           tooltip: 'Ações',
                                           onSelected: (v) {
                                             if (v == 'start') _startService(context, controller, wo.id);
+                                            if (v == 'pause') _pauseWorkOrder(context, controller, wo.id);
+                                            if (v == 'resume') _resumeWorkOrder(context, controller, wo.id);
                                             if (v == 'complete') _completeWorkOrder(context, controller, wo.id);
                                             if (v == 'cancel') _cancelWorkOrder(context, controller, wo.id);
                                           },
@@ -112,15 +115,15 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                                 value: 'start',
                                                 child: Text('Iniciar atendimento'),
                                               ),
-                                            if (wo.status == WorkOrderStatus.inProgress)
-                                              const PopupMenuItem(
-                                                value: 'complete',
-                                                child: Text('Concluir OS'),
-                                              ),
-                                            const PopupMenuItem(
-                                              value: 'cancel',
-                                              child: Text('Cancelar OS'),
-                                            ),
+                                            if (wo.status == WorkOrderStatus.inProgress) ...[
+                                              const PopupMenuItem(value: 'pause', child: Text('Pausar OS')),
+                                              const PopupMenuItem(value: 'complete', child: Text('Concluir OS')),
+                                            ],
+                                            if (wo.status == WorkOrderStatus.paused)
+                                              const PopupMenuItem(value: 'resume', child: Text('Retomar atendimento')),
+                                            if (wo.status != WorkOrderStatus.completed &&
+                                                wo.status != WorkOrderStatus.cancelled)
+                                              const PopupMenuItem(value: 'cancel', child: Text('Cancelar OS')),
                                           ],
                                         )
                                   : null,
@@ -315,6 +318,69 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     }
   }
 
+  Future<void> _pauseWorkOrder(
+    BuildContext context,
+    WorkOrderListController controller,
+    String workOrderId,
+  ) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Pausar OS'),
+        content: TextField(
+          key: const Key('wo-pause-reason'),
+          controller: reasonController,
+          decoration: const InputDecoration(
+            labelText: 'Justificativa',
+            hintText: 'Informe o motivo da pausa',
+          ),
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            key: const Key('wo-pause-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryAction,
+              minimumSize: const Size(48, 48),
+            ),
+            child: const Text('Pausar OS'),
+          ),
+        ],
+      ),
+    );
+    final reason = reasonController.text;
+    reasonController.dispose();
+    if (confirmed != true || !context.mounted) return;
+    final result = await controller.pause(workOrderId, reason);
+    if (!context.mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.getOrNullFailure()!.message)),
+      );
+    }
+  }
+
+  Future<void> _resumeWorkOrder(
+    BuildContext context,
+    WorkOrderListController controller,
+    String workOrderId,
+  ) async {
+    final result = await controller.resume(workOrderId);
+    if (!context.mounted) return;
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.getOrNullFailure()!.message)),
+      );
+    }
+  }
+
   Future<void> _cancelWorkOrder(
     BuildContext context,
     WorkOrderListController controller,
@@ -380,6 +446,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
         WorkOrderListFilter.today => 'Hoje',
         WorkOrderListFilter.scheduled => 'Agendadas',
         WorkOrderListFilter.inProgress => 'Em Andamento',
+        WorkOrderListFilter.paused => 'Pausadas',
         WorkOrderListFilter.completed => 'Concluídas',
       };
 }

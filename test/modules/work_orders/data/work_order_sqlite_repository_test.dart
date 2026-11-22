@@ -30,12 +30,13 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_wo.db',
-        dbVersion: 6,
+        dbVersion: 7,
         migrations: [
           WorkOrderMigration.v3(),
           WorkOrderMigration.v4(),
           WorkOrderMigration.v5(),
           WorkOrderMigration.v6(),
+          WorkOrderMigration.v7(),
         ],
         factory: databaseFactoryFfi,
       );
@@ -97,6 +98,31 @@ void main() {
       final loaded = all.getOrNull()!.first;
       expect(loaded.status, WorkOrderStatus.cancelled);
       expect(loaded.cancellationReason, 'Cliente ausente');
+    });
+
+    test('UC-03.04 - persiste pausa e retomada', () async {
+      final wo = WorkOrder.tryCreate(
+        id: 'wo1',
+        customerId: 'c1',
+        serviceDescription: 'Manutenção',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+      ).getOrNull()!;
+      final point = GeoPoint.tryCreate(
+        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+      ).getOrNull()!;
+      final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
+      final paused = inProgress.pause('Aguardando peça').getOrNull()!;
+      await repo.save(paused);
+      var loaded = (await repo.findAll()).getOrNull()!.first;
+      expect(loaded.status, WorkOrderStatus.paused);
+      expect(loaded.pauseReason, 'Aguardando peça');
+
+      final resumed = paused.resume().getOrNull()!;
+      await repo.save(resumed);
+      loaded = (await repo.findAll()).getOrNull()!.first;
+      expect(loaded.status, WorkOrderStatus.inProgress);
+      expect(loaded.pauseReason, isNull);
     });
 
     test('UC-03.05 - persiste conclusão e restaura assinatura/checkout (INV-SEC-24)', () async {

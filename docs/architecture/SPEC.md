@@ -36,7 +36,7 @@
 | :--- | :--- | :--- |
 | **Cliente** | `Customer` | Contato contratante do serviço (Nome, Telefone/WhatsApp, Endereço). |
 | **Ordem de Serviço** | `WorkOrder` | Agregado raiz da visita técnica e execução do serviço. |
-| **Status da OS** | `WorkOrderStatus` | Máquina de estados: `SCHEDULED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`. |
+| **Status da OS** | `WorkOrderStatus` | Máquina de estados: `SCHEDULED`, `IN_PROGRESS`, `PAUSED`, `COMPLETED`, `CANCELLED`. |
 | **Ponto Georreferenciado** | `GeoPoint` | Value Object com latitude, longitude e timestamp da captura. |
 | **Modelo de Checklist** | `ChecklistTemplate` | Lista padrão de verificações reutilizáveis por tipo de trabalho. |
 | **Resposta de Checklist** | `ChecklistAnswer` | Registro com `CONFORME`, `NAO_CONFORME`, `NAO_APLICA` e observação. |
@@ -48,7 +48,7 @@
 
 ## 3. Invariantes de Domínio (Regras Inegociáveis)
 
-- **INV-01 (Fluxo Estrito de Estados)**: Nenhuma `WorkOrder` pode ser finalizada (`COMPLETED`) sem ter sido iniciada (`IN_PROGRESS`).
+- **INV-01 (Fluxo Estrito de Estados)**: Nenhuma `WorkOrder` pode ser finalizada (`COMPLETED`) sem ter sido iniciada (`IN_PROGRESS`). `PAUSED` é estado intermediário válido apenas a partir de `IN_PROGRESS`, e a retomada retorna a `IN_PROGRESS` antes de qualquer conclusão. |
 - **INV-02 (Auditabilidade Georreferenciada)**: O Check-in e o Check-out exigem a coleta de um `GeoPoint` com precisão do GPS nativo (ou indicação de GPS desligado com autorização expressa).
 - **INV-03 (Completude de Fechamento)**: Uma `WorkOrder` só pode ser concluída se todos os itens obrigatórios de checklist tiverem sido respondidos e a assinatura digital do cliente tiver sido coletada.
 - **INV-04 (Cota Máxima de Evidências)**: Cada `WorkOrder` armazena no máximo 6 fotos compactadas localmente.
@@ -76,6 +76,8 @@ Entidade Raiz: WorkOrder (Identificador: WorkOrderId [UUID v4])
 │   └── cancellationReason: String?
 ├── Métodos de Negócio:
 │   ├── startService(geo: GeoPoint): Result<void>
+│   ├── pause(reason: String): Result<void>
+│   ├── resume(): Result<void>
 │   ├── answerItem(itemId: String, answer: ChecklistAnswer): Result<void>
 │   ├── addEvidence(evidence: PhotoEvidence): Result<void>
 │   ├── complete(signature: DigitalSignature, checkOutGeo: GeoPoint): Result<void>

@@ -6,6 +6,7 @@
 enum WorkOrderStatus {
   scheduled,
   inProgress,
+  paused,
   completed,
   cancelled;
 
@@ -13,6 +14,7 @@ enum WorkOrderStatus {
   String get code => switch (this) {
         WorkOrderStatus.scheduled => 'SCHEDULED',
         WorkOrderStatus.inProgress => 'IN_PROGRESS',
+        WorkOrderStatus.paused => 'PAUSED',
         WorkOrderStatus.completed => 'COMPLETED',
         WorkOrderStatus.cancelled => 'CANCELLED',
       };
@@ -20,6 +22,7 @@ enum WorkOrderStatus {
   static WorkOrderStatus? fromCode(String code) => switch (code) {
         'SCHEDULED' => WorkOrderStatus.scheduled,
         'IN_PROGRESS' => WorkOrderStatus.inProgress,
+        'PAUSED' => WorkOrderStatus.paused,
         'COMPLETED' => WorkOrderStatus.completed,
         'CANCELLED' => WorkOrderStatus.cancelled,
         _ => null,
