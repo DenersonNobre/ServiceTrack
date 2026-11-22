@@ -164,7 +164,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final err = result.getOrNullFailure()!;
     final reason = _bypassReasonForCode(err.code);
     if (reason == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err.message)));
+      AppFeedback.showError(context, err.message);
       return;
     }
     final bypassed = await showDialog<bool>(
@@ -202,9 +202,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final bypassResult = await controller.startServiceWithBypass(workOrderId, reason);
     if (!context.mounted) return;
     if (bypassResult.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(bypassResult.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, bypassResult.getOrNullFailure()!.message);
     }
   }
 
@@ -271,7 +269,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: sigController.clear,
-                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+                  style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
                   child: const Text('Limpar assinatura'),
                 ),
               ),
@@ -281,7 +279,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
             child: const Text('Voltar'),
           ),
           FilledButton(
@@ -289,7 +287,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primaryAction,
-              minimumSize: const Size(48, 48),
+              minimumSize: kMinTouchTargetSize,
             ),
             child: const Text('Concluir OS'),
           ),
@@ -310,9 +308,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     sigController.dispose();
     if (!context.mounted) return;
     if (pngBytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe a assinatura do recebedor.')),
-      );
+      AppFeedback.showError(context, 'Informe a assinatura do recebedor.');
       return;
     }
     final sigResult = DigitalSignature.tryCreate(
@@ -322,9 +318,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       requireDocumentByPolicy: requireDoc,
     );
     if (sigResult.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(sigResult.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, sigResult.getOrNullFailure()!.message);
       return;
     }
     final result = await controller.completeWorkOrder(
@@ -333,9 +327,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     );
     if (!context.mounted) return;
     if (result.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, result.getOrNullFailure()!.message);
     }
   }
 
@@ -361,7 +353,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
             child: const Text('Voltar'),
           ),
           FilledButton(
@@ -369,7 +361,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primaryAction,
-              minimumSize: const Size(48, 48),
+              minimumSize: kMinTouchTargetSize,
             ),
             child: const Text('Pausar OS'),
           ),
@@ -382,9 +374,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final result = await controller.pause(workOrderId, reason);
     if (!context.mounted) return;
     if (result.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, result.getOrNullFailure()!.message);
     }
   }
 
@@ -396,9 +386,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final result = await controller.resume(workOrderId);
     if (!context.mounted) return;
     if (result.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, result.getOrNullFailure()!.message);
     }
   }
 
@@ -424,7 +412,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+            style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
             child: const Text('Voltar'),
           ),
           FilledButton(
@@ -432,7 +420,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
             onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
-              minimumSize: const Size(48, 48),
+              minimumSize: kMinTouchTargetSize,
             ),
             child: const Text('Cancelar OS'),
           ),
@@ -445,9 +433,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     final result = await controller.cancel(workOrderId, reason);
     if (!context.mounted) return;
     if (result.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.getOrNullFailure()!.message)),
-      );
+      AppFeedback.showError(context, result.getOrNullFailure()!.message);
     }
   }
 

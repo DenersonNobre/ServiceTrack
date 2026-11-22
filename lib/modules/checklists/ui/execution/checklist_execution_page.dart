@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_feedback.dart';
 import 'checklist_execution_controller.dart';
 import 'checklist_item_widget.dart';
 
@@ -66,10 +67,9 @@ final class ChecklistExecutionPage
                     );
                     if (!context.mounted) return;
                     if (res.isFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(res.getOrNullFailure()!.message),
-                        ),
+                      AppFeedback.showError(
+                        context,
+                        res.getOrNullFailure()!.message,
                       );
                     }
                   },
@@ -83,10 +83,9 @@ final class ChecklistExecutionPage
                     );
                     if (!context.mounted) return;
                     if (res.isFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(res.getOrNullFailure()!.message),
-                        ),
+                      AppFeedback.showError(
+                        context,
+                        res.getOrNullFailure()!.message,
                       );
                     }
                   },
