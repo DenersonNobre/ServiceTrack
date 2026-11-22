@@ -9,6 +9,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/auth_failure_codes.dart';
+
 /// PIN de desbloqueio. Criar apenas via [tryCreate].
 final class SecurityPin {
   const SecurityPin._(this.value);
@@ -24,7 +26,7 @@ final class SecurityPin {
     if (!_shape.hasMatch(candidate)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_PIN_INVALIDO',
+          code: AuthFailureCodes.invalidPin,
           message: 'O PIN deve ter de 4 a 6 dígitos numéricos.',
         ),
       );

@@ -10,6 +10,7 @@ import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../domain/ports/auth_credential_repository_port.dart';
+import '../../domain/ports/auth_failure_codes.dart';
 import '../../domain/value_objects/auth_credentials.dart';
 import '../../domain/value_objects/biometric_auth_result.dart';
 import '../../features/recovery/pin_recovery_use_case.dart';
@@ -165,7 +166,7 @@ final class PinRecoveryController extends IKortexController {
             onRecovered?.call();
           case Failure<bool, ValidationError>(:final value):
             pinError.value = value.message;
-            if (value.code == 'ERR_RECUPERACAO_NAO_AUTORIZADA') {
+            if (value.code == AuthFailureCodes.recoveryUnauthorized) {
               _pendingDeviceCredential = false;
               step.value = PinRecoveryStep.chooseMethod;
             }

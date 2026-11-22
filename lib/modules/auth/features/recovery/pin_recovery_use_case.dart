@@ -9,6 +9,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
 import '../../domain/ports/auth_credential_repository_port.dart';
+import '../../domain/ports/auth_failure_codes.dart';
 import '../../domain/ports/biometric_auth_port.dart';
 import '../../domain/value_objects/auth_credentials.dart';
 import '../../domain/value_objects/biometric_auth_result.dart';
@@ -50,7 +51,7 @@ final class PinRecoveryUseCase {
     if (auth != BiometricAuthResult.success) {
       return const Failure(
         ValidationError(
-          code: 'ERR_RECUPERACAO_NAO_AUTORIZADA',
+          code: AuthFailureCodes.recoveryUnauthorized,
           message: 'Autenticação do dispositivo não confirmada.',
         ),
       );

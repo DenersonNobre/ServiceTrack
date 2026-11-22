@@ -9,6 +9,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/auth_failure_codes.dart';
+
 /// Nome do técnico. Criar apenas via [tryCreate].
 final class TechnicianName {
   const TechnicianName._(this.value);
@@ -22,7 +24,7 @@ final class TechnicianName {
     if (trimmed.isEmpty || trimmed.length < 2) {
       return const Failure(
         ValidationError(
-          code: 'ERR_NOME_OBRIGATORIO',
+          code: AuthFailureCodes.nameRequired,
           message: 'Informe o nome do técnico.',
         ),
       );

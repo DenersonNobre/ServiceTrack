@@ -7,6 +7,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
 import '../../modules/checklists/domain/ports/checklist_answer_repository_port.dart';
+import '../../modules/checklists/domain/ports/checklist_failure_codes.dart';
 import '../../modules/checklists/domain/ports/checklist_template_repository_port.dart';
 import '../../modules/work_orders/domain/ports/checklist_proof_port.dart';
 import '../../modules/work_orders/domain/value_objects/checklist_completion_proof.dart';
@@ -32,7 +33,7 @@ final class ChecklistProofAdapter implements IChecklistProofPort {
       if (requireTemplate) {
         return const Failure(
           ValidationError(
-            code: 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO',
+            code: ChecklistFailureCodes.templateRequired,
             message: 'Vincule um checklist à OS antes de concluir.',
           ),
         );
@@ -52,7 +53,7 @@ final class ChecklistProofAdapter implements IChecklistProofPort {
         if (template == null) {
           return const Failure(
             ValidationError(
-              code: 'ERR_CHECKLIST_NAO_ENCONTRADO',
+              code: ChecklistFailureCodes.notFound,
               message: 'Modelo de checklist não encontrado.',
             ),
           );

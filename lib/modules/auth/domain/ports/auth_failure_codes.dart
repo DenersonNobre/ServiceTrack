@@ -25,4 +25,19 @@ abstract final class AuthFailureCodes {
 
   /// Cofre indisponível (I/O da plataforma).
   static const storeUnavailable = 'ERR_COFRE_INDISPONIVEL';
+
+  /// E-mail de contato inválido no onboarding.
+  static const invalidEmail = 'ERR_EMAIL_INVALIDO';
+
+  /// Senha mestre abaixo do comprimento mínimo (8 caracteres).
+  static const passwordTooShort = 'ERR_SENHA_CURTA';
+
+  /// PIN fora do formato numérico de 4 a 6 dígitos.
+  static const invalidPin = 'ERR_PIN_INVALIDO';
+
+  /// Nome do técnico obrigatório ausente ou muito curto.
+  static const nameRequired = 'ERR_NOME_OBRIGATORIO';
+
+  /// Tentativa de recuperação de PIN sem prova de autenticação válida.
+  static const recoveryUnauthorized = 'ERR_RECUPERACAO_NAO_AUTORIZADA';
 }

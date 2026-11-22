@@ -43,4 +43,10 @@ abstract final class ChecklistFailureCodes {
 
   /// Template de checklist contém itens com identificador duplicado.
   static const duplicateItemId = 'ERR_CHECKLIST_ITEM_ID_DUPLICADO';
+
+  /// Política exige template de checklist vinculado à OS.
+  static const templateRequired = 'ERR_CHECKLIST_TEMPLATE_OBRIGATORIO';
+
+  /// Template de checklist não encontrado no repositório.
+  static const notFound = 'ERR_CHECKLIST_NAO_ENCONTRADO';
 }

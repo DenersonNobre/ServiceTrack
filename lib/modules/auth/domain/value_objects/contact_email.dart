@@ -9,6 +9,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/auth_failure_codes.dart';
+
 /// E-mail do técnico. Criar apenas via [tryCreate].
 final class ContactEmail {
   const ContactEmail._(this.value);
@@ -24,7 +26,7 @@ final class ContactEmail {
     if (!_shape.hasMatch(normalized)) {
       return const Failure(
         ValidationError(
-          code: 'ERR_EMAIL_INVALIDO',
+          code: AuthFailureCodes.invalidEmail,
           message: 'Informe um e-mail válido.',
         ),
       );

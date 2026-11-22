@@ -9,6 +9,8 @@
 import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 
+import '../ports/auth_failure_codes.dart';
+
 /// Senha mestre em claro (hash fica na camada de persistência).
 /// Criar apenas via [tryCreate].
 final class MasterPassword {
@@ -26,7 +28,7 @@ final class MasterPassword {
     if (candidate.length < minLength) {
       return const Failure(
         ValidationError(
-          code: 'ERR_SENHA_CURTA',
+          code: AuthFailureCodes.passwordTooShort,
           message: 'A senha deve ter ao menos 8 caracteres.',
         ),
       );
