@@ -56,4 +56,9 @@ final class WorkOrderMigration {
   static Migration v7() => Migration(version: 7, scripts: const [
         'ALTER TABLE work_orders ADD COLUMN pause_reason TEXT',
       ]);
+
+  /// v9: vínculo de template de checklist por OS (UC-04.06/07).
+  static Migration v9() => Migration(version: 9, scripts: const [
+        'ALTER TABLE work_orders ADD COLUMN checklist_template_id TEXT',
+      ]);
 }

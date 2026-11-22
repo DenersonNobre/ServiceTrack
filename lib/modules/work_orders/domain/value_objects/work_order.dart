@@ -30,6 +30,7 @@ final class WorkOrder {
     required this.checkOut,
     required this.signature,
     required this.checklistProof,
+    required this.checklistTemplateId,
   });
 
   final String id;
@@ -57,12 +58,16 @@ final class WorkOrder {
   /// Prova de checklist obrigatório completo (UC-03.05, INV-SEC-22).
   final ChecklistCompletionProof? checklistProof;
 
+  /// Template de checklist vinculado à OS (UC-04.06/07).
+  final String? checklistTemplateId;
+
   static IResult<WorkOrder, ValidationError> tryCreate({
     required String id,
     required String customerId,
     required String serviceDescription,
     required DateTime scheduledAt,
     required Money estimatedValue,
+    String? checklistTemplateId,
   }) {
     if (id.trim().isEmpty || customerId.trim().isEmpty) {
       return const Failure(
@@ -85,6 +90,8 @@ final class WorkOrder {
         ValidationError(code: 'ERR_OS_VALOR_INVALIDO', message: 'Valor estimado não pode ser negativo.'),
       );
     }
+    final tpl = checklistTemplateId?.trim();
+    final normalizedTemplateId = (tpl == null || tpl.isEmpty) ? null : tpl;
     return Success(WorkOrder._(
       id: id.trim(),
       customerId: customerId.trim(),
@@ -98,6 +105,7 @@ final class WorkOrder {
       checkOut: null,
       signature: null,
       checklistProof: null,
+      checklistTemplateId: normalizedTemplateId,
     ));
   }
 
@@ -136,6 +144,7 @@ final class WorkOrder {
       checkOut: null,
       signature: null,
       checklistProof: null,
+      checklistTemplateId: checklistTemplateId,
     ));
   }
 
@@ -168,6 +177,7 @@ final class WorkOrder {
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
+      checklistTemplateId: checklistTemplateId,
     ));
   }
 
@@ -191,6 +201,7 @@ final class WorkOrder {
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
+      checklistTemplateId: checklistTemplateId,
     ));
   }
 
@@ -226,6 +237,7 @@ final class WorkOrder {
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
+      checklistTemplateId: checklistTemplateId,
     ));
   }
 
@@ -256,6 +268,7 @@ final class WorkOrder {
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
+      checklistTemplateId: checklistTemplateId,
     ));
   }
 
@@ -273,6 +286,7 @@ final class WorkOrder {
     GeoPoint? checkOut,
     DigitalSignature? signature,
     ChecklistCompletionProof? checklistProof,
+    String? checklistTemplateId,
   }) {
     return WorkOrder._(
       id: id,
@@ -287,6 +301,7 @@ final class WorkOrder {
       checkOut: checkOut,
       signature: signature,
       checklistProof: checklistProof,
+      checklistTemplateId: checklistTemplateId,
     );
   }
 

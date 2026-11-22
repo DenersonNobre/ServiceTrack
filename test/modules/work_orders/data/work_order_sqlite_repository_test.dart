@@ -30,13 +30,14 @@ void main() {
       await databaseFactoryFfi.setDatabasesPath(dir.path);
       provider = SqliteProvider(
         dbName: 'test_wo.db',
-        dbVersion: 7,
+        dbVersion: 9,
         migrations: [
           WorkOrderMigration.v3(),
           WorkOrderMigration.v4(),
           WorkOrderMigration.v5(),
           WorkOrderMigration.v6(),
           WorkOrderMigration.v7(),
+          WorkOrderMigration.v9(),
         ],
         factory: databaseFactoryFfi,
       );
@@ -224,6 +225,24 @@ void main() {
       expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
       final all = await repo.findAll();
       expect(all.getOrNull()!, isEmpty);
+    });
+
+    test('UC-04.07 - persiste e restaura checklistTemplateId', () async {
+      final wo = WorkOrder.tryCreate(
+        id: 'wo-tpl',
+        customerId: 'c1',
+        serviceDescription: 'Instalação',
+        scheduledAt: DateTime.utc(2026, 11, 22, 14),
+        estimatedValue: Money.fromMinorUnits(10000, currencyCode: 'BRL', scale: 2),
+        checklistTemplateId: 'tpl-1',
+      ).getOrNull()!;
+      expect(wo.checklistTemplateId, 'tpl-1');
+
+      final saved = await repo.save(wo);
+      expect(saved.isSuccess, isTrue);
+
+      final loaded = (await repo.findAll()).getOrNull()!.first;
+      expect(loaded.checklistTemplateId, 'tpl-1');
     });
   });
 }

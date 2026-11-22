@@ -51,6 +51,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         'signature_image_base64': null,
         'checklist_mandatory_total': null,
         'checklist_answered_mandatory': null,
+        'checklist_template_id': workOrder.checklistTemplateId,
       };
       final checkIn = workOrder.checkIn;
       if (checkIn case CheckInGps(:final point)) {
@@ -160,6 +161,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     if (sigR case Failure<DigitalSignature?, ValidationError>(:final value)) return Failure(value);
     final proofR = _mapChecklistProof(row);
     if (proofR case Failure<ChecklistCompletionProof?, ValidationError>(:final value)) return Failure(value);
+    final templateId = row['checklist_template_id'] as String?;
     return Success(
       WorkOrder.restore(
         id: base.id,
@@ -174,6 +176,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         checkOut: checkOutR.getOrNull(),
         signature: sigR.getOrNull(),
         checklistProof: proofR.getOrNull(),
+        checklistTemplateId: (templateId == null || templateId.isEmpty) ? null : templateId,
       ),
     );
   }

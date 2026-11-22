@@ -6,6 +6,7 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
+import '../../domain/ports/checklist_proof_port.dart';
 import '../../domain/ports/location_service_port.dart';
 import '../../domain/ports/work_order_repository_port.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
@@ -19,9 +20,14 @@ import '../../domain/value_objects/work_order_status.dart';
 enum WorkOrderListFilter { all, today, scheduled, inProgress, paused, completed }
 
 final class WorkOrderListController extends IKortexController {
-  WorkOrderListController({required this.repository, required this.locationService});
+  WorkOrderListController({
+    required this.repository,
+    required this.locationService,
+    this.checklistProofPort,
+  });
   final IWorkOrderRepositoryPort repository;
   final ILocationServicePort locationService;
+  final IChecklistProofPort? checklistProofPort;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<List<WorkOrder>> items = KortexSignal<List<WorkOrder>>([]);
@@ -177,11 +183,11 @@ final class WorkOrderListController extends IKortexController {
     }
   }
 
-  /// Conclui OS com check-out, assinatura e prova de checklist (UC-03.05).
+  /// Conclui OS com check-out, assinatura e prova de checklist (UC-03.05, UC-04.07).
   Future<IResult<WorkOrder, ValidationError>> completeWorkOrder(
     String workOrderId, {
     required DigitalSignature signature,
-    required ChecklistCompletionProof checklistProof,
+    ChecklistCompletionProof? checklistProof,
   }) async {
     if (completingId.value != null) {
       return const Failure(
@@ -196,6 +202,28 @@ final class WorkOrderListController extends IKortexController {
           ValidationError(code: 'ERR_OS_NAO_ENCONTRADA', message: 'OS não encontrada.'),
         );
       }
+      final proofPort = checklistProofPort;
+      final IResult<ChecklistCompletionProof, ValidationError> proofResult;
+      if (proofPort != null) {
+        proofResult = await proofPort.getProof(
+          workOrderId: workOrderId,
+          templateId: wo.checklistTemplateId,
+        );
+      } else if (checklistProof != null) {
+        proofResult = Success(checklistProof);
+      } else {
+        proofResult = ChecklistCompletionProof.tryCreate(
+          mandatoryTotal: 0,
+          answeredMandatory: 0,
+        );
+      }
+      final ChecklistCompletionProof effectiveProof;
+      switch (proofResult) {
+        case Success(:final value):
+          effectiveProof = value;
+        case Failure(:final value):
+          return Failure(value);
+      }
       final loc = await locationService.getCurrentLocation();
       switch (loc) {
         case Failure(:final value):
@@ -204,7 +232,7 @@ final class WorkOrderListController extends IKortexController {
           final completed = wo.complete(
             signature: signature,
             checkOut: value,
-            checklistProof: checklistProof,
+            checklistProof: effectiveProof,
           );
           switch (completed) {
             case Failure<WorkOrder, ValidationError>(:final value):

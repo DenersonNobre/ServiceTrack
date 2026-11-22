@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import '../modules/auth/data/biometric/.index.dart';
 import '../modules/auth/data/credential_store/.index.dart';
 import '../modules/auth/domain/ports/.index.dart';
+import '../modules/checklists/.index.dart';
 import '../modules/customers/data/.index.dart';
 import '../modules/customers/domain/ports/.index.dart';
 import '../modules/profile/data/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
 import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
+import 'adapters/checklist_proof_adapter.dart';
 import 'app_entry.dart';
 import 'theme/app_theme.dart';
 
@@ -26,6 +28,9 @@ class ServiceTrackApp extends StatelessWidget {
     this.serviceLocationRepository,
     this.workOrderRepository,
     this.locationService,
+    this.checklistTemplateRepository,
+    this.checklistAnswerRepository,
+    this.checklistProofPort,
   });
 
   /// Repositório de credenciais (injeção para testes).
@@ -49,6 +54,15 @@ class ServiceTrackApp extends StatelessWidget {
   /// Porta de localização (injeção para testes).
   final ILocationServicePort? locationService;
 
+  /// Repositório de templates de checklist (injeção para testes).
+  final IChecklistTemplateRepositoryPort? checklistTemplateRepository;
+
+  /// Repositório de respostas de checklist (injeção para testes).
+  final IChecklistAnswerRepositoryPort? checklistAnswerRepository;
+
+  /// Porta de prova de checklist para conclusão de OS (injeção para testes).
+  final IChecklistProofPort? checklistProofPort;
+
   @override
   Widget build(BuildContext context) {
     final repo = credentialRepository ??
@@ -61,6 +75,15 @@ class ServiceTrackApp extends StatelessWidget {
         serviceLocationRepository ?? MemoryServiceLocationRepository();
     final workOrderRepo = workOrderRepository ?? MemoryWorkOrderRepository();
     final location = locationService ?? GeolocatorLocationService();
+    final checklistTemplateRepo =
+        checklistTemplateRepository ?? MemoryChecklistTemplateRepository();
+    final checklistAnswerRepo =
+        checklistAnswerRepository ?? MemoryChecklistAnswerRepository();
+    final proofPort = checklistProofPort ??
+        ChecklistProofAdapter(
+          templateRepository: checklistTemplateRepo,
+          answerRepository: checklistAnswerRepo,
+        );
     return MaterialApp(
       title: 'ServiceTrack',
       theme: AppTheme.light,
@@ -74,6 +97,7 @@ class ServiceTrackApp extends StatelessWidget {
         locationRepo: locationRepo,
         workOrderRepo: workOrderRepo,
         locationService: location,
+        checklistProofPort: proofPort,
       ),
     );
   }

@@ -12,7 +12,6 @@ import 'package:signature/signature.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/.index.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
-import '../../domain/value_objects/checklist_completion_proof.dart';
 import '../../domain/value_objects/digital_signature.dart';
 import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
@@ -301,20 +300,9 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       );
       return;
     }
-    final proofResult = ChecklistCompletionProof.tryCreate(
-      mandatoryTotal: 0,
-      answeredMandatory: 0,
-    );
-    if (proofResult.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(proofResult.getOrNullFailure()!.message)),
-      );
-      return;
-    }
     final result = await controller.completeWorkOrder(
       workOrderId,
       signature: sigResult.getOrNull()!,
-      checklistProof: proofResult.getOrNull()!,
     );
     if (!context.mounted) return;
     if (result.isFailure) {

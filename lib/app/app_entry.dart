@@ -34,6 +34,7 @@ class AppEntry extends StatefulWidget {
     required this.locationRepo,
     required this.workOrderRepo,
     required this.locationService,
+    required this.checklistProofPort,
   });
 
   final IAuthCredentialRepositoryPort repo;
@@ -43,6 +44,7 @@ class AppEntry extends StatefulWidget {
   final IServiceLocationRepositoryPort locationRepo;
   final IWorkOrderRepositoryPort workOrderRepo;
   final ILocationServicePort locationService;
+  final IChecklistProofPort checklistProofPort;
 
   @override
   State<AppEntry> createState() => _AppEntryState();
@@ -286,6 +288,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
               create: (_) => WorkOrderListController(
                 repository: widget.workOrderRepo,
                 locationService: widget.locationService,
+                checklistProofPort: widget.checklistProofPort,
               ),
               dispose: (c) => c.dispose(),
             ),
