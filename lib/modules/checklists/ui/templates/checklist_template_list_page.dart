@@ -67,6 +67,7 @@ final class ChecklistTemplateListPage
           if (list.isEmpty) {
             return AppEmptyState(
               icon: Icons.checklist_outlined,
+              imageAsset: 'assets/images/empty_checklists.png',
               title: 'Nenhum modelo cadastrado',
               message:
                   'Crie modelos reutilizáveis para agilizar seus atendimentos.',

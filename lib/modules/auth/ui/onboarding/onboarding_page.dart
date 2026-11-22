@@ -24,7 +24,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
               child: KortexWatch(
@@ -32,7 +32,16 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 24),
+                      Center(
+                        child: Image.asset(
+                          'assets/images/onboarding_welcome.png',
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         'Crie seu acesso',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -40,21 +49,21 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                               fontWeight: FontWeight.w700,
                             ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Text(
                         'Configure seus dados para proteger o app e personalizar seus laudos.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: AppColors.gray700,
                             ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 16),
                       _Field(
                         label: 'Nome completo',
                         error: controller.nameError.value,
                         onChanged: (v) => controller.name.value = v,
                         textInputAction: TextInputAction.next,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _Field(
                         label: 'E-mail',
                         error: controller.emailError.value,
@@ -62,7 +71,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _Field(
                         label: 'Senha mestre',
                         error: controller.passwordError.value,
@@ -70,7 +79,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                         obscureText: true,
                         textInputAction: TextInputAction.next,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _Field(
                         label: 'PIN (4 a 6 dígitos)',
                         error: controller.pinError.value,
@@ -80,7 +89,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => controller.submit(),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       if (controller.submitError.value != null) ...[
                         Text(
                           controller.submitError.value!,

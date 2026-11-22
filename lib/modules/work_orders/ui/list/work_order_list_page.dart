@@ -10,6 +10,7 @@ import 'package:kortex/kortex.dart';
 import 'package:signature/signature.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/.index.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/checklist_completion_proof.dart';
 import '../../domain/value_objects/digital_signature.dart';
@@ -72,7 +73,12 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                 ),
                 Expanded(
                   child: items.isEmpty
-                      ? const Center(child: Text('Nenhuma OS encontrada.'))
+                      ? const AppEmptyState(
+                          icon: Icons.assignment_outlined,
+                          imageAsset: 'assets/images/empty_work_orders.png',
+                          title: 'Nenhuma OS encontrada.',
+                          message: 'Crie uma nova ordem de serviço pelo botão +.',
+                        )
                       : ListView.separated(
                           itemCount: items.length,
                           separatorBuilder: (_, _) => const Divider(height: 1),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/.index.dart';
 import '../../domain/value_objects/customer.dart';
 import 'customer_list_controller.dart';
 
@@ -58,7 +59,12 @@ final class CustomerListPage extends IKortexPage<CustomerListController> {
                   }
                   final items = controller.filteredCustomers;
                   if (controller.customers.value.isEmpty) {
-                    return const Center(child: Text('Nenhum cliente cadastrado.'));
+                    return const AppEmptyState(
+                      icon: Icons.people_outline,
+                      imageAsset: 'assets/images/empty_customers.png',
+                      title: 'Nenhum cliente cadastrado.',
+                      message: 'Toque no botão + para cadastrar seu primeiro cliente.',
+                    );
                   }
                   if (items.isEmpty) {
                     return const Center(child: Text('Nenhum cliente encontrado.'));

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/.index.dart';
 import '../../domain/value_objects/service_location.dart';
 import 'service_location_list_controller.dart';
 
@@ -38,7 +39,14 @@ final class ServiceLocationListPage extends IKortexPage<ServiceLocationListContr
               return Center(child: Text(controller.error.value!, style: const TextStyle(color: AppColors.error)));
             }
             final items = controller.locations.value;
-            if (items.isEmpty) return const Center(child: Text('Nenhum local cadastrado.'));
+            if (items.isEmpty) {
+              return const AppEmptyState(
+                icon: Icons.place_outlined,
+                imageAsset: 'assets/images/empty_locations.png',
+                title: 'Nenhum local cadastrado.',
+                message: 'Adicione um endereço de atendimento para este cliente.',
+              );
+            }
             return ListView.separated(
               itemCount: items.length,
               separatorBuilder: (_, _) => const Divider(height: 1),

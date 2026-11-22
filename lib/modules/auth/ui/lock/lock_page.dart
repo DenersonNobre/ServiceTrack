@@ -43,6 +43,16 @@ final class LockPage extends IKortexPage<LockController> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      Center(
+                        child: Image.asset(
+                          'assets/images/lock_security.png',
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Text(
                         'App bloqueado',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(

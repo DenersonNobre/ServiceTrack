@@ -45,7 +45,25 @@ final class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Home - ServiceTrack')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/home_hero_empty.png',
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 16),
+              const Text('Home - ServiceTrack'),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

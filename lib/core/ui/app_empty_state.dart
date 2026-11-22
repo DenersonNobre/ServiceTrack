@@ -15,12 +15,20 @@ final class AppEmptyState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.message,
+    this.imageAsset,
+    this.imageSize = 140,
     this.actionLabel,
     this.onAction,
   });
 
-  /// Ícone ilustrativo central.
+  /// Ícone ilustrativo central (fallback quando [imageAsset] não é informado).
   final IconData icon;
+
+  /// Caminho opcional de ilustração PNG transparente em `assets/images/`.
+  final String? imageAsset;
+
+  /// Tamanho máximo da ilustração quando [imageAsset] é informado.
+  final double imageSize;
 
   /// Título principal.
   final String title;
@@ -44,7 +52,17 @@ final class AppEmptyState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 48, color: AppColors.gray500),
+              if (imageAsset != null)
+                Image.asset(
+                  imageAsset!,
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) =>
+                      Icon(icon, size: 48, color: AppColors.gray500),
+                )
+              else
+                Icon(icon, size: 48, color: AppColors.gray500),
               const SizedBox(height: 16),
               Text(
                 title,
