@@ -11,6 +11,12 @@ import 'app_colors.dart';
 
 /// Temas canônicos Light e Dark do ServiceTrack.
 abstract final class AppTheme {
+  /// Família tipográfica principal da interface (offline em assets/fonts/).
+  static const fontSans = 'PlusJakartaSans';
+
+  /// Família monoespaçada para códigos de OS, GPS e timestamps.
+  static const fontMono = 'JetBrainsMono';
+
   static const FlexSchemeColor _lightColors = FlexSchemeColor(
     primary: AppColors.primaryAction,
     primaryContainer: Color(0xFFCCFBF1),
@@ -52,6 +58,7 @@ abstract final class AppTheme {
         colors: _lightColors,
         scaffoldBackground: AppColors.surface,
         surface: AppColors.surfaceCard,
+        fontFamily: fontSans,
         subThemesData: _subThemes,
         keyColors: const FlexKeyColors(
           useSecondary: true,
@@ -63,6 +70,7 @@ abstract final class AppTheme {
   /// Tema escuro harmônico derivado do mesmo seed Deep Petrol Green.
   static ThemeData get dark => FlexThemeData.dark(
         colors: _darkColors,
+        fontFamily: fontSans,
         subThemesData: _subThemes,
         keyColors: const FlexKeyColors(
           useSecondary: true,

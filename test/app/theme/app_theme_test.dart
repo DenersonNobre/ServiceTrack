@@ -11,6 +11,7 @@ void main() {
       expect(theme.useMaterial3, isTrue);
       expect(theme.colorScheme.primary, AppColors.primaryAction);
       expect(theme.scaffoldBackgroundColor, AppColors.surface);
+      expect(theme.textTheme.bodyMedium?.fontFamily, AppTheme.fontSans);
     });
 
     test('dark gera tema escuro Material 3 valido', () {
