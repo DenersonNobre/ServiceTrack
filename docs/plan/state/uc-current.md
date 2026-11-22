@@ -9,8 +9,8 @@
 
 ## Contexto Atual
 - **O que foi feito**: UC-04.07 concluído/consolidado (D-05 mitigado). Iniciado UC-04.08 (unificação DigitalSignature/M-05, ADR-001).
-- **Gate 2.5 (Segurança)**: Gate 2.5: INVOKED — análise estática do slice (sem subagente separado): sem nova PII/LGPD/dependência; reforça integridade INV-03/INV-06/INV-SEC-22 (fail-closed). Risco residual: OS sem `checklistTemplateId` vinculada — política C (PO 2026-11-22) controla por `requireChecklistTemplate` (default true fail-closed). Sem criptografia nova (C5/D-01 permanecem).
-- **Gates 3/4**: pendentes (aguardando Gate 2.5 e implementação).
+- **Gate 2.5 (Segurança)**: Gate 2.5: INVOKED — APROVADO COM CONDICIONANTES (Média, `ses_dfbc73e7affeMHohJlFfenufxo`). C-01/N1: não persistir `documentNumber` em claro (D-01); default minimização. C-03/N2: `documentNumber?` opcional por política/config, default sem coleta. C-10: migration additiva, sem UPDATE em COMPLETED + testes INV-SEC-23. C-04..C-09 obrigatórios no slice. C-02/C-11/C-12 deferidos (D-01/EPIC-05/EPIC-07).
+- **Gates 3/4**: pendentes (implementação condicionada ao Gate 2.5).
 
 ## [EVIDENCIA]
 - Leitura: `lib/modules/work_orders/ui/list/work_order_list_controller.dart`, `lib/modules/checklists/ui/execution/checklist_execution_controller.dart`, `lib/app/adapters/checklist_proof_adapter.dart`, `lib/app/app_entry.dart`, `lib/modules/work_orders/domain/ports/checklist_proof_port.dart`.
