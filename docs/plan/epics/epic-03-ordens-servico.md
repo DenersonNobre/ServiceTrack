@@ -35,7 +35,7 @@ Governar a criação, agendamento e transições da Ordem de Serviço (`WorkOrde
 | **UC-03.01** | Criação Rápida de Ordem de Serviço | Nenhuma | `Concluído` |
 | **UC-03.02** | Painel de Visitas & Filtros Rápidos | UC-03.01 | `Concluído` |
 | **UC-03.03** | Check-in de Atendimento & Georreferenciamento | UC-03.01, UC-03.02 | `Concluído` |
-| **UC-03.04** | Pausa e Cancelamento com Justificativa | UC-03.01 | `Em Andamento` |
+| **UC-03.04** | Pausa e Cancelamento com Justificativa | UC-03.01 | `Concluído` |
 | **UC-03.05** | Fechamento e Travamento Imutável da OS | UC-03.03 | `Concluído` |
 
 ---

@@ -2,22 +2,26 @@
 
 ## Metadados
 - **Fatia (Slice)**: `UC-03.04` (Pausa e Cancelamento com Justificativa)
-- **Status**: EM ANDAMENTO (Gate 3/4 pendentes)
+- **Status**: CONCLUIDO (Gates 2.5/3/4)
 - **Dono**: `opc01@e03ff640`
 - **Épico**: `EPIC-03`
 - **Última Atualização**: `2026-11-21`
 
 ## Contexto Atual
-- **O que foi feito**: Complemento da UC-03.04 com pausa/retomada. Contrato confirmado pelo PO: pausa só registra motivo (sem GPS na retomada). Adicionado `PAUSED` em `WorkOrderStatus`, `pause(reason)`, `resume()`, migração SQLite v7 `pause_reason`, repo/controller/UI (filtro Pausadas, ações Pausar/Retomar). Cancelamento de PAUSED permitido.
-- **Gate 2.5 (Segurança)**: Gate 2.5: PULADO — transição local de estado com justificativa em SQLite, sem nova dependência/superfície sensível; retomada sem GPS por decisão do PO.
-- **Gates 3/4**: pendentes.
+- **O que foi feito**: UC-03.04 completa. Cancelamento com justificativa (entrega anterior) + pausa/retomada (59661c6): `PAUSED`, `pause(reason)`, `resume()` sem GPS por decisão do PO, migração SQLite v7 `pause_reason`, controller/UI filtros e ações.
+- **Gate 2.5 (Segurança)**: Gate 2.5: PULADO — transição local com justificativa em SQLite, sem nova superfície sensível; retomada sem GPS por decisão do PO.
+- **Gate 3**: APROVADO Média (`ses_dfedd90adffeEk5ZybiJqKFgWd`).
+- **Gate 4**: APROVADO Alta (`ses_dfedd90abffeX2FsP3Wc1IiQMH`) — laudo `docs/plan/reviews/qa-review-v0.17.0.md`.
 
 ## [EVIDENCIA]
-- Leitura: `docs/plan/epics/epic-03-ordens-servico.md` UC-03.04, `docs/architecture/SPEC.md` INV-01/WorkOrderStatus/pause/resume.
-- Verifica: `flutter analyze --fatal-infos` -> No issues found (exit 0). `flutter test test/modules/work_orders` -> 32/32 pass. `flutter test` completo -> 02:50 +128 -3 (3 falhas fora do slice: 2x `credential_recovery_test.dart` UC-01.04 flakiness conhecida, 1x `checklist_template_sqlite_repository_test.dart` UC-04.01 que passou isolado `00:01 +1 All tests passed!`).
+- Leitura: `docs/plan/epics/epic-03-ordens-servico.md` UC-03.04, `docs/architecture/SPEC.md` INV-01/PAUSED/pause/resume.
+- Verifica: `flutter analyze --fatal-infos` -> No issues found (exit 0). `flutter test` completo -> 03:21 +137 -5 (5 falhas fora do slice: UC-01.02 timeout full-run mas PASS isolado; UC-01.04 flaky). `flutter test test/modules/work_orders` -> 32/32 pass.
 - Confirma: RED `work_order_pause_test.dart` falhou por ausência de `pause/resume/paused` (exit 1); após implementação verde.
 
+## Observações (não bloqueantes)
+- A1: flakiness UC-01.02/UC-01.04 fora do slice.
+- A2: `pauseReason` persistido mas não exposto em UI de detalhe/histórico.
+
 ## Próximo passo
-1. Gate 3 (review).
-2. Gate 4 (QA) + laudo.
-3. Consolidação UC-03.04 completa e release claim.
+1. Liberar claim UC-03.04.
+2. Tratar D-05 antes de EPIC-04; iniciar próximo épico conforme `docs/plan/README.md` (EPIC-04 bloqueado por EPIC-03 agora concluído, mas D-05 pendente).
