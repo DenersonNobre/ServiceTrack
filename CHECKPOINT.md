@@ -6,16 +6,18 @@
 ## Contexto
 App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite local, biometria/PIN e geração de laudos em PDF no aparelho.
 
-## Estado Real (Verificado em 2026-11-21)
-- **Branch**: `main` (local à frente de `origin/main`, sem push — aguardar autorização do PO).
-- **EPIC-00/01/02/03**: **CONCLUÍDAS** (`qa-review-v0.1.0..v0.17.0`). UC-03.04 fechada com pausa/retomada (sem GPS na retomada, decisão PO).
-- **Dívidas**: `docs/DEBITOS.md` D-01..D-05; A1 flakiness `credential_recovery_test.dart`/`auth_session_settings_test.dart` fora do slice.
+## Estado Real (Verificado em 2026-11-22)
+- **Branch**: `main` (sincronizada com `origin/main` após push autorizado).
+- **EPIC-00/01/02/03**: **CONCLUÍDAS** (`qa-review-v0.1.0..v0.17.0`).
+- **EPIC-04**: **Em reconciliação** — código parcial (UC-04.01–04.04 com commits e 19 testes de módulo verdes), mas sem laudos/gates e com lacunas: D-05 (prova 0/0), respostas só em memória, assinatura duplicada. Ver `docs/plan/epics/epic-04-checklists-evidencias.md` §6.
+- **EPIC-06**: **Pronta para iniciar** (hardening/qualidade transversal) — `docs/plan/epics/epic-06-hardening-qualidade.md`.
+- **Dívidas**: `docs/DEBITOS.md` D-01..D-05; N-01..N-07 na proposta de mitigação.
 
 ## Próximo Passo Acionável
-1. Tratar **D-05** antes de integrar EPIC-04 (prova checklist real, substituir 0/0).
-2. Iniciar **EPIC-04 — Checklists, Câmera & Evidências GPS** conforme `docs/plan/README.md`.
+1. **EPIC-04 reconciliação**: executar UC-04.05–04.08 (contrato assinatura, SQLite respostas por OS, integração D-05, unificação assinatura) com Gates 2.5/3/4.
+2. **EPIC-06 em paralelo controlado**: iniciar M-01/M-02/M-07/M-08 em fatias pequenas sem colidir com work_orders/checklists.
 
 ## Travas Vivas
-- **Claim ativo**: UC-04.03 por outro agente (`agy01@59993bf1`) — não conflitar.
-- **Push**: pendente autorização explícita do PO (e evidências: árvore limpa, sem concorrência/divergência).
+- **Claim ativo**: nenhum (verificar `claims status` antes de mutar).
+- **Push**: somente com autorização explícita do PO + 3 evidências.
 - **Greenfield Lock**: **DESTRAVADO**.
