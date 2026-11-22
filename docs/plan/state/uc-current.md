@@ -20,4 +20,4 @@
 ## Próximo passo
 1. **E2E device (EPIC-04)**: validar fluxo ponta-a-ponta em device/emulador (template->OS->checklist->conclusão) — pendência de ambiente, não de código.
 2. **EPIC-07**: plugar políticas/config (checklist obrigatório, documento recebedor) e tratar C-01/D-01 antes de habilitar persistência de documento.
-3. Consolidar release EPIC-04 após E2E/gates remanescentes dos UCs 04.01-04.04 conforme matriz.
+3. **Consolidação EPIC-04**: README/épico reconciliados (UC-04.01–04.08 concluídos em código/testes; D-05 mitigado). Fechar E2E device e emitir consolidação/laudo final do épico quando validado.
