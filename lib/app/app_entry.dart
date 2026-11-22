@@ -13,7 +13,7 @@ import '../modules/auth/ui/recovery/.index.dart';
 import '../modules/checklists/ui/execution/checklist_execution_controller.dart';
 import '../modules/checklists/ui/execution/checklist_execution_page.dart';
 import '../modules/customers/ui/customers_routes.dart';
-import '../modules/profile/ui/profile/.index.dart';
+import '../modules/profile/ui/profile_routes.dart';
 import '../modules/work_orders/domain/value_objects/work_order_status.dart';
 import '../modules/work_orders/ui/form/.index.dart';
 import '../modules/work_orders/ui/list/.index.dart';
@@ -33,6 +33,7 @@ class AppEntry extends StatefulWidget {
 class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
   late final CustomersRoutes _customersRoutes;
+  late final ProfileRoutes _profileRoutes;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
   static const _backgroundLockTtl = Duration(minutes: 5);
@@ -44,6 +45,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     _customersRoutes = CustomersRoutes(
       customerRepository: widget.deps.customerRepository,
       locationRepository: widget.deps.locationRepository,
+    );
+    _profileRoutes = ProfileRoutes(
+      profileRepository: widget.deps.profileRepository,
     );
     _routeFuture = ResolveInitialRouteUseCase(
       repo: widget.deps.credentialRepository,
@@ -75,20 +79,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
 
   void _goProfile() {
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => KortexScope(
-          providers: [
-            KortexProvider<ProfileController>(
-              create: (_) =>
-                  ProfileController(repository: widget.deps.profileRepository),
-              dispose: (c) => c.dispose(),
-            ),
-          ],
-          child: const ProfilePage(),
-        ),
-      ),
-    );
+    Navigator.of(context).push(_profileRoutes.edit());
   }
 
   void _goCustomers() {

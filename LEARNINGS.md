@@ -46,13 +46,15 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 
 ### 2. Decisão
 - GetX é proibido (`AGENTS.md`); o "binding" no Kortex é o `KortexScope`/`KortexProvider`.
-- Introduzido `AppDependencies` (composition root) e `CustomersRoutes` (rotas + bindings Kortex do módulo de clientes), com injeção por construtor.
-- `AppEntry` recebe `deps` e delega a navegação de clientes ao módulo; o comportamento observável foi preservado.
+- Introduzido `AppDependencies` (composition root), `CustomersRoutes` e `ProfileRoutes` (rotas + bindings Kortex por módulo), com injeção por construtor.
+- O helper `appScopedRoute` (`lib/core/ui`) elimina o boilerplate de `MaterialPageRoute` + `KortexScope` + `KortexProvider` + `readKortex` + auto-dispose nas rotas de módulo.
+- `AppEntry` recebe `deps` e delega a navegação de clientes e perfil aos módulos; o comportamento observável foi preservado.
 
 ### 3. Regra
 - Cada módulo deve expor seu route/scope builder e receber apenas as portas que usa; o shell só orquestra gate, lifecycle e rotas.
+- Usar `appScopedRoute` para rotas com um único controller; `KortexScope` manual só quando a rota precisar de múltiplos providers.
 - Refator é behavior-preserving: a suíte completa é a rede de segurança.
 
 ### 4. Evidência
-- `app_entry.dart`: 487 -> 317 linhas; `KortexProvider` no shell: 13 -> 8 (5 extraídos para `CustomersRoutes`).
-- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => `172 passed, 0 failed`.
+- `app_entry.dart`: 487 -> 312 linhas; `KortexProvider` no shell: 13 -> 7 (5 em `CustomersRoutes` + 1 em `ProfileRoutes`).
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => `174 passed, 0 failed`.

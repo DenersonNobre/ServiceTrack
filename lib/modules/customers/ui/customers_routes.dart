@@ -1,11 +1,11 @@
 // Rotas e bindings Kortex do módulo de clientes.
 //
-// SRP: compor escopo/provider e navegação das telas de clientes/local.
+// SRP: compor rotas escopadas e navegação das telas de clientes/local.
 // Não implementa regra de negócio nem conhece o shell do app.
 
 import 'package:flutter/material.dart';
-import 'package:kortex/kortex.dart';
 
+import '../../../../core/ui/app_scoped_route.dart';
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/ports/service_location_repository_port.dart';
 import '../domain/value_objects/customer.dart';
@@ -33,120 +33,74 @@ final class CustomersRoutes {
 
   /// Lista de clientes com atalhos para cadastro, detalhe e locais.
   Route<void> list() {
-    return MaterialPageRoute<void>(
-      builder: (context) => KortexScope(
-        providers: [
-          KortexProvider<CustomerListController>(
-            create: (_) =>
-                CustomerListController(repository: customerRepository),
-            dispose: (controller) => controller.dispose(),
-          ),
-        ],
-        child: Builder(
-          builder: (scopeContext) {
-            final list = scopeContext.readKortex<CustomerListController>();
-            return CustomerListPage(
-              onAdd: () => _push(context, form(onSaved: list.load)),
-              onEdit: (customer) => _push(
-                context,
-                form(customerId: customer.id, onSaved: list.load),
-              ),
-              onLocations: (customer) => _push(context, locations(customer)),
-              onDetail: (customer) => _push(context, detail(customer)),
-            );
-          },
+    return appScopedRoute<CustomerListController, void>(
+      create: (_) => CustomerListController(repository: customerRepository),
+      builder: (context, controller) => CustomerListPage(
+        onAdd: () => _push(context, form(onSaved: controller.load)),
+        onEdit: (customer) => _push(
+          context,
+          form(customerId: customer.id, onSaved: controller.load),
         ),
+        onLocations: (customer) => _push(context, locations(customer)),
+        onDetail: (customer) => _push(context, detail(customer)),
       ),
     );
   }
 
   /// Cadastro/edição de cliente; ao salvar, fecha a rota e notifica o chamador.
   Route<void> form({String? customerId, VoidCallback? onSaved}) {
-    return MaterialPageRoute<void>(
-      builder: (context) => KortexScope(
-        providers: [
-          KortexProvider<CustomerFormController>(
-            create: (_) => CustomerFormController(
-              repository: customerRepository,
-              customerId: customerId,
-            ),
-            dispose: (controller) => controller.dispose(),
-          ),
-        ],
-        child: CustomerFormPage(
-          onSaved: () {
-            Navigator.of(context).pop();
-            onSaved?.call();
-          },
-        ),
+    return appScopedRoute<CustomerFormController, void>(
+      create: (_) => CustomerFormController(
+        repository: customerRepository,
+        customerId: customerId,
+      ),
+      builder: (context, _) => CustomerFormPage(
+        onSaved: () {
+          Navigator.of(context).pop();
+          onSaved?.call();
+        },
       ),
     );
   }
 
   /// Detalhe do cliente com atalhos de edição e locais.
   Route<void> detail(Customer customer) {
-    return MaterialPageRoute<void>(
-      builder: (context) => KortexScope(
-        providers: [
-          KortexProvider<CustomerDetailController>(
-            create: (_) => CustomerDetailController(
-              repository: customerRepository,
-              customerId: customer.id,
-            ),
-            dispose: (controller) => controller.dispose(),
-          ),
-        ],
-        child: Builder(
-          builder: (scopeContext) {
-            final detailController = scopeContext
-                .readKortex<CustomerDetailController>();
-            return CustomerDetailPage(
-              onEdit: () => _push(
-                context,
-                form(customerId: customer.id, onSaved: detailController.load),
-              ),
-              onLocations: () => _push(context, locations(customer)),
-            );
-          },
+    return appScopedRoute<CustomerDetailController, void>(
+      create: (_) => CustomerDetailController(
+        repository: customerRepository,
+        customerId: customer.id,
+      ),
+      builder: (context, controller) => CustomerDetailPage(
+        onEdit: () => _push(
+          context,
+          form(customerId: customer.id, onSaved: controller.load),
         ),
+        onLocations: () => _push(context, locations(customer)),
       ),
     );
   }
 
   /// Lista de locais de atendimento do cliente.
   Route<void> locations(Customer customer) {
-    return MaterialPageRoute<void>(
-      builder: (context) => KortexScope(
-        providers: [
-          KortexProvider<ServiceLocationListController>(
-            create: (_) => ServiceLocationListController(
-              repository: locationRepository,
-              customerId: customer.id,
-            ),
-            dispose: (controller) => controller.dispose(),
+    return appScopedRoute<ServiceLocationListController, void>(
+      create: (_) => ServiceLocationListController(
+        repository: locationRepository,
+        customerId: customer.id,
+      ),
+      builder: (context, controller) => ServiceLocationListPage(
+        customerName: customer.name.value,
+        onAdd: () => _push(
+          context,
+          locationForm(customerId: customer.id, onSaved: controller.load),
+        ),
+        onEdit: (location) => _push(
+          context,
+          locationForm(
+            customerId: customer.id,
+            locationId: location.id,
+            initial: location,
+            onSaved: controller.load,
           ),
-        ],
-        child: Builder(
-          builder: (scopeContext) {
-            final list = scopeContext
-                .readKortex<ServiceLocationListController>();
-            return ServiceLocationListPage(
-              customerName: customer.name.value,
-              onAdd: () => _push(
-                context,
-                locationForm(customerId: customer.id, onSaved: list.load),
-              ),
-              onEdit: (location) => _push(
-                context,
-                locationForm(
-                  customerId: customer.id,
-                  locationId: location.id,
-                  initial: location,
-                  onSaved: list.load,
-                ),
-              ),
-            );
-          },
         ),
       ),
     );
@@ -159,25 +113,18 @@ final class CustomersRoutes {
     ServiceLocation? initial,
     VoidCallback? onSaved,
   }) {
-    return MaterialPageRoute<void>(
-      builder: (context) => KortexScope(
-        providers: [
-          KortexProvider<ServiceLocationFormController>(
-            create: (_) => ServiceLocationFormController(
-              repository: locationRepository,
-              customerId: customerId,
-              locationId: locationId,
-              initial: initial,
-            ),
-            dispose: (controller) => controller.dispose(),
-          ),
-        ],
-        child: ServiceLocationFormPage(
-          onSaved: () {
-            Navigator.of(context).pop();
-            onSaved?.call();
-          },
-        ),
+    return appScopedRoute<ServiceLocationFormController, void>(
+      create: (_) => ServiceLocationFormController(
+        repository: locationRepository,
+        customerId: customerId,
+        locationId: locationId,
+        initial: initial,
+      ),
+      builder: (context, _) => ServiceLocationFormPage(
+        onSaved: () {
+          Navigator.of(context).pop();
+          onSaved?.call();
+        },
       ),
     );
   }
