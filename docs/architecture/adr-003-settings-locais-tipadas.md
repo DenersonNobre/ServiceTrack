@@ -1,6 +1,7 @@
 # ADR-003 — Configurações Locais Tipadas
 
-> **Status**: Aceito (UC-07.01 implementado; UC-07.02/03 pendentes)  
+> **Status**: Aceito (UC-07.01/02/03 implementados; Gates 3/4 pendentes)
+>
 > **Data**: 2026-11-22  
 > **Autor**: `opc01@e03ff640`  
 > **Relacionado**: `EPIC-07`, `UC-07.01`, `SettingKey`, `SettingsSnapshot`, `ISettingsRepositoryPort`, `SettingsMigration.v11`, `ADR-001` D2.
@@ -56,8 +57,8 @@
 | `SettingsSqliteRepository` + `MemorySettingsRepository` | Concluído |
 | `GetSettings` + `UpdateSetting` | Concluído |
 | Testes de domínio/repositório/use cases | Concluído (10 testes) |
-| UI de configurações (UC-07.02) | Pendente |
-| Integração das políticas nos consumidores (UC-07.03) | Pendente |
+| UI de configurações (UC-07.02) | Concluído |
+| Integração das políticas nos consumidores (UC-07.03) | Concluído (G2.5 com condicionantes; G3/G4 pendentes) |
 
 ## Regras de evolução
 

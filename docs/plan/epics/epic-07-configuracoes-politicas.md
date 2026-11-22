@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00` (fundação), `EPIC01` (perfil/auth local) |
 | **Prioridade** | Média (habilita políticas transversais; D2/ADR-001) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Andamento (UC-07.01/02 concluídos; UC-07.03 pendente)` |
+| **Status Atual** | `Em Andamento (UC-07.01/02/03 concluídos em código; Gates 3/4 pendentes)` |
 | **Referências** | [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [SPEC](../../architecture/SPEC.md) \| [DESIGN](../../architecture/DESIGN.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
@@ -36,7 +36,7 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 | :--- | :--- | :--- | :---: | :---: |
 | **UC-07.01** | Fundação do Módulo de Configurações Locais | Nenhuma | PULADO (sem superfície sensível nova; sem PII, sem nova dependência) | `Concluído (código+testes)` |
 | **UC-07.02** | UI de Configurações Locais | UC-07.01 | PULADO (UI lê/escreve por use case; sem PII nova; D2 já decidido) | `Concluído (código+testes)` |
-| **UC-07.03** | Integração de Políticas de Conclusão/Evidência | UC-07.01, UC-07.02 | INVOKED (D2/PII: documento do recebedor; respeitar C-01/D-01, minimização, fail-closed) | `Pendente` |
+| **UC-07.03** | Integração de Políticas de Conclusão/Evidência | UC-07.01, UC-07.02 | INVOKED (D2/PII: documento do recebedor; respeitar C-01/D-01, minimização, fail-closed) | `Concluído (código+testes; G2.5 c/ condicionantes)` |
 
 ---
 
@@ -44,18 +44,18 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 
 - [x] Catálogo tipado de configurações com defaults explícitos (sem string mágica de chave fora do catálogo).
 - [x] Persistência local SQLite via `dnolib/sqlite` com migration versionada e idempotente (`SettingsMigration.v11`, `dbVersion: 11`).
-- [ ] Consumidores acessam políticas por porta/use case, não por storage direto nem bool hardcoded em `app_entry`.
+- [x] Consumidores acessam políticas por use case, não por storage direto nem bool hardcoded em `app_entry`.
 - [x] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
-- [ ] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, fluxo exige documento e respeita C-01/D-01 (fail-closed se persistência de documento não protegida).
-- [ ] `require_checklist_template` default `true` (política C, D-05) configurável.
-- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`190 passed`).
-- [ ] Gates 2.5/3/4 conforme sensibilidade (UC-07.03 com G2.5 obrigatório).
+- [x] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, o fluxo falha fail-closed enquanto D-01 não protege o documento.
+- [x] `require_checklist_template` default `true` (política C, D-05) configurável.
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`199 passed`).
+- [ ] Gates 3/4 formais do épico (G2.5 do UC-07.03 aprovado com condicionantes SEC-01..SEC-08).
 
 ### 3.1 Status de Execução (2026-11-22)
 
 - **UC-07.01 (concluído)**: `SettingKey`, `SettingsSnapshot`, `ISettingsRepositoryPort`, `SettingsSqliteRepository`, `MemorySettingsRepository`, `GetSettings`, `UpdateSetting` e `SettingsMigration.v11` entregues; `app_database` em `dbVersion: 11`; 10 testes do módulo verdes. Decisão em [ADR-003](../../architecture/adr-003-settings-locais-tipadas.md).
 - **UC-07.02 (concluído)**: `SettingsController` (Kortex), `SettingsPage` (`SwitchListTile` >=48dp, `KortexListener` + `AppFeedback`), `SettingsRoutes` e entrada na Home; `AppDependencies`/`ServiceTrackApp`/`main.dart` injetam `ISettingsRepositoryPort` (SQLite no app real, memória no fallback). 4 testes de UI/controller verdes.
-- **UC-07.03**: pendente (Gate 2.5 obrigatório e integração das políticas nos consumidores).
+- **UC-07.03 (concluído)**: `GetSettings` é a fonte única no `WorkOrderListController`; políticas lidas por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01 estiver aberto; UI não coleta documento nesse estado. Gate 2.5 **INVOKED — aprovado com condicionantes (Média)**, SEC-01..SEC-08; invariantes INV-SEC-28..32. 5 testes de política/segurança adicionais; suíte **199 verdes**. Gates 3/4 formais pendentes.
 
 ---
 
@@ -164,7 +164,7 @@ Cenário: Alterar política pela UI
 ### Caso de Uso UC-07.03 — Integração de Políticas de Conclusão/Evidência
 
 * **Identificador**: `UC-07.03`
-* **Status**: `Pendente`
+* **Status**: `Concluído (código+testes; G2.5 aprovado com condicionantes; G3/G4 pendentes)`
 * **Dependência**: UC-07.01, UC-07.02, ADR-001 D2
 * **Gate 2.5**: `INVOKED — D2 toca PII/LGPD (documento do recebedor). Respeitar C-01/D-01 (sem persistência de documento em claro; fail-closed se habilitado sem proteção), minimização (default false), redaction, sem log de documento. Checklist policy não é PII.`
 

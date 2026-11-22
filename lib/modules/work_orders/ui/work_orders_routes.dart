@@ -12,6 +12,8 @@ import '../../checklists/domain/ports/checklist_template_repository_port.dart';
 import '../../checklists/ui/execution/checklist_execution_controller.dart';
 import '../../checklists/ui/execution/checklist_execution_page.dart';
 import '../../customers/domain/ports/customer_repository_port.dart';
+import '../../settings/domain/.index.dart';
+import '../../settings/features/.index.dart';
 import '../domain/ports/checklist_proof_port.dart';
 import '../domain/ports/location_service_port.dart';
 import '../domain/ports/work_order_repository_port.dart';
@@ -30,8 +32,7 @@ final class WorkOrdersRoutes {
     required this.checklistProofPort,
     required this.checklistTemplateRepository,
     required this.checklistAnswerRepository,
-    this.requireChecklistTemplate = true,
-    this.requireReceiverDocument = false,
+    required this.settingsRepository,
   });
 
   final IWorkOrderRepositoryPort workOrderRepository;
@@ -40,8 +41,7 @@ final class WorkOrdersRoutes {
   final IChecklistProofPort checklistProofPort;
   final IChecklistTemplateRepositoryPort checklistTemplateRepository;
   final IChecklistAnswerRepositoryPort checklistAnswerRepository;
-  final bool requireChecklistTemplate;
-  final bool requireReceiverDocument;
+  final ISettingsRepositoryPort settingsRepository;
 
   /// Lista de OS com atalhos para cadastro e execução de checklist.
   Route<void> list() {
@@ -50,8 +50,7 @@ final class WorkOrdersRoutes {
         repository: workOrderRepository,
         locationService: locationService,
         checklistProofPort: checklistProofPort,
-        requireChecklistTemplate: requireChecklistTemplate,
-        requireReceiverDocument: requireReceiverDocument,
+        getSettings: GetSettings(repository: settingsRepository),
       ),
       builder: (context, controller) => WorkOrderListPage(
         onAdd: () => _push(context, form(onSaved: controller.load)),

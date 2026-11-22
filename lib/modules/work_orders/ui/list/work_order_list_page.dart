@@ -2,7 +2,6 @@
 //
 // SRP: renderizar lista de OS, filtros e ações de check-in. Não contém regra de negócio.
 
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kortex/kortex.dart';
@@ -13,6 +12,7 @@ import '../../../../core/.index.dart';
 import '../../domain/ports/work_order_failure_codes.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/digital_signature.dart';
+import '../../domain/value_objects/document_protection.dart';
 import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
@@ -26,7 +26,10 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     controller.ensureLoaded();
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(backgroundColor: AppColors.surface, title: const Text('Ordens de Serviço')),
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        title: const Text('Ordens de Serviço'),
+      ),
       floatingActionButton: FloatingActionButton(
         key: const Key('wo-add'),
         backgroundColor: AppColors.primaryAction,
@@ -38,9 +41,15 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
         child: KortexWatch(
           builder: (context, _) {
             if (controller.loading.value) {
-              return const Center(child: CircularProgressIndicator(color: AppColors.primaryAction));
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primaryAction,
+                ),
+              );
             }
-            if (controller.error.value != null) return Center(child: Text(controller.error.value!));
+            if (controller.error.value != null) {
+              return Center(child: Text(controller.error.value!));
+            }
             final items = controller.filteredItems;
             final startingId = controller.startingId.value;
             final completingId = controller.completingId.value;
@@ -48,7 +57,10 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
               children: [
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       for (final f in WorkOrderListFilter.values)
@@ -63,7 +75,9 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                               onSelected: (_) => controller.filter.value = f,
                               selectedColor: AppColors.primaryAction,
                               labelStyle: TextStyle(
-                                color: controller.filter.value == f ? Colors.white : AppColors.gray700,
+                                color: controller.filter.value == f
+                                    ? Colors.white
+                                    : AppColors.gray700,
                               ),
                             ),
                           ),
@@ -77,14 +91,16 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                           icon: Icons.assignment_outlined,
                           imageAsset: 'assets/images/empty_work_orders.png',
                           title: 'Nenhuma OS encontrada.',
-                          message: 'Crie uma nova ordem de serviço pelo botão +.',
+                          message:
+                              'Crie uma nova ordem de serviço pelo botão +.',
                         )
                       : ListView.separated(
                           itemCount: items.length,
                           separatorBuilder: (_, _) => const Divider(height: 1),
                           itemBuilder: (context, i) {
                             final wo = items[i];
-                            final isBusy = startingId == wo.id || completingId == wo.id;
+                            final isBusy =
+                                startingId == wo.id || completingId == wo.id;
                             return ListTile(
                               key: Key('wo-${wo.id}'),
                               title: Text(wo.serviceDescription),
@@ -92,55 +108,115 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                                 '${wo.status.code} • ${wo.scheduledAt.toLocal().toString().substring(0, 16)}',
                               ),
                               minTileHeight: 56,
-                              trailing: (wo.status == WorkOrderStatus.scheduled ||
+                              trailing:
+                                  (wo.status == WorkOrderStatus.scheduled ||
                                       wo.status == WorkOrderStatus.inProgress ||
                                       wo.status == WorkOrderStatus.paused)
                                   ? isBusy
-                                      ? const SizedBox(
-                                          width: 48,
-                                          height: 48,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(12),
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          ),
-                                        )
-                                      : PopupMenuButton<String>(
-                                          key: Key('wo-actions-${wo.id}'),
-                                          icon: const Icon(Icons.more_vert),
-                                          tooltip: 'Ações',
-                                          onSelected: (v) {
-                                            if (v == 'start') _startService(context, controller, wo.id);
-                                            if (v == 'pause') _pauseWorkOrder(context, controller, wo.id);
-                                            if (v == 'resume') _resumeWorkOrder(context, controller, wo.id);
-                                            if (v == 'complete') _completeWorkOrder(context, controller, wo.id);
-                                            if (v == 'cancel') _cancelWorkOrder(context, controller, wo.id);
-                                            if (v == 'checklist') {
-                                              final tpl = wo.checklistTemplateId;
-                                              if (tpl != null) onChecklist?.call(wo.id, tpl);
-                                            }
-                                          },
-                                          itemBuilder: (_) => [
-                                            if (wo.status == WorkOrderStatus.scheduled)
-                                              const PopupMenuItem(
-                                                value: 'start',
-                                                child: Text('Iniciar atendimento'),
+                                        ? const SizedBox(
+                                            width: 48,
+                                            height: 48,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
                                               ),
-                                            if (wo.status == WorkOrderStatus.inProgress) ...[
-                                              if (wo.checklistTemplateId != null)
+                                            ),
+                                          )
+                                        : PopupMenuButton<String>(
+                                            key: Key('wo-actions-${wo.id}'),
+                                            icon: const Icon(Icons.more_vert),
+                                            tooltip: 'Ações',
+                                            onSelected: (v) {
+                                              if (v == 'start') {
+                                                _startService(
+                                                  context,
+                                                  controller,
+                                                  wo.id,
+                                                );
+                                              }
+                                              if (v == 'pause') {
+                                                _pauseWorkOrder(
+                                                  context,
+                                                  controller,
+                                                  wo.id,
+                                                );
+                                              }
+                                              if (v == 'resume') {
+                                                _resumeWorkOrder(
+                                                  context,
+                                                  controller,
+                                                  wo.id,
+                                                );
+                                              }
+                                              if (v == 'complete') {
+                                                _completeWorkOrder(
+                                                  context,
+                                                  controller,
+                                                  wo.id,
+                                                );
+                                              }
+                                              if (v == 'cancel') {
+                                                _cancelWorkOrder(
+                                                  context,
+                                                  controller,
+                                                  wo.id,
+                                                );
+                                              }
+                                              if (v == 'checklist') {
+                                                final tpl =
+                                                    wo.checklistTemplateId;
+                                                if (tpl != null) {
+                                                  onChecklist?.call(wo.id, tpl);
+                                                }
+                                              }
+                                            },
+                                            itemBuilder: (_) => [
+                                              if (wo.status ==
+                                                  WorkOrderStatus.scheduled)
                                                 const PopupMenuItem(
-                                                  value: 'checklist',
-                                                  child: Text('Checklist'),
+                                                  value: 'start',
+                                                  child: Text(
+                                                    'Iniciar atendimento',
+                                                  ),
                                                 ),
-                                              const PopupMenuItem(value: 'pause', child: Text('Pausar OS')),
-                                              const PopupMenuItem(value: 'complete', child: Text('Concluir OS')),
+                                              if (wo.status ==
+                                                  WorkOrderStatus
+                                                      .inProgress) ...[
+                                                if (wo.checklistTemplateId !=
+                                                    null)
+                                                  const PopupMenuItem(
+                                                    value: 'checklist',
+                                                    child: Text('Checklist'),
+                                                  ),
+                                                const PopupMenuItem(
+                                                  value: 'pause',
+                                                  child: Text('Pausar OS'),
+                                                ),
+                                                const PopupMenuItem(
+                                                  value: 'complete',
+                                                  child: Text('Concluir OS'),
+                                                ),
+                                              ],
+                                              if (wo.status ==
+                                                  WorkOrderStatus.paused)
+                                                const PopupMenuItem(
+                                                  value: 'resume',
+                                                  child: Text(
+                                                    'Retomar atendimento',
+                                                  ),
+                                                ),
+                                              if (wo.status !=
+                                                      WorkOrderStatus
+                                                          .completed &&
+                                                  wo.status !=
+                                                      WorkOrderStatus.cancelled)
+                                                const PopupMenuItem(
+                                                  value: 'cancel',
+                                                  child: Text('Cancelar OS'),
+                                                ),
                                             ],
-                                            if (wo.status == WorkOrderStatus.paused)
-                                              const PopupMenuItem(value: 'resume', child: Text('Retomar atendimento')),
-                                            if (wo.status != WorkOrderStatus.completed &&
-                                                wo.status != WorkOrderStatus.cancelled)
-                                              const PopupMenuItem(value: 'cancel', child: Text('Cancelar OS')),
-                                          ],
-                                        )
+                                          )
                                   : null,
                             );
                           },
@@ -177,11 +253,13 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
           'Este bypass será auditado com motivo explícito.',
         ),
         actions: [
-          if (err.code == WorkOrderFailureCodes.locationPermissionDeniedForever ||
+          if (err.code ==
+                  WorkOrderFailureCodes.locationPermissionDeniedForever ||
               err.code == WorkOrderFailureCodes.locationServiceDisabled)
             TextButton(
               onPressed: () async {
-                if (err.code == WorkOrderFailureCodes.locationPermissionDeniedForever) {
+                if (err.code ==
+                    WorkOrderFailureCodes.locationPermissionDeniedForever) {
                   await Geolocator.openAppSettings();
                 } else {
                   await Geolocator.openLocationSettings();
@@ -189,18 +267,26 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
               },
               child: const Text('Abrir configurações'),
             ),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             key: const Key('wo-bypass-confirm'),
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primaryAction),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryAction,
+            ),
             child: const Text('Registrar bypass'),
           ),
         ],
       ),
     );
     if (bypassed != true || !context.mounted) return;
-    final bypassResult = await controller.startServiceWithBypass(workOrderId, reason);
+    final bypassResult = await controller.startServiceWithBypass(
+      workOrderId,
+      reason,
+    );
     if (!context.mounted) return;
     if (bypassResult.isFailure) {
       AppFeedback.showError(context, bypassResult.getOrNullFailure()!.message);
@@ -212,6 +298,20 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     WorkOrderListController controller,
     String workOrderId,
   ) async {
+    final policyResult = await controller.loadPolicy();
+    if (!context.mounted) return;
+    if (policyResult.isFailure) {
+      AppFeedback.showError(context, policyResult.getOrNullFailure()!.message);
+      return;
+    }
+    final requireDoc = policyResult.getOrNull()!.requireReceiverDocument;
+    if (requireDoc && !kDocumentAtRestProtectionAvailable) {
+      AppFeedback.showError(
+        context,
+        'Documento do recebedor indisponível: proteção em repouso (D-01) não configurada.',
+      );
+      return;
+    }
     final nameController = TextEditingController();
     final docController = TextEditingController();
     final sigController = SignatureController(
@@ -219,7 +319,6 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       penColor: Colors.black,
       exportBackgroundColor: Colors.white,
     );
-    final requireDoc = controller.requireReceiverDocument;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -255,11 +354,16 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                 style: TextStyle(fontSize: 12, color: AppColors.gray500),
               ),
               const SizedBox(height: 12),
-              const Text('Assinatura do recebedor', style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Assinatura do recebedor',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
               Container(
                 height: 160,
-                decoration: BoxDecoration(border: Border.all(color: AppColors.border)),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                ),
                 child: Signature(
                   controller: sigController,
                   backgroundColor: Colors.white,
@@ -303,7 +407,9 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     }
     final name = nameController.text;
     final doc = docController.text;
-    final pngBytes = sigController.isEmpty ? null : await sigController.toPngBytes();
+    final pngBytes = sigController.isEmpty
+        ? null
+        : await sigController.toPngBytes();
     nameController.dispose();
     docController.dispose();
     sigController.dispose();
@@ -439,26 +545,26 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
   }
 
   CheckInBypassReason? _bypassReasonForCode(String code) => switch (code) {
-        WorkOrderFailureCodes.locationPermissionDenied =>
-          CheckInBypassReason.permissionDenied,
-        WorkOrderFailureCodes.locationPermissionDeniedForever =>
-          CheckInBypassReason.permissionDeniedPermanently,
-        WorkOrderFailureCodes.locationServiceDisabled =>
-          CheckInBypassReason.gpsUnavailable,
-        WorkOrderFailureCodes.locationTimeout => CheckInBypassReason.timeout,
-        WorkOrderFailureCodes.locationUnavailable =>
-          CheckInBypassReason.gpsUnavailable,
-        WorkOrderFailureCodes.locationInvalidData =>
-          CheckInBypassReason.gpsUnavailable,
-        _ => null,
-      };
+    WorkOrderFailureCodes.locationPermissionDenied =>
+      CheckInBypassReason.permissionDenied,
+    WorkOrderFailureCodes.locationPermissionDeniedForever =>
+      CheckInBypassReason.permissionDeniedPermanently,
+    WorkOrderFailureCodes.locationServiceDisabled =>
+      CheckInBypassReason.gpsUnavailable,
+    WorkOrderFailureCodes.locationTimeout => CheckInBypassReason.timeout,
+    WorkOrderFailureCodes.locationUnavailable =>
+      CheckInBypassReason.gpsUnavailable,
+    WorkOrderFailureCodes.locationInvalidData =>
+      CheckInBypassReason.gpsUnavailable,
+    _ => null,
+  };
 
   String _filterLabel(WorkOrderListFilter f) => switch (f) {
-        WorkOrderListFilter.all => 'Todas',
-        WorkOrderListFilter.today => 'Hoje',
-        WorkOrderListFilter.scheduled => 'Agendadas',
-        WorkOrderListFilter.inProgress => 'Em Andamento',
-        WorkOrderListFilter.paused => 'Pausadas',
-        WorkOrderListFilter.completed => 'Concluídas',
-      };
+    WorkOrderListFilter.all => 'Todas',
+    WorkOrderListFilter.today => 'Hoje',
+    WorkOrderListFilter.scheduled => 'Agendadas',
+    WorkOrderListFilter.inProgress => 'Em Andamento',
+    WorkOrderListFilter.paused => 'Pausadas',
+    WorkOrderListFilter.completed => 'Concluídas',
+  };
 }

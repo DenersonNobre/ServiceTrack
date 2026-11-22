@@ -25,8 +25,6 @@ final class AppDependencies {
     required this.checklistTemplateRepository,
     required this.checklistAnswerRepository,
     required this.settingsRepository,
-    this.requireChecklistTemplate = true,
-    this.requireReceiverDocument = false,
   });
 
   final IAuthCredentialRepositoryPort credentialRepository;
@@ -40,6 +38,4 @@ final class AppDependencies {
   final IChecklistTemplateRepositoryPort checklistTemplateRepository;
   final IChecklistAnswerRepositoryPort checklistAnswerRepository;
   final ISettingsRepositoryPort settingsRepository;
-  final bool requireChecklistTemplate;
-  final bool requireReceiverDocument;
 }

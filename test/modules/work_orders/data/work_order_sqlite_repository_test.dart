@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'dart:io';
 
-
 import 'package:dnolib/core/models/money.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,10 +55,18 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final saved = await repo.save(wo);
-      expect(saved.isSuccess, isTrue, reason: saved.isFailure ? saved.getOrNullFailure().toString() : '');
+      expect(
+        saved.isSuccess,
+        isTrue,
+        reason: saved.isFailure ? saved.getOrNullFailure().toString() : '',
+      );
       final all = await repo.findAll();
       expect(all.getOrNull()!.length, 1);
       expect(all.getOrNull()!.first.serviceDescription, 'Manutenção');
@@ -71,10 +78,16 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        latitude: -23.5,
+        longitude: -46.6,
+        timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final started = wo.startService(LocationCaptured(point)).getOrNull()!;
       await repo.save(started);
@@ -91,7 +104,11 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final cancelled = wo.cancel('Cliente ausente').getOrNull()!;
       await repo.save(cancelled);
@@ -108,10 +125,16 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        latitude: -23.5,
+        longitude: -46.6,
+        timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
       final paused = inProgress.pause('Aguardando peça').getOrNull()!;
@@ -133,19 +156,43 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        latitude: -23.5,
+        longitude: -46.6,
+        timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
       await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
         signerName: 'Carlos Silva',
-        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
+        signatureBytes: Uint8List.fromList([
+          137,
+          80,
+          78,
+          71,
+          13,
+          10,
+          26,
+          10,
+          0,
+          0,
+          0,
+          13,
+        ]),
       ).getOrNull()!;
-      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
-      final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
+      final proof = ChecklistCompletionProof.tryCreate(
+        mandatoryTotal: 0,
+        answeredMandatory: 0,
+      ).getOrNull()!;
+      final completed = inProgress
+          .complete(signature: sig, checkOut: point, checklistProof: proof)
+          .getOrNull()!;
       final saved = await repo.save(completed);
       expect(saved.isSuccess, isTrue);
 
@@ -157,76 +204,130 @@ void main() {
       expect(loaded.toString(), contains('redacted'));
     });
 
-    test('UC-03.05 - repo bloqueia update em OS COMPLETED (INV-SEC-23)', () async {
-      final wo = WorkOrder.tryCreate(
-        id: 'wo1',
-        customerId: 'c1',
-        serviceDescription: 'Manutenção',
-        scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
-      ).getOrNull()!;
-      final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
-      ).getOrNull()!;
-      final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
-      await repo.save(inProgress);
-      final sig = DigitalSignature.tryCreate(
-        signerName: 'Carlos Silva',
-        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
-      ).getOrNull()!;
-      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
-      final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
-      await repo.save(completed);
+    test(
+      'UC-03.05 - repo bloqueia update em OS COMPLETED (INV-SEC-23)',
+      () async {
+        final wo = WorkOrder.tryCreate(
+          id: 'wo1',
+          customerId: 'c1',
+          serviceDescription: 'Manutenção',
+          scheduledAt: DateTime.utc(2026, 11, 22, 14),
+          estimatedValue: Money.fromMinorUnits(
+            15000,
+            currencyCode: 'BRL',
+            scale: 2,
+          ),
+        ).getOrNull()!;
+        final point = GeoPoint.tryCreate(
+          latitude: -23.5,
+          longitude: -46.6,
+          timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        ).getOrNull()!;
+        final inProgress = wo
+            .startService(LocationCaptured(point))
+            .getOrNull()!;
+        await repo.save(inProgress);
+        final sig = DigitalSignature.tryCreate(
+          signerName: 'Carlos Silva',
+          signatureBytes: Uint8List.fromList([
+            137,
+            80,
+            78,
+            71,
+            13,
+            10,
+            26,
+            10,
+            0,
+            0,
+            0,
+            13,
+          ]),
+        ).getOrNull()!;
+        final proof = ChecklistCompletionProof.tryCreate(
+          mandatoryTotal: 0,
+          answeredMandatory: 0,
+        ).getOrNull()!;
+        final completed = inProgress
+            .complete(signature: sig, checkOut: point, checklistProof: proof)
+            .getOrNull()!;
+        await repo.save(completed);
 
-      final tampered = WorkOrder.restore(
-        id: completed.id,
-        customerId: completed.customerId,
-        serviceDescription: 'Adulterado',
-        scheduledAt: completed.scheduledAt,
-        estimatedValue: completed.estimatedValue,
-        status: WorkOrderStatus.completed,
-        checkIn: completed.checkIn,
-        cancellationReason: completed.cancellationReason,
-        checkOut: completed.checkOut,
-        signature: completed.signature,
-        checklistProof: completed.checklistProof,
-      );
-      final res = await repo.save(tampered);
-      expect(res.isFailure, isTrue);
-      expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
+        final tampered = WorkOrder.restore(
+          id: completed.id,
+          customerId: completed.customerId,
+          serviceDescription: 'Adulterado',
+          scheduledAt: completed.scheduledAt,
+          estimatedValue: completed.estimatedValue,
+          status: WorkOrderStatus.completed,
+          checkIn: completed.checkIn,
+          cancellationReason: completed.cancellationReason,
+          checkOut: completed.checkOut,
+          signature: completed.signature,
+          checklistProof: completed.checklistProof,
+        );
+        final res = await repo.save(tampered);
+        expect(res.isFailure, isTrue);
+        expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
 
-      final loaded = (await repo.findAll()).getOrNull()!.first;
-      expect(loaded.serviceDescription, 'Manutenção');
-    });
+        final loaded = (await repo.findAll()).getOrNull()!.first;
+        expect(loaded.serviceDescription, 'Manutenção');
+      },
+    );
 
-    test('UC-03.05 - repo bloqueia insert fabricado de OS COMPLETED (INV-SEC-23)', () async {
-      final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
-      ).getOrNull()!;
-      final sig = DigitalSignature.tryCreate(
-        signerName: 'Carlos Silva',
-        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
-      ).getOrNull()!;
-      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
-      final fabricated = WorkOrder.restore(
-        id: 'wo-fabricated',
-        customerId: 'c1',
-        serviceDescription: 'Fabricada',
-        scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
-        status: WorkOrderStatus.completed,
-        checkIn: null,
-        cancellationReason: null,
-        checkOut: point,
-        signature: sig,
-        checklistProof: proof,
-      );
-      final res = await repo.save(fabricated);
-      expect(res.isFailure, isTrue);
-      expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
-      final all = await repo.findAll();
-      expect(all.getOrNull()!, isEmpty);
-    });
+    test(
+      'UC-03.05 - repo bloqueia insert fabricado de OS COMPLETED (INV-SEC-23)',
+      () async {
+        final point = GeoPoint.tryCreate(
+          latitude: -23.5,
+          longitude: -46.6,
+          timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        ).getOrNull()!;
+        final sig = DigitalSignature.tryCreate(
+          signerName: 'Carlos Silva',
+          signatureBytes: Uint8List.fromList([
+            137,
+            80,
+            78,
+            71,
+            13,
+            10,
+            26,
+            10,
+            0,
+            0,
+            0,
+            13,
+          ]),
+        ).getOrNull()!;
+        final proof = ChecklistCompletionProof.tryCreate(
+          mandatoryTotal: 0,
+          answeredMandatory: 0,
+        ).getOrNull()!;
+        final fabricated = WorkOrder.restore(
+          id: 'wo-fabricated',
+          customerId: 'c1',
+          serviceDescription: 'Fabricada',
+          scheduledAt: DateTime.utc(2026, 11, 22, 14),
+          estimatedValue: Money.fromMinorUnits(
+            15000,
+            currencyCode: 'BRL',
+            scale: 2,
+          ),
+          status: WorkOrderStatus.completed,
+          checkIn: null,
+          cancellationReason: null,
+          checkOut: point,
+          signature: sig,
+          checklistProof: proof,
+        );
+        final res = await repo.save(fabricated);
+        expect(res.isFailure, isTrue);
+        expect(res.getOrNullFailure()!.code, 'ERR_OS_IMUTAVEL');
+        final all = await repo.findAll();
+        expect(all.getOrNull()!, isEmpty);
+      },
+    );
 
     test('UC-04.07 - persiste e restaura checklistTemplateId', () async {
       final wo = WorkOrder.tryCreate(
@@ -234,7 +335,11 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Instalação',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(10000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          10000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
         checklistTemplateId: 'tpl-1',
       ).getOrNull()!;
       expect(wo.checklistTemplateId, 'tpl-1');
@@ -252,23 +357,57 @@ void main() {
         customerId: 'c1',
         serviceDescription: 'Manutenção',
         scheduledAt: DateTime.utc(2026, 11, 22, 14),
-        estimatedValue: Money.fromMinorUnits(15000, currencyCode: 'BRL', scale: 2),
+        estimatedValue: Money.fromMinorUnits(
+          15000,
+          currencyCode: 'BRL',
+          scale: 2,
+        ),
       ).getOrNull()!;
       final point = GeoPoint.tryCreate(
-        latitude: -23.5, longitude: -46.6, timestampUtc: DateTime.utc(2026, 11, 21, 12),
+        latitude: -23.5,
+        longitude: -46.6,
+        timestampUtc: DateTime.utc(2026, 11, 21, 12),
       ).getOrNull()!;
       final inProgress = wo.startService(LocationCaptured(point)).getOrNull()!;
       await repo.save(inProgress);
       final sig = DigitalSignature.tryCreate(
-        signatureBytes: Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13]),
+        signatureBytes: Uint8List.fromList([
+          137,
+          80,
+          78,
+          71,
+          13,
+          10,
+          26,
+          10,
+          0,
+          0,
+          0,
+          13,
+        ]),
         signerName: 'Carlos Silva',
         documentNumber: '12345678909',
       ).getOrNull()!;
-      final proof = ChecklistCompletionProof.tryCreate(mandatoryTotal: 0, answeredMandatory: 0).getOrNull()!;
-      final completed = inProgress.complete(signature: sig, checkOut: point, checklistProof: proof).getOrNull()!;
+      final proof = ChecklistCompletionProof.tryCreate(
+        mandatoryTotal: 0,
+        answeredMandatory: 0,
+      ).getOrNull()!;
+      final completed = inProgress
+          .complete(signature: sig, checkOut: point, checklistProof: proof)
+          .getOrNull()!;
       final res = await repo.save(completed);
       expect(res.isFailure, isTrue);
-      expect(res.getOrNullFailure()!.code, 'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL');
+      expect(
+        res.getOrNullFailure()!.code,
+        'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL',
+      );
+
+      final reloaded = (await repo.findAll()).getOrNull()!.firstWhere(
+        (candidate) => candidate.id == 'wo-sig-doc',
+      );
+      expect(reloaded.status, WorkOrderStatus.inProgress);
+      expect(reloaded.signature, isNull);
+      expect(reloaded.checkOut, isNull);
     });
 
     test('UC-04.08/A3 - reidratação de assinatura corrompida falha fail-closed sem PII', () async {

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/checklists/data/memory_checklist_answer_repository.dart';
 import 'package:service_track/modules/checklists/data/memory_checklist_template_repository.dart';
 import 'package:service_track/modules/customers/data/memory_customer_repository.dart';
+import 'package:service_track/modules/settings/.index.dart';
 import 'package:service_track/modules/work_orders/data/memory_work_order_repository.dart';
 import 'package:service_track/modules/work_orders/domain/ports/checklist_proof_port.dart';
 import 'package:service_track/modules/work_orders/domain/ports/location_service_port.dart';
@@ -40,6 +41,7 @@ void main() {
         checklistProofPort: _FakeChecklistProofPort(),
         checklistTemplateRepository: MemoryChecklistTemplateRepository(),
         checklistAnswerRepository: MemoryChecklistAnswerRepository(),
+        settingsRepository: MemorySettingsRepository(),
       );
 
       await tester.pumpWidget(

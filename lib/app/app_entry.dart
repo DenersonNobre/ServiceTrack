@@ -57,8 +57,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       checklistProofPort: widget.deps.checklistProofPort,
       checklistTemplateRepository: widget.deps.checklistTemplateRepository,
       checklistAnswerRepository: widget.deps.checklistAnswerRepository,
-      requireChecklistTemplate: widget.deps.requireChecklistTemplate,
-      requireReceiverDocument: widget.deps.requireReceiverDocument,
+      settingsRepository: widget.deps.settingsRepository,
     );
     _routeFuture = ResolveInitialRouteUseCase(
       repo: widget.deps.credentialRepository,

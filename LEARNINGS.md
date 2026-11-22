@@ -110,3 +110,23 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 ### 4. Prevenção
 - Ao atualizar `../.dnolib`/`../kortex`, rodar o script e commitar os tarballs no mesmo commit.
 - CI que depende de path dep externo precisa de bootstrap explícito; nunca assumir que o runner tem os irmãos.
+- Verificação real: GitHub Actions run `45079552556` passou (vendor → pub get → analyze → 194 testes).
+
+## 2026-11-22 — UC-07.03: integração de políticas com fail-closed
+
+### 1. Decisão de implementação
+- `GetSettings` é a **fonte única** no `WorkOrderListController`; bools de política removidos de `AppDependencies`, `ServiceTrackApp` e `WorkOrdersRoutes`.
+- A política é relida **por operação** de conclusão; falha de leitura aborta com código de settings (sem default silencioso).
+- `require_checklist_template` alimenta `checklistProofPort.requireTemplate`; `require_receiver_document` valida documento e falha com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto `kDocumentAtRestProtectionAvailable=false` (D-01/C-01).
+- A UI consulta a política **antes** de abrir o diálogo; se documento é exigido e a proteção está indisponível, não renderiza o campo e mostra erro.
+
+### 2. Testes de segurança
+- SEC-02: documento exigido é validado na operação.
+- SEC-03: settings indisponível aborta sem persistir.
+- SEC-04: documento não é coletado quando proteção está indisponível (widget test).
+- SEC-07: guard do repositório deixa OS em `IN_PROGRESS`, sem assinatura/check-out.
+- SEC-08: `require_checklist_template=false` não relaxa INV-03.
+
+### 3. Evidência
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **199 passed**.
+- Gate 2.5: APROVADO COM CONDICIONANTES (Média); SEC-01..SEC-08; INV-SEC-28..32.

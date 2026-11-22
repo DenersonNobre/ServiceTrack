@@ -6,6 +6,9 @@ import 'package:dnolib/core/patterns/result.dart';
 import 'package:dnolib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
+import '../../../evidences/domain/ports/evidence_failure_codes.dart';
+import '../../../settings/domain/.index.dart';
+import '../../../settings/features/.index.dart';
 import '../../domain/ports/checklist_proof_port.dart';
 import '../../domain/ports/location_service_port.dart';
 import '../../domain/ports/work_order_failure_codes.dart';
@@ -13,31 +16,38 @@ import '../../domain/ports/work_order_repository_port.dart';
 import '../../domain/value_objects/check_in_bypass_reason.dart';
 import '../../domain/value_objects/checklist_completion_proof.dart';
 import '../../domain/value_objects/digital_signature.dart';
+import '../../domain/value_objects/document_protection.dart';
 import '../../domain/value_objects/location_capture.dart';
 import '../../domain/value_objects/work_order.dart';
 import '../../domain/value_objects/work_order_status.dart';
 
 /// Filtros rápidos do painel de visitas (UC-03.02, UC-03.04).
-enum WorkOrderListFilter { all, today, scheduled, inProgress, paused, completed }
+enum WorkOrderListFilter {
+  all,
+  today,
+  scheduled,
+  inProgress,
+  paused,
+  completed,
+}
 
 final class WorkOrderListController extends IKortexController {
   WorkOrderListController({
     required this.repository,
     required this.locationService,
     required this.checklistProofPort,
-    this.requireChecklistTemplate = true,
-    this.requireReceiverDocument = false,
+    required this.getSettings,
+    this.documentAtRestProtectionAvailable = kDocumentAtRestProtectionAvailable,
   });
   final IWorkOrderRepositoryPort repository;
   final ILocationServicePort locationService;
   final IChecklistProofPort checklistProofPort;
 
-  /// Política: exige template vinculado na conclusão (UC-04.07, EPIC-07).
-  final bool requireChecklistTemplate;
+  /// Fonte única das políticas locais (UC-07.03/SEC-01).
+  final GetSettings getSettings;
 
-  /// Política: exige documento do recebedor na assinatura (UC-04.08/C-03, EPIC-07).
-  /// Default minimização LGPD: false.
-  final bool requireReceiverDocument;
+  /// Capacidade de proteção em repouso; injetável apenas para testes (SEC-04).
+  final bool documentAtRestProtectionAvailable;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<List<WorkOrder>> items = KortexSignal<List<WorkOrder>>([]);
@@ -59,7 +69,8 @@ final class WorkOrderListController extends IKortexController {
         WorkOrderListFilter.all => true,
         WorkOrderListFilter.today => _isSameLocalDay(wo.scheduledAt, now),
         WorkOrderListFilter.scheduled => wo.status == WorkOrderStatus.scheduled,
-        WorkOrderListFilter.inProgress => wo.status == WorkOrderStatus.inProgress,
+        WorkOrderListFilter.inProgress =>
+          wo.status == WorkOrderStatus.inProgress,
         WorkOrderListFilter.paused => wo.status == WorkOrderStatus.paused,
         WorkOrderListFilter.completed => wo.status == WorkOrderStatus.completed,
       };
@@ -91,11 +102,20 @@ final class WorkOrderListController extends IKortexController {
     }
   }
 
+  /// Lê a política vigente para a UI decidir exibição/coleta (SEC-02/SEC-04).
+  Future<IResult<SettingsSnapshot, ValidationError>> loadPolicy() =>
+      getSettings.execute();
+
   /// Inicia atendimento com captura de GPS (INV-SEC-19: fail-closed).
-  Future<IResult<WorkOrder, ValidationError>> startService(String workOrderId) async {
+  Future<IResult<WorkOrder, ValidationError>> startService(
+    String workOrderId,
+  ) async {
     if (startingId.value != null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe um check-in em andamento.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.busy,
+          message: 'Já existe um check-in em andamento.',
+        ),
       );
     }
     startingId.value = workOrderId;
@@ -115,11 +135,17 @@ final class WorkOrderListController extends IKortexController {
   ) async {
     if (startingId.value != null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe um check-in em andamento.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.busy,
+          message: 'Já existe um check-in em andamento.',
+        ),
       );
     }
     startingId.value = workOrderId;
-    final result = await _applyStart(workOrderId, LocationBypassed(reason: reason));
+    final result = await _applyStart(
+      workOrderId,
+      LocationBypassed(reason: reason),
+    );
     startingId.value = null;
     return result;
   }
@@ -132,7 +158,10 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.notFound,
+          message: 'OS não encontrada.',
+        ),
       );
     }
     final paused = wo.pause(reason);
@@ -142,7 +171,9 @@ final class WorkOrderListController extends IKortexController {
       case Success<WorkOrder, ValidationError>(:final value):
         final saved = await repository.save(value);
         if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+          items.value = items.value
+              .map((e) => e.id == workOrderId ? value : e)
+              .toList();
         }
         return saved;
     }
@@ -153,7 +184,10 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.notFound,
+          message: 'OS não encontrada.',
+        ),
       );
     }
     final resumed = wo.resume();
@@ -163,7 +197,9 @@ final class WorkOrderListController extends IKortexController {
       case Success<WorkOrder, ValidationError>(:final value):
         final saved = await repository.save(value);
         if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+          items.value = items.value
+              .map((e) => e.id == workOrderId ? value : e)
+              .toList();
         }
         return saved;
     }
@@ -177,7 +213,10 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.notFound,
+          message: 'OS não encontrada.',
+        ),
       );
     }
     final cancelled = wo.cancel(reason);
@@ -187,7 +226,9 @@ final class WorkOrderListController extends IKortexController {
       case Success<WorkOrder, ValidationError>(:final value):
         final saved = await repository.save(value);
         if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+          items.value = items.value
+              .map((e) => e.id == workOrderId ? value : e)
+              .toList();
         }
         return saved;
     }
@@ -200,7 +241,10 @@ final class WorkOrderListController extends IKortexController {
   }) async {
     if (completingId.value != null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.busy, message: 'Já existe uma conclusão em andamento.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.busy,
+          message: 'Já existe uma conclusão em andamento.',
+        ),
       );
     }
     completingId.value = workOrderId;
@@ -208,13 +252,41 @@ final class WorkOrderListController extends IKortexController {
       final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
       if (wo == null) {
         return const Failure(
-          ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
+          ValidationError(
+            code: WorkOrderFailureCodes.notFound,
+            message: 'OS não encontrada.',
+          ),
+        );
+      }
+      final policyResult = await getSettings.execute();
+      final SettingsSnapshot policy;
+      switch (policyResult) {
+        case Success(:final value):
+          policy = value;
+        case Failure(:final value):
+          return Failure(value);
+      }
+      if (policy.requireReceiverDocument &&
+          !documentAtRestProtectionAvailable) {
+        return const Failure(
+          ValidationError(
+            code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
+            message: 'Documento do recebedor não pode ser coletado/persistido sem proteção em repouso (D-01/C-01).',
+          ),
+        );
+      }
+      if (policy.requireReceiverDocument && signature.documentNumber == null) {
+        return const Failure(
+          ValidationError(
+            code: EvidenceFailureCodes.missingSignerDocument,
+            message: 'Informe o documento do recebedor.',
+          ),
         );
       }
       final proofResult = await checklistProofPort.getProof(
         workOrderId: workOrderId,
         templateId: wo.checklistTemplateId,
-        requireTemplate: requireChecklistTemplate,
+        requireTemplate: policy.requireChecklistTemplate,
       );
       final ChecklistCompletionProof effectiveProof;
       switch (proofResult) {
@@ -238,8 +310,12 @@ final class WorkOrderListController extends IKortexController {
               return Failure(value);
             case Success<WorkOrder, ValidationError>(:final value):
               final saved = await repository.save(value);
-              if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-                items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+              if (saved case Success<WorkOrder, ValidationError>(
+                :final value,
+              )) {
+                items.value = items.value
+                    .map((e) => e.id == workOrderId ? value : e)
+                    .toList();
               }
               return saved;
           }
@@ -260,7 +336,10 @@ final class WorkOrderListController extends IKortexController {
     final wo = items.value.where((e) => e.id == workOrderId).firstOrNull;
     if (wo == null) {
       return const Failure(
-        ValidationError(code: WorkOrderFailureCodes.notFound, message: 'OS não encontrada.'),
+        ValidationError(
+          code: WorkOrderFailureCodes.notFound,
+          message: 'OS não encontrada.',
+        ),
       );
     }
     final started = wo.startService(capture);
@@ -270,7 +349,9 @@ final class WorkOrderListController extends IKortexController {
       case Success<WorkOrder, ValidationError>(:final value):
         final saved = await repository.save(value);
         if (saved case Success<WorkOrder, ValidationError>(:final value)) {
-          items.value = items.value.map((e) => e.id == workOrderId ? value : e).toList();
+          items.value = items.value
+              .map((e) => e.id == workOrderId ? value : e)
+              .toList();
         }
         return saved;
     }
