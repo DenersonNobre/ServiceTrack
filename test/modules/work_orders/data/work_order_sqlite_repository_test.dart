@@ -270,5 +270,31 @@ void main() {
       expect(res.isFailure, isTrue);
       expect(res.getOrNullFailure()!.code, 'ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL');
     });
+
+    test('UC-04.08/A3 - reidratação de assinatura corrompida falha fail-closed sem PII', () async {
+      final db = await provider.db;
+      await db.insert(WorkOrderMigration.table, {
+        'id': 'wo-bad-sig',
+        'customer_id': 'c1',
+        'service_description': 'Teste',
+        'scheduled_at': DateTime.utc(2026, 11, 22, 14).toIso8601String(),
+        'estimated_value_minor': 1000,
+        'estimated_value_currency': 'BRL',
+        'estimated_value_scale': 2,
+        'status': 'IN_PROGRESS',
+        'created_at': DateTime.utc(2026, 11, 22, 10).toIso8601String(),
+        'updated_at': DateTime.utc(2026, 11, 22, 10).toIso8601String(),
+        'signature_name': 'Nome Sensível',
+        'signature_image_base64': '%%%not-base64%%%',
+        'signature_signed_at_utc': null,
+        'signature_document_number': null,
+      });
+      final res = await repo.findAll();
+      expect(res.isFailure, isTrue);
+      final err = res.getOrNullFailure()!;
+      expect(err.code, 'ERR_OS_DADOS_INVALIDOS');
+      expect(err.message, isNot(contains('Nome Sensível')));
+      expect(err.message, isNot(contains('not-base64')));
+    });
   });
 }

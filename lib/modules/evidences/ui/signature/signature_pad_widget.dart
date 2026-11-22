@@ -19,10 +19,14 @@ final class SignaturePadWidget extends StatefulWidget {
   const SignaturePadWidget({
     super.key,
     required this.onConfirmed,
+    this.requireDocumentByPolicy = false,
   });
 
   /// Callback acionado com [DigitalSignature] validada.
   final void Function(DigitalSignature signature) onConfirmed;
+
+  /// Política C-03: documento obrigatório apenas quando habilitado (default minimização).
+  final bool requireDocumentByPolicy;
 
   @override
   State<SignaturePadWidget> createState() => _SignaturePadWidgetState();
@@ -66,6 +70,7 @@ class _SignaturePadWidgetState extends State<SignaturePadWidget> {
       signatureBytes: bytes,
       signerName: _nameController.text,
       documentNumber: _docController.text,
+      requireDocumentByPolicy: widget.requireDocumentByPolicy,
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -109,17 +114,19 @@ class _SignaturePadWidgetState extends State<SignaturePadWidget> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
-        const SizedBox(height: 12),
-        TextField(
-          key: const Key('signature-signer-doc'),
-          controller: _docController,
-          decoration: InputDecoration(
-            labelText: 'Documento (CPF/RG)',
-            filled: true,
-            fillColor: AppColors.surfaceCard,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        if (widget.requireDocumentByPolicy) ...[
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('signature-signer-doc'),
+            controller: _docController,
+            decoration: InputDecoration(
+              labelText: 'Documento (CPF/RG)',
+              filled: true,
+              fillColor: AppColors.surfaceCard,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            ),
           ),
-        ),
+        ],
         if (_error != null) ...[
           const SizedBox(height: 8),
           Text(_error!, style: const TextStyle(color: AppColors.error)),
