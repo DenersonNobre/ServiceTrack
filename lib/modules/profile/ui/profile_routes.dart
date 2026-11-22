@@ -5,7 +5,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/ui/app_scoped_route.dart';
+import '../../../core/ui/app_scoped_route.dart';
 import '../domain/ports/technician_profile_repository_port.dart';
 import 'profile/profile_controller.dart';
 import 'profile/profile_page.dart';

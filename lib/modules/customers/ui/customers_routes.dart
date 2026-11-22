@@ -5,7 +5,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/ui/app_scoped_route.dart';
+import '../../../core/ui/app_scoped_route.dart';
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/ports/service_location_repository_port.dart';
 import '../domain/value_objects/customer.dart';
