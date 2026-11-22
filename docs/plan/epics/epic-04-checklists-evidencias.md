@@ -5,7 +5,7 @@
 | Atributo | Valor |
 | :--- | :--- |
 | **Identificador** | `EPIC04` |
-| **Dependências Diretas** | `EPIC00`, `EPIC03` |
+| **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
 | **Status Atual** | `Em Reconciliação (código parcial; D-05/integração pendente)` |
