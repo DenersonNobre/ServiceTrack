@@ -1,29 +1,36 @@
 # UC-CURRENT — Handoff de Estado
 
 ## Metadados
-- **Fatia (Slice)**: `UC-04.09` — Modelos de checklist alcançáveis (seed + cadastro), sobre `OPS-EPIC04-E2E-DEVICE`
-- **Status**: CONCLUÍDO em código+testes; **E2E device BLOQUEADO pelo ambiente** (MIUI `INSTALL_FAILED_USER_RESTRICTED`)
+- **Fatia (Slice)**: `OPS-EPIC04-E2E-DEVICE` — E2E de device do EPIC-04
+- **UC**: `UC-04.09` — UC-04.09 (Modelos de checklist alcançáveis)
+- **Status**: CONCLUÍDO em código+testes; **E2E device pendente** (install bloqueado MIUI intermitente, sonda e fluxo escritos)
 - **Dono**: `opc01@e03ff640`
 - **Épico**: `EPIC-04`
-- **Gate 2.5 (Segurança)**: PULADO — seed de catálogo estático e CRUD local de modelo de checklist; sem nova superfície sensível (nenhuma coleta/transmissão de PII, nenhuma dependência nova de rede).
+- **Gate 2.5 (Segurança)**: PULADO — artefato de teste (`integration_test/`) + chaves de widget; sem nova superfície sensível (nenhuma coleta/transmissão de PII, nenhuma dependência nova de rede).
 - **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **Lacuna fechada**: `UC-04.01` estava `Concluído` com `TASK-02` ("UI de cadastro/listagem") não entregue — `ChecklistTemplateListPage` era **código morto** (nenhuma rota a montava), não havia formulário de cadastro e nenhuma migration semeava templates. Consequência medida: `wo-checklist-template` nascia vazio em instalação limpa, `checklistTemplateId` só podia ser `null` e o fluxo `template→OS→checklist→conclusão` era inalcançável pela UI.
-- **Seed (v12)**: `ChecklistMigration.v12()` semeia 3 modelos (`Instalação Split`, `Manutenção Preventiva`, `Vistoria Rápida`) com 8 itens no total, via `INSERT OR IGNORE` (idempotente: reabrir o banco não duplica). `createAppDatabase()` passou para `dbVersion: 12`.
-- **Cadastro**: `ChecklistTemplateFormController` (Kortex, rascunho com identidade por item) + `ChecklistTemplateFormPage` (`StatelessWidget`) — validação delegada a `ChecklistTemplate.tryCreate`/`ChecklistItem.tryCreate`, sem duplicar regra no controller.
-- **Rota**: `ChecklistsRoutes` (`list()`/`form()`) + ação `wo-templates` no AppBar da lista de OS. A UI antes órfã agora tem caminho de entrada a partir do produto.
-- **Toolchain**: `kortex` passou de `path: ../kortex` para **`^0.2.1` (pub.dev)** — o pacote foi publicado e o repositório virou workspace (`packages/kortex`), o que quebrou o path local. `ci/vendor/kortex.tar.gz` removido e `scripts/ci/vendor-deps.ps1` reduzido a `dnolib` (única dependência de path restante).
-- **Testes**: +11 na suíte (2 seed, 4 controller, 3 form, 2 alcançabilidade) → **221 verdes**.
-- **Bloqueio medido (device)**: `adb -s 192.168.67.65:5555 install -r -t app-debug.apk` → `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`. O aparelho responde (`adb devices` = `device`, `location_mode=3`); a MIUI está recusando instalação por USB (falta "Instalar via USB" nas Opções do desenvolvedor). Sem instalar, `flutter test integration_test/...` não roda — o probe escrito (`integration_test/epic04_probe.dart`) **não foi executado** e não é reportado como validado.
+- **Sonda medida em device real** (`integration_test/epic04_probe.dart`, executada com sucesso): rota inicial = **onboarding** (`[PROBE] tela inicial: [Crie seu acesso, ...]`) e **GPS OK em 2558 ms** (`lat=-16.7318355, lon=-43.8568404`). Conclusão de OS exige fix de GPS e **não tem bypass**, então a sonda era pré-requisito real do E2E — e foi medida, não presumida.
+- **E2E escrito**: `integration_test/epic04_flow.dart` cobre `onboarding → cliente → OS (cliente + modelo) → check-in → checklist → conclusão`, com asserção computada em cada elo. Fica fora do glob de `flutter test` (sem sufixo `_test`) para o gate headless não tentar rodar E2E sem plugin nativo.
+- **Asserções que provam o contrato**: `IN_PROGRESS` só aparece se o check-in **sem bypass** deu certo (GPS real); `selectedStatus == conforme` é relido do controller após persistir cada item (prova escrita no banco, não só cor do botão); `COMPLETED` só sai com assinatura desenhada + GPS de check-out.
+- **Testabilidade**: os quatro `_Field` do onboarding não tinham `key` — adicionadas `onboarding-name|email|password|pin` + `onboarding-submit` para o E2E nao depender de índice de campo.
+- **Armadilha do ambiente de teste**: `adb shell pm clear` **revoga permissão de runtime**. Sem reconceder `ACCESS_FINE/COARSE_LOCATION` após o `pm clear`, o check-in abre diálogo nativo (que o Dart não toca) e falharia por motivo errado.
+- **Bloqueio medido (install)**: `adb -s 192.168.67.65:5555 install -r -t app-debug.apk` → `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`. Na mesma sessão esse **mesmo comando retornou `Success` uma vez**, sem alteração de configuração no aparelho — logo não é bloqueio permanente. `settings put secure adb_install_need_confirm 0` **não** resolveu (a chave estava `null` e continua recusando). Causa ainda **não determinada**; atribuição anterior ("falta Instalar via USB, exige conta Mi") foi refutada e corrigida no `LEARNINGS.md`.
+- **Consequência de método**: `epic04_probe.dart` **foi executado** (evidência acima); `epic04_flow.dart` **não foi** — e não é reportado como validado.
 
 ## [EVIDENCIA]
-- Leitura: `lib/modules/checklists/data/checklist_migration.dart` → `v12()` com `INSERT OR IGNORE` para 3 templates + 8 itens; `lib/app/database/app_database.dart` → `dbVersion: 12`; `lib/modules/checklists/ui/checklists_routes.dart` → `list()`/`form()` com `appScopedRoute`; `lib/modules/work_orders/ui/list/work_order_list_page.dart` → ação `wo-templates`; `lib/modules/checklists/ui/templates/checklist_template_form_controller.dart` → validação delegada ao domínio.
-- Verificação: RED antes do verde em 4 pontos — seed `Expected: length 3 / Actual: []`; controller `Method not found: 'ChecklistTemplateFormController'`; identidade de item `Found 1 widget with text "Primeiro item"` (mutação `ValueKey(draft.id)`→`ValueKey(index)`); alcançabilidade `+0 -2` (mutação removendo `wo-templates`) → todos passaram após a implementação/restauração.
-- Confirmação: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+221 All tests passed!`; `flutter pub get` resolve `kortex 0.2.1` de `https://pub.dev` (`pubspec.lock: source: hosted`).
+- Leitura: `integration_test/epic04_flow.dart` → 6 etapas com `esperarPor`/asserticao por etapa; `lib/modules/auth/ui/onboarding/onboarding_page.dart` → `_Field(fieldKey:)` + `onboarding-submit`; `lib/modules/work_orders/ui/list/work_order_list_page.dart` → menu `Iniciar atendimento`/`Checklist`/`Concluir OS` exigindo `IN_PROGRESS` para os dois últimos.
+- Verificação: `adb devices` → `192.168.67.65:5555 device`; `flutter test integration_test/epic04_probe.dart -d 192.168.67.65:5555` → `[PROBE] GPS OK em 2558ms`; `flutter test integration_test/epic04_flow.dart -d ...` → **falhou no install**, antes de executar o teste (`Failed to load ...: Unable to start the app on the device`).
+- Confirmação: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+221 All tests passed!`; `flutter test integration_test/epic04_flow.dart -d ...` → **falhou no install**, antes de executar o teste (`Failed to load ...: Unable to start the app on the device`).
 
 ## Próximo passo
-1. **Desbloquear o device**: habilitar "Instalar via USB" (MIUI, exige conta Mi) e rodar `flutter test integration_test/epic04_probe.dart -d 192.168.67.65:5555` para medir rota de boot e fix de GPS antes de escrever o E2E completo.
-2. **E2E `template→OS→checklist→conclusão`**: escrever `integration_test/epic04_flow.dart` depois de o probe confirmar GPS (a conclusão de OS exige fix e não tem bypass).
+1. Determinar a causa do `INSTALL_FAILED_USER_RESTRICTED` por evidência (logcat da sessão de instalação / `pm install` via push), não por nova suposição.
+2. Com install OK: `adb shell pm clear com.servicetrack.service_track`, reconceder as duas permissões de localização e rodar `flutter test integration_test/epic04_flow.dart -d 192.168.67.65:5555`.
 3. **Push**: pendente de autorização explícita do PO + 3 evidências.
-4. **D-01/C-01**: segue bloqueando persistência de documento do recebedor por design.
+4. **D-01/C-01**: persiste bloqueando persistência de documento do recebedor por design (fail-closed).
+
+## Travas Vivas
+- **Claims**: `OPS-EPIC04-E2E-DEVICE` (`opc01@e03ff640`); `claims status` antes de mutar.
+- **Push**: somente com autorização explícita do PO + 3 evidências.
+- **D-01/C-01**: persiste bloqueando documento do recebedor por design (fail-closed).
+- **Greenfield Lock**: **DESTRAVADO**.

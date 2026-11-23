@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device bloqueado pelo ambiente` |
+| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device pendente de instalação bem-sucedida` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -258,4 +258,4 @@ Entregue nesta fatia:
 | Tela stateless com identidade por item | `checklist_template_form_page.dart` | `checklist_template_form_page_test.dart` (RED por mutação: `ValueKey(index)` herda texto do vizinho removido) |
 | Rota acessível a partir da OS | `checklists_routes.dart` + ação `wo-templates` | `checklist_templates_reachable_test.dart` (RED por mutação: `+0 -2` sem a ação) |
 
-**Pendente**: validação E2E em device — bloqueada por `INSTALL_FAILED_USER_RESTRICTED` (MIUI recusando instalação por USB), não pelo código.
+**Pendente**: validação E2E em device — bloqueada por `INSTALL_FAILED_USER_RESTRICTED` (MIUI recusando `adb install -r -t`, intermitente; logcat mostra `Commit of session ... failed: Install canceled by user`. A instalação passou via `adb push + pm install -r -t /data/local/tmp/st.apk`). Não pelo código — o app roda e o GPS funciona; só falta reconceder permissões de localização após reinstalar).

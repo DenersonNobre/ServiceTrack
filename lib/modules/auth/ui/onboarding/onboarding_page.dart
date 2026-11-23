@@ -44,7 +44,8 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       const SizedBox(height: 8),
                       Text(
                         'Crie seu acesso',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
                               color: AppColors.gray900,
                               fontWeight: FontWeight.w700,
                             ),
@@ -52,12 +53,12 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       const SizedBox(height: 4),
                       Text(
                         'Configure seus dados para proteger o app e personalizar seus laudos.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.gray700,
-                            ),
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.gray700),
                       ),
                       const SizedBox(height: 16),
                       _Field(
+                        fieldKey: const Key('onboarding-name'),
                         label: 'Nome completo',
                         error: controller.nameError.value,
                         onChanged: (v) => controller.name.value = v,
@@ -65,6 +66,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       ),
                       const SizedBox(height: 12),
                       _Field(
+                        fieldKey: const Key('onboarding-email'),
                         label: 'E-mail',
                         error: controller.emailError.value,
                         onChanged: (v) => controller.email.value = v,
@@ -73,6 +75,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       ),
                       const SizedBox(height: 12),
                       _Field(
+                        fieldKey: const Key('onboarding-password'),
                         label: 'Senha mestre',
                         error: controller.passwordError.value,
                         onChanged: (v) => controller.password.value = v,
@@ -81,6 +84,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       ),
                       const SizedBox(height: 12),
                       _Field(
+                        fieldKey: const Key('onboarding-pin'),
                         label: 'PIN (4 a 6 dígitos)',
                         error: controller.pinError.value,
                         onChanged: (v) => controller.pin.value = v,
@@ -110,6 +114,7 @@ final class OnboardingPage extends IKortexPage<OnboardingController> {
                       SizedBox(
                         height: 52,
                         child: FilledButton(
+                          key: const Key('onboarding-submit'),
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.primaryAction,
                             foregroundColor: Colors.white,
@@ -150,12 +155,14 @@ final class _Field extends StatelessWidget {
     required this.label,
     required this.error,
     required this.onChanged,
+    this.fieldKey,
     this.keyboardType,
     this.obscureText = false,
     this.textInputAction,
     this.onSubmitted,
   });
 
+  final Key? fieldKey;
   final String label;
   final String? error;
   final ValueChanged<String> onChanged;
@@ -167,6 +174,7 @@ final class _Field extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      key: fieldKey,
       onChanged: onChanged,
       keyboardType: keyboardType,
       obscureText: obscureText,
@@ -177,7 +185,10 @@ final class _Field extends StatelessWidget {
         errorText: error,
         filled: true,
         fillColor: AppColors.surfaceCard,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         constraints: const BoxConstraints(minHeight: 48),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -189,7 +200,10 @@ final class _Field extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primaryAction, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.primaryAction,
+            width: 1.5,
+          ),
         ),
       ),
     );
