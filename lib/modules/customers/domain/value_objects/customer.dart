@@ -4,7 +4,7 @@
 //
 // Pattern: Value Objects + Entity com Result.Fail tipado.
 
-import 'package:dnolib/brlib/brlib.dart';
+import 'package:kortex_lib/brlib/brlib.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 
