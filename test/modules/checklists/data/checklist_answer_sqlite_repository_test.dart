@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/checklists/.index.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';

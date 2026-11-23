@@ -2,7 +2,7 @@
 //
 // SRP: definir schema da tabela customers.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 /// Migração v1 da tabela customers.
 final class CustomerMigration {

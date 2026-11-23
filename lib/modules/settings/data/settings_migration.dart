@@ -2,7 +2,7 @@
 //
 // SRP: definir schema key/value tipado das políticas locais.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 /// Migrações das configurações locais.
 abstract final class SettingsMigration {

@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../domain/ports/work_order_failure_codes.dart';
 import '../domain/ports/work_order_repository_port.dart';

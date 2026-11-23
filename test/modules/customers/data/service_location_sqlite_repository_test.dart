@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/customers/data/customer_migration.dart';
 import 'package:service_track/modules/customers/data/service_location_migration.dart';

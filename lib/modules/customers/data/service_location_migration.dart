@@ -2,7 +2,7 @@
 //
 // SRP: definir schema da tabela service_locations.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 /// Migração v2 da tabela service_locations.
 final class ServiceLocationMigration {

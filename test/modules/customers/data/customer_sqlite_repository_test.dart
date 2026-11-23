@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/customers/data/customer_migration.dart';
 import 'package:service_track/modules/customers/data/customer_sqlite_repository.dart';
 import 'package:service_track/modules/customers/domain/value_objects/customer.dart';
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {

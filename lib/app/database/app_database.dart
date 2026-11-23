@@ -3,7 +3,7 @@
 // SRP: criar e expor SqliteProvider do app com migrations registradas.
 // Não contém regra de negócio.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../modules/checklists/data/checklist_migration.dart';
 import '../../modules/customers/data/customer_migration.dart';

@@ -6,7 +6,7 @@
 
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../domain/ports/customer_failure_codes.dart';
 import '../domain/ports/service_location_repository_port.dart';

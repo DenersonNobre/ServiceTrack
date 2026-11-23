@@ -2,7 +2,7 @@
 //
 // SRP: definir schema das tabelas de templates, itens e respostas por OS.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 /// Migrações das tabelas de checklists.
 abstract final class ChecklistMigration {

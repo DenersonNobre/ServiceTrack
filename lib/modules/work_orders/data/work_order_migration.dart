@@ -2,7 +2,7 @@
 //
 // SRP: definir schema/migrações da tabela work_orders.
 
-import 'package:dnolib/sqlite/sqlite.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 /// Migrações da tabela work_orders.
 final class WorkOrderMigration {
