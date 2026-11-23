@@ -17,9 +17,17 @@ import '../../domain/value_objects/work_order_status.dart';
 import 'work_order_list_controller.dart';
 
 final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
-  const WorkOrderListPage({super.key, this.onAdd, this.onChecklist});
+  const WorkOrderListPage({
+    super.key,
+    this.onAdd,
+    this.onChecklist,
+    this.onTemplates,
+  });
   final VoidCallback? onAdd;
   final void Function(String workOrderId, String templateId)? onChecklist;
+
+  /// Abre o cadastro/listagem de modelos de checklist (UC-04.09).
+  final VoidCallback? onTemplates;
 
   @override
   Widget buildPage(BuildContext context, WorkOrderListController controller) {
@@ -29,6 +37,16 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         title: const Text('Ordens de Serviço'),
+        actions: [
+          if (onTemplates != null)
+            IconButton(
+              key: const Key('wo-templates'),
+              tooltip: 'Modelos de checklist',
+              constraints: kMinTouchTargetConstraints,
+              icon: const Icon(Icons.checklist_outlined),
+              onPressed: onTemplates,
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         key: const Key('wo-add'),

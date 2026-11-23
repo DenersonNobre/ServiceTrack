@@ -158,3 +158,28 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 
 ### 3. Evidência
 - `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **210 passed**; `git grep "setState(" lib/` e `git grep "Size(48, 48)" lib/` => zero.
+
+## 2026-11-22 — UC-04.09: modelos de checklist alcançáveis (seed + cadastro)
+
+### 1. Entregas
+- `ChecklistMigration.v12()`: seed idempotente (`INSERT OR IGNORE`) de 3 modelos (`Instalação Split`, `Manutenção Preventiva`, `Vistoria Rápida`) com 8 itens; `createAppDatabase()` em `dbVersion: 12`.
+- `ChecklistTemplateFormController` (Kortex; rascunho com id por item) + `ChecklistTemplateFormPage` (`StatelessWidget`), com validação delegada a `ChecklistTemplate.tryCreate`/`ChecklistItem.tryCreate`.
+- `ChecklistsRoutes` (`list()`/`form()`) e ação `wo-templates` no AppBar da lista de OS: a página de modelos deixou de ser código morto.
+- `kortex` migrado de path para pub.dev `^0.2.1`; `ci/vendor/kortex.tar.gz` removido e `scripts/ci/vendor-deps.ps1` restrito a `dnolib`.
+
+### 2. Gotchas (custo real medido nesta fatia)
+
+- **Pacote local publicado vira workspace e quebra a dependência de path.** Sintoma: todo o app parou de compilar com `Error: Error when reading '../kortex/lib/kortex.dart': O sistema não pode encontrar o caminho` em **todas** as units que importam `package:kortex/kortex.dart`. Causa: o repositório virou pub workspace (`packages/kortex`, `resolution: workspace`), então `../kortex/lib` deixou de existir. **Fix**: trocar a dependência para a versão publicada (`kortex: ^0.2.1`), confirmar `pubspec.lock` com `source: hosted` + `url: https://pub.dev` e **tirar o pacote do vendor do CI** (tarball + extração), senão o CI continua montando `../kortex` para uma dependência que já não é local.
+
+- **`ChecklistTemplateListPage` existindo não provava entrega.** Código morto compila, passa no `analyze` e o teste de widget dele passa (o teste monta a página direto). O que faltava era **rota**: `grep ChecklistTemplateListPage lib/` dava 2 ocorrências (página + controller) e zero chamadores. **Regra prática**: ao auditar "UI entregue", grepar o **chamador** da página, não a página; e exigir um teste que chegue nela **pela navegação do produto**, não por `home:`.
+
+- **`TextFormField` + `ValueKey(index)` faz o campo herdar o texto do vizinho removido.** Numa lista editável, remover o item 0 troca o conteúdo lógico do índice 0 e o Flutter **reusa o elemento** (mesma key), mantendo o `TextEditingController` interno com o texto antigo — `initialValue` só vale na primeira construção daquele `State`. **Fix**: identidade estável por rascunho (`ValueKey(draft.id)`), com o id vivendo no estado (Kortex), não na página. Prova: mutar para `ValueKey(index)` reprova o teste com `Found 1 widget with text "Primeiro item"` quando nenhum era esperado.
+
+- **Red-Before-Green por mutação quando o teste nasce depois do código.** Os testes de tela foram escritos após a implementação (não havia como montar a tela antes dela existir). Para não entregar teste tautológico, o RED foi obtido por **mutação dirigida**: trocar `ValueKey(draft.id)` → `ValueKey(index)` e remover a ação `wo-templates` da rota. Ambas reprovaram (`+0 -2` no segundo caso) e voltaram a passar ao restaurar. Registrar a mutação no corpo do commit, não só o verde.
+
+- **MIUI recusa `adb install` com `INSTALL_FAILED_USER_RESTRICTED` mesmo com o device em `device`.** `adb devices` listava o aparelho, `settings get secure location_mode` respondia `3`, e ainda assim a instalação era "canceled by user" — é a opção **"Instalar via USB"** das Opções do desenvolvedor (exige conta Mi) que está desligada. Consequência de método: sem instalar, `flutter test integration_test/...` **não roda**; um E2E escrito nesse estado é código nunca executado e não pode ser reportado como validado.
+
+### 3. Evidência
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **221 passed**.
+- REDs registrados: seed (`Expected: length 3 / Actual: []`), controller (`Method not found: 'ChecklistTemplateFormController'`), identidade de item (`Found 1 widget with text "Primeiro item"`), alcançabilidade (`+0 -2` sem `wo-templates`).
+- Bloqueio de device: `adb install -r -t app-debug.apk` => `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`.

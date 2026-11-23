@@ -23,9 +23,8 @@ jobs:
 
       - name: Preparar dependencias locais (vendor)
         run: |
-          mkdir -p ../.dnolib ../kortex
+          mkdir -p ../.dnolib
           tar -xzf ci/vendor/dnolib.tar.gz -C ../.dnolib
-          tar -xzf ci/vendor/kortex.tar.gz -C ../kortex
 
       - name: Instalar dependencias
         run: flutter pub get

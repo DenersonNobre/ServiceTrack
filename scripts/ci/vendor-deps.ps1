@@ -1,7 +1,8 @@
 # Gera os tarballs de dependências locais usados pelo CI.
 #
 # Uso: pwsh scripts/ci/vendor-deps.ps1
-# Requer os repositórios irmãos ../.dnolib e ../kortex no disco.
+# Requer os repositórios irmãos das dependências de path no disco (../.dnolib).
+# kortex é consumido do pub.dev (^0.2.1), então não entra no vendor.
 
 $ErrorActionPreference = 'Stop'
 
@@ -10,8 +11,7 @@ $vendor = Join-Path $repo 'ci\vendor'
 New-Item -ItemType Directory -Force -Path $vendor | Out-Null
 
 $deps = @(
-    @{ Name = 'dnolib'; Path = (Join-Path $repo '..\.dnolib') },
-    @{ Name = 'kortex'; Path = (Join-Path $repo '..\kortex') }
+    @{ Name = 'dnolib'; Path = (Join-Path $repo '..\.dnolib') }
 )
 
 foreach ($dep in $deps) {

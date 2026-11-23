@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../../checklists/domain/ports/checklist_answer_repository_port.dart';
 import '../../checklists/domain/ports/checklist_template_repository_port.dart';
+import '../../checklists/ui/checklists_routes.dart';
 import '../../checklists/ui/execution/checklist_execution_controller.dart';
 import '../../checklists/ui/execution/checklist_execution_page.dart';
 import '../../customers/domain/ports/customer_repository_port.dart';
@@ -54,6 +55,11 @@ final class WorkOrdersRoutes {
       ),
       builder: (context, controller) => WorkOrderListPage(
         onAdd: () => _push(context, form(onSaved: controller.load)),
+        onTemplates: () => _push(
+          context,
+          ChecklistsRoutes(templateRepository: checklistTemplateRepository)
+              .list(),
+        ),
         onChecklist: (workOrderId, templateId) => _push(
           context,
           checklistExecution(workOrderId: workOrderId, templateId: templateId),

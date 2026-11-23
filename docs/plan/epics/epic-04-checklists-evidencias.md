@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Implementado em código (UC-04.01–04.08); E2E device pendente` |
+| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device bloqueado pelo ambiente` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -31,10 +31,11 @@ Permitir o preenchimento de itens de checklist de forma ágil em campo com o pol
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
-| **UC-04.01** | Modelos de Checklists Rápidos | Nenhuma | `Concluído` |
+| **UC-04.01** | Modelos de Checklists Rápidos | Nenhuma | `Concluído (fechado em UC-04.09)` |
 | **UC-04.02** | Preenchimento Tátil do Checklist na OS | UC-04.01 | `Concluído` |
 | **UC-04.03** | Captura & Compressão de Fotos com Metadados | Nenhuma | `Concluído` |
 | **UC-04.04** | Assinatura Digital na Tela do Smartphone | Nenhuma | `Concluído` |
+| **UC-04.09** | Modelos Alcançáveis: Seed + Cadastro | UC-04.01 | `Concluído` |
 
 ---
 
@@ -54,7 +55,7 @@ Permitir o preenchimento de itens de checklist de forma ágil em campo com o pol
 ### Caso de Uso UC-04.01 — Modelos de Checklists Rápidos
 
 * **Identificador**: `UC-04.01`
-* **Status**: `Concluído (código+testes; E2E device pendente)`
+* **Status**: `Concluído (código+testes; TASK-02 fechado em UC-04.09; E2E device pendente)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.01 -owner <agente> -paths lib/modules/checklists/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.01`
 
@@ -204,11 +205,13 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 ### 5.1 Migrations SQLite (`dnolib/sqlite`)
 | Arquivo | Conteúdo | UCs dependentes |
 | :--- | :--- | :--- |
-| `lib/modules/checklists/data/checklist_migration.dart` | Tabelas `checklist_templates`, `checklist_items`, `checklist_answers` | `UC-04.01`, `UC-04.02` |
+| `lib/modules/checklists/data/checklist_migration.dart` | Tabelas `checklist_templates`, `checklist_items`, `checklist_answers` (v8); seed dos 3 modelos embutidos + 8 itens (v12, `INSERT OR IGNORE`) | `UC-04.01`, `UC-04.02`, `UC-04.09` |
 | `lib/modules/evidences/data/evidence_migration.dart` | Tabelas `photo_evidences`, `digital_signatures` | `UC-04.03`, `UC-04.04` |
 
 ### 5.2 Seeds
-- Seed inicial embutido no app com 2 templates padrão: `"Manutenção Preventiva"` e `"Instalação Padrão"`.
+- `ChecklistMigration.v12()` (registrada em `createAppDatabase`, `dbVersion: 12`) semeia 3 modelos com itens:
+  `Instalação Split` (3 itens), `Manutenção Preventiva` (3 itens) e `Vistoria Rápida` (2 itens).
+- `INSERT OR IGNORE`: reabrir o banco na mesma versão **não** re-semeia nem duplica itens.
 
 ### 5.3 Config Schema
 - Sem variáveis de ambiente externas (armazenamento 100% local em `getApplicationSupportDirectory()/evidences/`).
@@ -238,5 +241,21 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 | **UC-04.06** | Persistência SQLite de Respostas de Checklist por OS (M-04) | UC-04.01, UC-04.02 | `Concluído` |
 | **UC-04.07** | Integração Prova Real de Checklist na Conclusão OS (fecha D-05) | UC-04.06, UC-03.05 | `Concluído` |
 | **UC-04.08** | Unificação de DigitalSignature e Migração (M-05) | UC-04.05 | `Concluído` |
+| **UC-04.09** | Modelos Alcançáveis: Seed Embutido + Cadastro pela UI | UC-04.01 | `Concluído` |
 
 > Gate 2.5 obrigatório em UC-04.05/07/08 (PII/LGPD, imutabilidade, validação). Gate 4 deve incluir evidência de `flutter analyze --fatal-infos` e `flutter test` completo.
+
+### 6.4 UC-04.09 — correção de entrega declarada (2026-11-22)
+
+`UC-04.01` figurava `Concluído`, mas o `TASK-02` ("UI Kortex de cadastro/listagem") não estava entregue: a página de listagem existia como **código morto** (nenhuma rota a montava), não havia formulário de cadastro e nenhuma migration semeava templates. Efeito medido: em instalação limpa o seletor `wo-checklist-template` nascia vazio, `checklistTemplateId` só podia ser `null` e o fluxo `template→OS→checklist→conclusão` era inalcançável pela UI.
+
+Entregue nesta fatia:
+
+| Item | Arquivo | Prova |
+| :--- | :--- | :--- |
+| Seed de 3 modelos + 8 itens | `checklist_migration.dart` (`v12`) | `checklist_seed_migration_test.dart` (RED antes: `Expected: length 3 / Actual: []`) |
+| Cadastro com validação de domínio | `checklist_template_form_controller.dart` | `checklist_template_form_controller_test.dart` (RED antes: `Method not found`) |
+| Tela stateless com identidade por item | `checklist_template_form_page.dart` | `checklist_template_form_page_test.dart` (RED por mutação: `ValueKey(index)` herda texto do vizinho removido) |
+| Rota acessível a partir da OS | `checklists_routes.dart` + ação `wo-templates` | `checklist_templates_reachable_test.dart` (RED por mutação: `+0 -2` sem a ação) |
+
+**Pendente**: validação E2E em device — bloqueada por `INSTALL_FAILED_USER_RESTRICTED` (MIUI recusando instalação por USB), não pelo código.
