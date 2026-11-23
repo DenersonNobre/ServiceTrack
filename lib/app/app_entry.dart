@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../modules/auth/features/app_entry/.index.dart';
 import '../modules/auth/ui/auth_routes.dart';
+import '../modules/checklists/ui/checklists_routes.dart';
 import '../modules/customers/ui/customers_routes.dart';
 import '../modules/profile/ui/profile_routes.dart';
 import '../modules/settings/ui/.index.dart';
@@ -24,6 +25,7 @@ class AppEntry extends StatefulWidget {
 class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
   late final AuthRoutes _authRoutes;
+  late final ChecklistsRoutes _checklistsRoutes;
   late final CustomersRoutes _customersRoutes;
   late final ProfileRoutes _profileRoutes;
   late final SettingsRoutes _settingsRoutes;
@@ -39,6 +41,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     _authRoutes = AuthRoutes(
       credentialRepository: widget.deps.credentialRepository,
       biometricAuth: widget.deps.biometricAuth,
+    );
+    _checklistsRoutes = ChecklistsRoutes(
+      templateRepository: widget.deps.checklistTemplateRepository,
     );
     _customersRoutes = CustomersRoutes(
       customerRepository: widget.deps.customerRepository,
@@ -102,6 +107,11 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     Navigator.of(context).push(_settingsRoutes.edit());
   }
 
+  void _goChecklists() {
+    if (!mounted) return;
+    Navigator.of(context).push(_checklistsRoutes.list());
+  }
+
   void _goWorkOrders() {
     if (!mounted) return;
     Navigator.of(context).push(_workOrdersRoutes.list());
@@ -116,6 +126,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           onProfile: _goProfile,
           onCustomers: _goCustomers,
           onWorkOrders: _goWorkOrders,
+          onChecklists: _goChecklists,
           onSettings: _goSettings,
         ),
       ),
@@ -170,6 +181,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             onProfile: _goProfile,
             onCustomers: _goCustomers,
             onWorkOrders: _goWorkOrders,
+            onChecklists: _goChecklists,
             onSettings: _goSettings,
           ),
         };
