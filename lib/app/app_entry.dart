@@ -10,6 +10,7 @@ import '../modules/profile/ui/profile_routes.dart';
 import '../modules/settings/ui/.index.dart';
 import '../modules/work_orders/ui/work_orders_routes.dart';
 import 'app_dependencies.dart';
+import 'home_dashboard_controller.dart';
 import 'home_page.dart';
 
 /// Porta de entrada do aplicativo após o [MaterialApp].
@@ -30,6 +31,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final ProfileRoutes _profileRoutes;
   late final SettingsRoutes _settingsRoutes;
   late final WorkOrdersRoutes _workOrdersRoutes;
+  late final HomeDashboardController _homeController;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
   static const _backgroundLockTtl = Duration(minutes: 5);
@@ -64,6 +66,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       checklistAnswerRepository: widget.deps.checklistAnswerRepository,
       settingsRepository: widget.deps.settingsRepository,
     );
+    _homeController = HomeDashboardController(
+      repository: widget.deps.workOrderRepository,
+    );
     _routeFuture = ResolveInitialRouteUseCase(
       repo: widget.deps.credentialRepository,
     ).execute();
@@ -72,6 +77,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _homeController.dispose();
     super.dispose();
   }
 
@@ -117,15 +123,31 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     Navigator.of(context).push(_workOrdersRoutes.list());
   }
 
+  void _goNewWorkOrder() {
+    if (!mounted) return;
+    Navigator.of(context).push(
+      _workOrdersRoutes.form(
+        onSaved: () {
+          // ignore: discarded_futures
+          _homeController.load();
+        },
+      ),
+    );
+  }
+
   void _goHome() {
     if (!mounted) return;
     _isLockVisible = false;
+    // ignore: discarded_futures
+    _homeController.load();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => HomePage(
+          controller: _homeController,
           onProfile: _goProfile,
           onCustomers: _goCustomers,
           onWorkOrders: _goWorkOrders,
+          onNewWorkOrder: _goNewWorkOrder,
           onChecklists: _goChecklists,
           onSettings: _goSettings,
         ),
@@ -178,9 +200,11 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             onForgotPin: _goRecovery,
           ),
           AppEntryRoute.home => HomePage(
+            controller: _homeController,
             onProfile: _goProfile,
             onCustomers: _goCustomers,
             onWorkOrders: _goWorkOrders,
+            onNewWorkOrder: _goNewWorkOrder,
             onChecklists: _goChecklists,
             onSettings: _goSettings,
           ),
