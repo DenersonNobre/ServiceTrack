@@ -184,4 +184,14 @@ final class PinRecoveryController extends IKortexController {
     newPin.value = '';
     step.value = PinRecoveryStep.chooseMethod;
   }
+
+  @override
+  void onDispose() {
+    step.dispose();
+    masterPassword.dispose();
+    newPin.dispose();
+    passwordError.dispose();
+    pinError.dispose();
+    loading.dispose();
+  }
 }
