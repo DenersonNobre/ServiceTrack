@@ -1,5 +1,8 @@
 include: package:flutter_lints/flutter.yaml
 
+plugins:
+  kortex_lint: ^0.1.2
+
 analyzer:
   language:
     strict-casts: true
