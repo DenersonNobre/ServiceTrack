@@ -3,8 +3,8 @@
 // SRP: representar prova fail-closed de que checklist obrigatório está completo.
 // Não persiste, não renderiza UI.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/work_order_failure_codes.dart';
 

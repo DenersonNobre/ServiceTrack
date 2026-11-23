@@ -2,8 +2,8 @@
 //
 // SRP: validar metadados, tamanho máximo (<= 400KB) e cota de 6 fotos por OS.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/evidence_failure_codes.dart';
 

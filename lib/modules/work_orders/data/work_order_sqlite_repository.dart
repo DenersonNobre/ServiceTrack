@@ -6,8 +6,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dnolib/core/models/money.dart';
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/ports/work_order_failure_codes.dart';

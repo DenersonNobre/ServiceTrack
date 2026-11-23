@@ -1,4 +1,4 @@
-import 'package:dnolib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex/kortex.dart';
 
 import '../domain/.index.dart';

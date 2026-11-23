@@ -2,8 +2,8 @@
 //
 // SRP: validar resposta tri-estado de checklist e completude obrigatória da OS.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/checklist_failure_codes.dart';
 import 'checklist_template.dart';

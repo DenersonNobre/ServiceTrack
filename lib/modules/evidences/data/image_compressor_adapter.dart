@@ -5,8 +5,8 @@
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:image/image.dart' as img;
 
 import '../domain/entities/photo_evidence.dart';

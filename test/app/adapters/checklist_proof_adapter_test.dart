@@ -1,5 +1,5 @@
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/app/adapters/checklist_proof_adapter.dart';
 import 'package:service_track/modules/checklists/domain/entities/checklist_answer.dart';

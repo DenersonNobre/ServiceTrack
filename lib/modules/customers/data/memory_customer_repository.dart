@@ -1,7 +1,7 @@
 // Repositório em memória de clientes (testes/fallback).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/value_objects/customer.dart';

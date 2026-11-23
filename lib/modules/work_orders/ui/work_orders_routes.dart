@@ -3,7 +3,7 @@
 // SRP: compor rotas escopadas de OS e execução de checklist.
 // Não implementa regra de negócio nem conhece o shell do app.
 
-import 'package:dnolib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/ui/app_scoped_route.dart';

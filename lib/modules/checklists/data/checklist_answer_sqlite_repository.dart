@@ -3,8 +3,8 @@
 // SRP: persistir e carregar respostas de checklist por work_order_id.
 // Não valida regra de negócio de completude (domínio).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/entities/checklist_answer.dart';

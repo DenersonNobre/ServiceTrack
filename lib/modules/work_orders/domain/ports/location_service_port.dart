@@ -3,8 +3,8 @@
 // SRP: contrato para captura pontual de localização em foreground.
 // Não conhece geolocator, UI ou persistência.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../value_objects/geo_point.dart';
 

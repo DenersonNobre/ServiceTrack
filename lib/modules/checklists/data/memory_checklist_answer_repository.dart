@@ -1,7 +1,7 @@
 // Repositório em memória de respostas de checklist (testes e fallback).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../domain/entities/checklist_answer.dart';
 import '../domain/ports/checklist_answer_repository_port.dart';

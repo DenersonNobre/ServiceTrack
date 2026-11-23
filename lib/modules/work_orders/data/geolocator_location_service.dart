@@ -5,8 +5,8 @@
 
 import 'dart:async';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../domain/ports/location_service_port.dart';

@@ -2,8 +2,8 @@
 //
 // SRP: persistir e carregar templates + itens em transação atômica SQLite.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 
 import '../domain/entities/checklist_template.dart';

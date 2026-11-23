@@ -2,8 +2,8 @@
 
 import 'dart:typed_data';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 /// Contrato para compressão de fotos antes de salvar em disco.
 abstract interface class IImageCompressorPort {

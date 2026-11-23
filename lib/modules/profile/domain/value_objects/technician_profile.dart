@@ -6,8 +6,8 @@
 // Pattern: Value Objects com Result.Fail tipado.
 
 import 'package:dnolib/brlib/brlib.dart';
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/profile_failure_codes.dart';
 

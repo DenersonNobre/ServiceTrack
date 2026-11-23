@@ -3,8 +3,8 @@
 // SRP: provar que o cadastro delega a validação ao domínio (título/itens),
 // normaliza itens em branco e persiste apenas modelos válidos.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/checklists/domain/entities/checklist_template.dart';
 import 'package:service_track/modules/checklists/domain/ports/checklist_failure_codes.dart';

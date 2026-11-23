@@ -1,7 +1,7 @@
 // Porta de persistência de respostas de checklist por OS (DIP / UC-04.02).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../entities/checklist_answer.dart';
 

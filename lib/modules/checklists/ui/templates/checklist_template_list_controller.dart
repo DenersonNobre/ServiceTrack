@@ -2,8 +2,8 @@
 //
 // SRP: carregar e remover modelos de checklist expondo sinais readonly.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../domain/entities/checklist_template.dart';

@@ -3,8 +3,8 @@
 // SRP: orquestrar criação de OS. Não renderiza UI.
 
 import 'package:dnolib/core/models/money.dart';
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 import 'package:uuid/uuid.dart';
 

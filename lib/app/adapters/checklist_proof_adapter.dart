@@ -3,8 +3,8 @@
 // SRP: compor repositórios de checklist para calcular ChecklistCompletionProof.
 // Camada de app (composição) - pode depender de módulos.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../../modules/checklists/domain/ports/checklist_answer_repository_port.dart';
 import '../../modules/checklists/domain/ports/checklist_failure_codes.dart';

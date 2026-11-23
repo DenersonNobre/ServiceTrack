@@ -6,8 +6,8 @@
 //
 // Dependências: dnolib (core/patterns).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/auth_failure_codes.dart';
 

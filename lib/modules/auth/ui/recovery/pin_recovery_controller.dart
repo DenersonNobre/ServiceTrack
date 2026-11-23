@@ -5,8 +5,8 @@
 //
 // Pattern: IKortexController + sinais de estado (A4: sem bypass UI).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../domain/ports/auth_credential_repository_port.dart';

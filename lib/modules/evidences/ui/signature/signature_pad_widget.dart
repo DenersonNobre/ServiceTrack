@@ -4,7 +4,7 @@
 // Estado de tela vive no SignaturePadController (KortexSignal); este widget é
 // stateless e não guarda estado próprio (UC-06.03).
 
-import 'package:dnolib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 import 'package:signature/signature.dart';

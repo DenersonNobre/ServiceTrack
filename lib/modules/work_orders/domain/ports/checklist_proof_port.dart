@@ -3,8 +3,8 @@
 // SRP: abstrair cálculo da prova real de checklist (DIP).
 // Não acessa SQLite/UI diretamente.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../value_objects/checklist_completion_proof.dart';
 

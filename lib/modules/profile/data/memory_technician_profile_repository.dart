@@ -5,8 +5,8 @@
 
 import 'dart:typed_data';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../domain/ports/profile_failure_codes.dart';
 import '../domain/ports/technician_profile_repository_port.dart';

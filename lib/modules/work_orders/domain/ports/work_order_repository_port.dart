@@ -2,8 +2,8 @@
 //
 // SRP: contrato de persistência de OS. Não conhece SQLite/UI.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../value_objects/work_order.dart';
 

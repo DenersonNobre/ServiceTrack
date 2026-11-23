@@ -2,8 +2,8 @@
 //
 // SRP: carregar e expor locais de um cliente. Não renderiza UI.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../domain/ports/service_location_repository_port.dart';

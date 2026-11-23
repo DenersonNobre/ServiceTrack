@@ -2,8 +2,8 @@
 //
 // SRP: carregar, filtrar e iniciar atendimento de OS. Não renderiza UI.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../evidences/domain/ports/evidence_failure_codes.dart';

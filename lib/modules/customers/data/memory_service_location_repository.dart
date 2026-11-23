@@ -1,7 +1,7 @@
 // Repositório em memória de locais de atendimento (testes/fallback).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../domain/ports/service_location_repository_port.dart';
 import '../domain/value_objects/service_location.dart';

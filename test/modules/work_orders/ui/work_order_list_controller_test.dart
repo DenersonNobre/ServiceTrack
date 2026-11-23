@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:dnolib/core/models/money.dart';
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/data/memory_work_order_repository.dart';
 import 'package:service_track/modules/work_orders/domain/ports/checklist_proof_port.dart';

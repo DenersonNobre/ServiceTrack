@@ -3,8 +3,8 @@
 // SRP: validar e encapsular templates reutilizáveis de checklist técnico.
 // Não persiste, não formata UI, não acessa I/O.
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../ports/checklist_failure_codes.dart';
 

@@ -14,8 +14,8 @@
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/ports/.index.dart';

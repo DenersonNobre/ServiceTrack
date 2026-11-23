@@ -4,8 +4,8 @@
 // Não renderiza UI e não duplica regra de negócio: título e itens são
 // validados pelas entidades do domínio (ChecklistTemplate/ChecklistItem).
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex/kortex.dart';
 import 'package:uuid/uuid.dart';
 

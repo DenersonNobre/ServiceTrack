@@ -14,6 +14,7 @@ dependencies:
 
   # Shared Kernel & Arquitetura do Autor
   kortex: ^0.2.3
+  kortex_lib: ^0.1.0
   dnolib:
     path: ../.dnolib
 

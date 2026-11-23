@@ -6,7 +6,7 @@
 //
 // Não afirma nada: imprime o resultado medido para decisão. Não é gate.
 
-import 'package:dnolib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';

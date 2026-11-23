@@ -7,7 +7,7 @@
 // Pattern: Controller kortex com sinais granulares + Result.
 
 import 'package:kortex/kortex.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../../domain/ports/.index.dart';
 import '../../domain/value_objects/.index.dart';

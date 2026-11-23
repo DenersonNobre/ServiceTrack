@@ -558,6 +558,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.3"
+  kortex_lib:
+    dependency: "direct main"
+    description:
+      name: kortex_lib
+      sha256: ab6ca873fdec8446b3302a0745af453f5569d32aac9fc5a55efac282d3b7be4b
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   kortex_lint:
     dependency: "direct dev"
     description:

@@ -9,8 +9,8 @@
 
 import 'dart:typed_data';
 
-import 'package:dnolib/core/patterns/result.dart';
-import 'package:dnolib/core/patterns/validation_error.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 import 'package:signature/signature.dart';
