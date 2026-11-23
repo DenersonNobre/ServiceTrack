@@ -91,7 +91,7 @@ Entidade Raiz: WorkOrder (Identificador: WorkOrderId [UUID v4])
 
 O ServiceTrack utiliza rigorosamente o stack e bibliotecas canônicas do autor:
 - **`kortex`**: Motor reativo de granularidade fina baseado em Signals (`KortexSignal`, `KortexWatch`, `IKortexPage`), injeção com escopo explícito na árvore de widgets (`KortexScope`, `KortexProvider`) e ciclo de vida determinístico sem dependências externas.
-- **`dnolib`** (exceto módulo `synapx`): Utilitários universais, Value Objects monetários/BR (`brlib` com validação de CPF/CNPJ, formatação de telefone), persistência SQLite/Drift e widgets reutilizáveis.
+- **`kortex_lib`** (pub.dev): Utilitários universais, `Result`/`ValidationError`, Value Objects monetários/BR (`Money`, `brlib` com validação de CPF/CNPJ, formatação de telefone), persistência SQLite e widgets reutilizáveis. (Substitui `dnolib`, aposentada na Fase B.)
 
 ```dart
 // Exemplo de Controller usando Kortex

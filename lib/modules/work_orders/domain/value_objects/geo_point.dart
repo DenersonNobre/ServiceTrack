@@ -3,7 +3,7 @@
 // SRP: validar e representar coordenada pontual de check-in/check-out.
 // Não captura GPS, não persiste, não loga coordenadas.
 //
-// Dependências: dnolib Result/ValidationError.
+// Dependências: kortex_lib Result/ValidationError.
 
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';

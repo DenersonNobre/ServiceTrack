@@ -4,25 +4,22 @@
 > Ponteiro da verdade viva; sem duplicação de backlog ou código.
 
 ## Contexto
-App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite local, biometria/PIN e geração de laudos em PDF no aparelho.
+App Flutter 100% standalone para técnicos autônomos com kortex, kortex_lib (pub.dev), SQLite local, biometria/PIN e geração de laudos em PDF no aparelho.
 
-## Estado Real (Verificado em 2026-11-22)
-- **Branch**: `main`; topo = fatia `UC-04.09` (ver `git log -1`); claim ativo: `OPS-EPIC04-E2E-DEVICE`.
-- **EPIC-00/01/02/03**: **CONCLUÍDOS** (`qa-review-v0.1.0..v0.17.0`).
-- **EPIC-04**: **Implementado em código/testes** (UC-04.01–04.09; D-05 mitigado; modelo de checklist com seed + cadastro alcançável). **Sonda de device executada**: rota=onboarding, GPS OK em 2558 ms. **E2E executa no device** (install OK, onboarding OK) mas **trava na navegação home→clientes**: tap em `home-customers` não abre `CustomerListPage` (3 execuções). Diagnóstico medido: `onPressed null? false` — botão habilitado, hipótese de fiação nula refutada; resta bissecar gesto vs. rota.
-- **EPIC-06**: **Concluído** — UC-06.01..06.05 (catálogos `*FailureCodes` + gate com prova negativa; tokens 48dp; `SignaturePadWidget` em Kortex/`setState` zero; `AppDependencies` + `*Routes`; `qa-review-v0.20.0.md`).
-- **EPIC-07**: **Concluído** — UC-07.01/02/03 (settings + UI + integração fail-closed D-01/C-01). G2.5/G3/G4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
-- **Toolchain**: `kortex` vem do **pub.dev (`^0.2.1`)**; `dnolib` segue por path (`ci/vendor/dnolib.tar.gz`).
-- **CI GitHub**: **verde** no run `45094252218` (`origin/main` `7e5d244`). Gitea sem workflow.
+## Estado Real (Verificado em 2026-11-23)
+- **Branch**: `main`; árvore limpa antes desta retomada de B5; local `ahead 4` de `origin/main` (`88ee8a0` no momento da medição). Claims: verificar com `claims status`.
+- **EPIC-00/01/02/03/06/07**: **CONCLUÍDOS** (ver `docs/plan/README.md` e `docs/plan/reviews/`).
+- **EPIC-04**: Implementado em código/testes (UC-04.01–04.09). E2E de device executa mas trava na navegação home→clientes (`home-customers` não abre `CustomerListPage`, 3 execuções); hipótese de fiação nula refutada. D-01/C-01 continuam fail-closed por design.
+- **Migração dnolib → kortex_lib (Fase B)**: B1 Result/ValidationError (`cc253ef`), B2 Money (`2081d22`), B3 brlib (`574e0d8`), B4 sqlite (`88ee8a0`) concluídos com gates verdes (+221). **B5 (cleanup)** em andamento: remover dnolib do pubspec/CI/vendor e atualizar docs factuais.
+- **CI GitHub**: verde no último push verificado (`45174220335` para `8deaada`). Gitea sem workflow.
 - **Dívidas**: `docs/DEBITOS.md` D-01..D-05; D-05 mitigado.
 
 ## Próximo Passo Acionável
-1. Causar o `INSTALL_FAILED_USER_RESTRICTED` por evidência (logcat/`pm install` via push) — **não** repetir a atribuição "Instalar via USB" (refutada).
-2. Com install OK: `pm clear` → reconceder `ACCESS_FINE/COARSE_LOCATION` → `flutter test integration_test/epic04_flow.dart -d 192.168.67.65:5555`.
-3. **Push**: pendente de autorização explícita do PO + 3 evidências.
+1. Finalizar B5: remover `dnolib` do pubspec/lock/CI/vendor, atualizar docs factuais, rodar `analyze` + `test`, commitar.
+2. Push dos commits locais somente com autorização explícita do PO + 3 evidências.
+3. Retomar E2E EPIC-04 (tap `home-customers` / rota) com evidência de device.
 
 ## Travas Vivas
-- **Claims**: `OPS-EPIC04-E2E-DEVICE` (`opc01@e03ff640`); `claims status` antes de mutar.
-- **Push**: somente com autorização explícita do PO + 3 evidências.
-- **D-01/C-01**: persiste bloqueando documento do recebedor por design (fail-closed).
+- **Push**: proibido sem autorização explícita do PO + 3 evidências (pedido, árvore limpa, sem concorrência/divergência).
+- **D-01/C-01**: documento do recebedor bloqueado por design (fail-closed).
 - **Greenfield Lock**: **DESTRAVADO**.

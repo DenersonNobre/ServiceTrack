@@ -34,7 +34,7 @@ graph TD
 
     EPIC00["EPIC-00: Fundação Flutter & Toolchain"]:::foundation
     EPIC01["EPIC-01: Onboarding, Auth Local & Perfil"]:::foundation
-    EPIC02["EPIC-02: Gestão Local de Clientes (SQLite/dnolib)"]:::foundation
+    EPIC02["EPIC-02: Gestão Local de Clientes (SQLite/kortex_lib)"]:::foundation
     EPIC03["EPIC-03: Ordens de Serviço & Ciclo de Estados"]:::ready
     EPIC04["EPIC-04: Checklists Rápidos & Evidências com GPS"]:::ready
     EPIC05["EPIC-05: Geração On-Device de Laudo PDF & Envio WhatsApp"]:::core
@@ -58,7 +58,7 @@ graph TD
 
 1. **EPIC00 (Fundação Flutter)**: Configurar projeto Flutter, design tokens do Styleguide v2.1, scripts de teste headless e shims de claim.
 2. **EPIC01 (Onboarding & Auth Local)**: Primeiro acesso do técnico, cadastro de perfil e cofre seguro de Biometria/PIN.
-3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `dnolib/sqlite` e validações `brlib`.
+3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `kortex_lib/sqlite` e validações `brlib`.
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
 5. **EPIC07 (Configurações & Políticas Locais)**: Concluído (`UC-07.01`: catálogo + SQLite v11 + use cases; `UC-07.02`: UI; `UC-07.03`: integração com fail-closed D-01/C-01). G3/G4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.08, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.

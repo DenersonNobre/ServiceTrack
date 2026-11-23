@@ -12,7 +12,7 @@ Aplicativo Flutter 100% local e autocontido (sem backend / zero custos de nuvem)
 - **Framework**: Flutter 3.47.6+ (Dart 3.13.5+)
 - **Shared Kernel & Reatividade**:
   - `kortex`: Gerenciamento de estado fino por Signals (`KortexSignal`, `KortexWatch`) e injeção com escopo determinístico (`KortexScope`).
-  - `dnolib`: Utilitários e infraestrutura compartilhada (validação de CPF/CNPJ, formatação de telefone, sqlite, widgets; exceto synapx).
+  - `kortex_lib`: Utilitários e infraestrutura compartilhada (Result/ValidationError, Money, validação de CPF/CNPJ, formatação de telefone, sqlite, widgets) — pub.dev.
 - **Composição & Navegação**: `AppDependencies` (composition root) + `*Routes` por módulo usando `appScopedRoute`; `AppEntry` só gate/lifecycle/dispatch. Ver [ADR-002](docs/architecture/adr-002-app-shell-di-route-bindings.md).
 - **Persistência Local**: SQLite tipado via `sqflite` / `sqflite_common_ffi`.
 - **Cofre Seguro**: `flutter_secure_storage` & `local_auth` (Biometria / PIN).

@@ -18,7 +18,7 @@
 Governar a criação, agendamento e transições da Ordem de Serviço (`WorkOrder`), aplicando a máquina de estados estrita (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`/`CANCELLED`) com registro pontual de Check-in/Check-out e cálculo de duração do atendimento.
 
 - **Incluso**:
-  - `UC-03.01`: Criação Rápida de Ordem de Serviço (Seleção de Cliente, Descrição do Serviço, Data/Hora e Valor Estimado com `dnolib/core` Money).
+  - `UC-03.01`: Criação Rápida de Ordem de Serviço (Seleção de Cliente, Descrição do Serviço, Data/Hora e Valor Estimado com `kortex_lib` Money).
   - `UC-03.02`: Agenda & Lista de Visitas (Filtros por chip: Hoje, Agendadas, Em Andamento, Concluídas).
   - `UC-03.03`: Início do Atendimento (Check-in pontual com captura de geolocalização `GeoPoint` e transição para `IN_PROGRESS`).
   - `UC-03.04`: Pausa e Cancelamento com Justificativa Obrigatória (pausa/retomada sem GPS, por ora; motivo obrigatório na pausa/cancelamento).

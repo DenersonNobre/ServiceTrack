@@ -43,7 +43,7 @@ Centralizar configurações e políticas locais do app em módulo dedicado, evit
 ## 3. Definição de Pronto (DoD) do Épico
 
 - [x] Catálogo tipado de configurações com defaults explícitos (sem string mágica de chave fora do catálogo).
-- [x] Persistência local SQLite via `dnolib/sqlite` com migration versionada e idempotente (`SettingsMigration.v11`, `dbVersion: 11`).
+- [x] Persistência local SQLite via `kortex_lib/sqlite` com migration versionada e idempotente (`SettingsMigration.v11`, `dbVersion: 11`).
 - [x] Consumidores acessam políticas por use case, não por storage direto nem bool hardcoded em `app_entry`.
 - [x] UI acessível (>=48dp, `#115E59`, `StatelessWidget` por padrão, estado reativo Kortex).
 - [x] D2 implementado: `require_receiver_document` default `false` (minimização); quando habilitado, o fluxo falha fail-closed enquanto D-01 não protege o documento.

@@ -18,7 +18,7 @@ final class ChecklistAnswerSqliteRepository
   /// Cria o repositório sobre [provider].
   ChecklistAnswerSqliteRepository({required this.provider});
 
-  /// Provider SQLite da `dnolib`.
+  /// Provider SQLite do `kortex_lib`.
   final SqliteProvider provider;
 
   @override

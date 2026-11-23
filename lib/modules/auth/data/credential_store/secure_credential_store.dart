@@ -9,7 +9,7 @@
 // dependência; são estado de segurança, não flags de UX (INV-SEC-05 trata
 // das flags biometria/remember_me, fora deste slice).
 //
-// Dependências: dnolib (core/patterns), package:uuid, ports/security da fatia.
+// Dependências: kortex_lib (core/patterns), package:uuid, ports/security da fatia.
 
 import 'dart:convert';
 import 'dart:isolate';

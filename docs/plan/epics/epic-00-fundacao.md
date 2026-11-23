@@ -59,7 +59,7 @@ Estabelecer a fundação de engenharia estéril e autocontida para o **ServiceTr
 
 - [ ] Projeto Flutter configurado na raiz com `pubspec.yaml` contendo:
   - Pacote local: `kortex` (gerenciamento reativo via signals e injeção com `KortexScope`).
-  - Pacote local: `dnolib` (na íntegra, com `hide Synapx` / exceto synapx).
+  - Pacote local: `kortex_lib` (pub.dev). *(Originalmente `dnolib`; migrado na Fase B, 2026-11-23.)*
   - Dependências nativas: `sqlite3_flutter_libs`, `pdf`, `share_plus`, `geolocator`, `image`, `signature`, `flutter_secure_storage`, `local_auth`.
 - [ ] Script `pwsh build-all.ps1` executa `flutter analyze` com zero erros/warnings.
 - [ ] Suíte de smoke test executável via `flutter test` com exit code 0.

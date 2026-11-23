@@ -1,35 +1,15 @@
-# CI — Dependências locais (`dnolib` e `kortex`)
+# CI — Dependências
 
-O `pubspec.yaml` usa path deps de desenvolvimento:
+As dependências de kernel (`kortex`, `kortex_lib`) vêm do **pub.dev**. Não há path deps nem vendor de CI.
 
-```yaml
-kortex:
-  path: ../kortex
-dnolib:
-  path: ../.dnolib
-```
+## Workflow
 
-No GitHub Actions esses diretórios não existem. O workflow `CI` extrai um **vendor de CI** antes do `flutter pub get`:
+O GitHub Actions (`.github/workflows/ci.yml`) roda em `ubuntu-latest` com Flutter `3.47.6`:
 
-```yaml
-mkdir -p ../.dnolib ../kortex
-tar -xzf ci/vendor/dnolib.tar.gz -C ../.dnolib
-tar -xzf ci/vendor/kortex.tar.gz -C ../kortex
-```
+1. `flutter pub get`
+2. `flutter analyze --fatal-infos`
+3. `flutter test`
 
-## Atualizar o vendor
+## Histórico
 
-Quando `../.dnolib` ou `../kortex` mudarem, regenere os tarballs a partir dos repos irmãos:
-
-```powershell
-pwsh scripts/ci/vendor-deps.ps1
-```
-
-O script usa `git archive HEAD`, portanto inclui apenas arquivos versionados. Commite os dois tarballs junto com a mudança de dependência.
-
-## Limitações
-
-- O vendor é um **snapshot de CI**, não uma cópia de desenvolvimento. O app continua usando `../kortex` e `../.dnolib` localmente.
-- `dnolib` não está publicado no pub.dev nem no GitHub; por isso o snapshot é necessário.
-- O Gitea não possui workflow de CI configurado; o sinal de CI atual vem do GitHub Actions.
-- Não coloque tokens/credenciais nos tarballs. Eles contêm apenas código versionado das dependências.
+- `dnolib` (path dep, aposentada) era vendorizada em `ci/vendor/dnolib.tar.gz` e extraída no CI. Removida na Fase B da migração (kortex_lib 0.1.0 no pub.dev).

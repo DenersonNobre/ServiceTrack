@@ -161,13 +161,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.14"
-  dnolib:
-    dependency: "direct main"
-    description:
-      path: "../.dnolib"
-      relative: true
-    source: path
-    version: "0.7.0"
   encrypt:
     dependency: transitive
     description:

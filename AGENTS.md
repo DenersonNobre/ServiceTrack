@@ -10,7 +10,7 @@
 - **Arquitetura Standalone**: O app é 100% autocontido no smartphone. Zero chamadas para backend/nuvem no escopo atual.
 - **Motor Reativo Obrigatório**: Toda gerência de estado de tela deve utilizar **`kortex`** (`KortexSignal`, `IKortexPage`, `KortexWatch`, `KortexScope`). Nunca introduzir GetX, Provider avulso ou ChangeNotifier desgovernado.
 - **Widgets Stateless por Padrão**: Preferir `StatelessWidget`. Evitar `StatefulWidget`/`setState`; estado de tela/local reativo deve ser modelado com Kortex. `StatefulWidget` só com justificativa técnica explícita (ex.: lifecycle nativo de controlador de plataforma).
-- **Infraestrutura**: Utilizar **`dnolib`** para utilitários comuns, regras de validação brasileira (`brlib`) e banco SQLite (exceto o módulo `synapx`, que está vetado).
+- **Infraestrutura**: Utilizar **`kortex_lib`** (pub.dev) para utilitários comuns, `Result`/`ValidationError`, regras de validação brasileira (`brlib`) e banco SQLite. `dnolib` está aposentada.
 - **Composição & Rotas**: `AppDependencies` é o composition root; cada módulo expõe seu `*Routes` usando `appScopedRoute` para rotas com um controller. `AppEntry` não compõe controllers de módulo; `KortexScope` manual só para múltiplos providers, com justificativa. GetX/service locator seguem proibidos. Detalhe: `docs/architecture/adr-002-app-shell-di-route-bindings.md`.
 - **Regra de Orientação de UI**:
   - Smartphones (`< 600dp`): Estritamente Retrato (`Portrait-Only`).

@@ -10,7 +10,7 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
   /// Cria o repositório sobre [provider].
   SettingsSqliteRepository({required this.provider});
 
-  /// Provider SQLite da `dnolib`.
+  /// Provider SQLite do `kortex_lib`.
   final SqliteProvider provider;
 
   @override

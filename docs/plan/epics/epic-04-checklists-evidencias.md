@@ -202,7 +202,7 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 
 ## 5. Dados e Configuração
 
-### 5.1 Migrations SQLite (`dnolib/sqlite`)
+### 5.1 Migrations SQLite (`kortex_lib/sqlite`)
 | Arquivo | Conteúdo | UCs dependentes |
 | :--- | :--- | :--- |
 | `lib/modules/checklists/data/checklist_migration.dart` | Tabelas `checklist_templates`, `checklist_items`, `checklist_answers` (v8); seed dos 3 modelos embutidos + 8 itens (v12, `INSERT OR IGNORE`) | `UC-04.01`, `UC-04.02`, `UC-04.09` |

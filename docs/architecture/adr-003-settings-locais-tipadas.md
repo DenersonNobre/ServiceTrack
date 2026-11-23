@@ -10,7 +10,7 @@
 
 [FATO] Políticas de conclusão estavam distribuídas como bools em `app_entry`, `service_track_app` e `work_order_list_controller` (`requireChecklistTemplate`, `requireReceiverDocument`), sem catálogo único, default explícito ou persistência local.
 
-[FATO] O app já usa SQLite via `dnolib/sqlite` para dados locais; não há backend. A decisão D2 (ADR-001) exige política configurável com default seguro/minimização.
+[FATO] O app usa SQLite via `kortex_lib/sqlite` para dados locais; não há backend. A decisão D2 (ADR-001) exige política configurável com default seguro/minimização.
 
 ## Decisão
 

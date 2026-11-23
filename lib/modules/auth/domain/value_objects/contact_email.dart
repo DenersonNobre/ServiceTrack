@@ -2,9 +2,9 @@
 //
 // SRP: valida formato e normaliza (trim + minúsculas) o e-mail.
 // NÃO verifica entrega, NÃO persiste, NÃO toca em UI.
-// Pattern: Value Object com Result (dnolib IResult/ValidationError).
+// Pattern: Value Object com Result (kortex_lib IResult/ValidationError).
 //
-// Dependências: dnolib (core/patterns).
+// Dependências: kortex_lib (core/patterns).
 
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';

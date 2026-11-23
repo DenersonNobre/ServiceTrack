@@ -1,4 +1,4 @@
-# Épico 02: Gestão Local de Clientes & Locais (SQLite / dnolib)
+# Épico 02: Gestão Local de Clientes & Locais (SQLite / kortex_lib)
 
 ## Metadados
 
@@ -15,7 +15,7 @@
 
 ## 1. Objetivo de Negócio & Escopo
 
-Permitir que o técnico cadastre, consulte, edite e organize sua carteira de clientes e locais de atendimento diretamente no smartphone, com armazenamento SQLite local via `dnolib/sqlite` e validações brasileiras com `dnolib/brlib` (CPF/CNPJ, CEP e WhatsApp).
+Permitir que o técnico cadastre, consulte, edite e organize sua carteira de clientes e locais de atendimento diretamente no smartphone, com armazenamento SQLite local via `kortex_lib/sqlite` e validações brasileiras com `kortex_lib/brlib` (CPF/CNPJ, CEP e WhatsApp).
 
 - **Incluso**:
   - `UC-02.01`: Cadastro e Edição de Cliente (Nome/Razão Social, CPF/CNPJ com validação `brlib`, WhatsApp/Telefone, E-mail e Observações).
@@ -41,7 +41,7 @@ Permitir que o técnico cadastre, consulte, edite e organize sua carteira de cli
 ## 3. Definição de Pronto (DoD) do Épico
 
 - [x] Entidades de domínio `Customer` e `ServiceLocation` puras com testes unitários.
-- [x] Validação de CPF/CNPJ via `dnolib/brlib` sem exceções.
+- [x] Validação de CPF/CNPJ via `kortex_lib/brlib` sem exceções.
 - [x] Tabela SQLite criada com índices para busca por nome e documento.
 - [x] Controllers reativos implementados com `kortex` (`KortexSignal`, `IKortexPage`).
 - [x] Suíte de testes unitários e de widgets 100% verde com exit code 0.

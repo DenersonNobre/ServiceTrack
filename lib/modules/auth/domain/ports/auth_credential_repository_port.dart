@@ -4,7 +4,7 @@
 // NÃO implementa hash, KDF ou I/O de plataforma.
 // Pattern: Port do Hexagonal; falhas esperadas via Result.
 //
-// Dependências: dnolib (core/patterns), value_objects desta fatia.
+// Dependências: kortex_lib (core/patterns), value_objects desta fatia.
 
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
