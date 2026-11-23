@@ -16,6 +16,7 @@
 - **Testabilidade**: os quatro `_Field` do onboarding não tinham `key` — adicionadas `onboarding-name|email|password|pin` + `onboarding-submit` para o E2E nao depender de índice de campo.
 - **Armadilha do ambiente de teste**: `adb shell pm clear` **revoga permissão de runtime**. Sem reconceder `ACCESS_FINE/COARSE_LOCATION` após o `pm clear`, o check-in abre diálogo nativo (que o Dart não toca) e falharia por motivo errado.
 - **Bloqueio medido (install)**: `adb -s 192.168.67.65:5555 install -r -t app-debug.apk` → `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`. Na mesma sessão esse **mesmo comando retornou `Success` uma vez**, sem alteração de configuração no aparelho — logo não é bloqueio permanente. `settings put secure adb_install_need_confirm 0` **não** resolveu (a chave estava `null` e continua recusando). Causa ainda **não determinada**; atribuição anterior ("falta Instalar via USB, exige conta Mi") foi refutada e corrigida no `LEARNINGS.md`.
+- **Hang sem falha (2026-11-23)**: `flutter test integration_test/epic04_flow.dart -d ...` instalou (`37,7s`) e imprimiu `00:00 +0: EPIC-04...`, depois **18:31 de silêncio** até `did not complete` + `No tests were found`. [FATO] Todas as esperas do teste têm deadline (máx 120 s) e terminam em `fail()` com a tela impressa — um stall de rota falharia em ~90 s, não em 18 min. [FATO] App ficou em foreground (`MainActivity`), secure storage **sem credenciais** (só keysets) e **nenhum `.db`** no data dir → rota esperada era onboarding, sem motivo para stall. [HIPÓTESE] O host perdeu o link do observatory sobre o adb-wifi (instalação a 37 s já indica link lento) e nunca recebeu os eventos do device. Mitigações aplicadas na rerun: `screen_off_timeout=1800000`, `pm clear` + grants refeitos, heartbeat `debugPrint('[E2E]...')` em `esperarPor` (visível no logcat mesmo sem o host) e `--no-uninstall` para perícia post-mortem.
 - **Consequência de método**: `epic04_probe.dart` **foi executado** (evidência acima); `epic04_flow.dart` **não foi** — e não é reportado como validado.
 
 ## [EVIDENCIA]
@@ -24,8 +25,8 @@
 - Confirmação: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+221 All tests passed!`; `flutter test integration_test/epic04_flow.dart -d ...` → **falhou no install**, antes de executar o teste (`Failed to load ...: Unable to start the app on the device`).
 
 ## Próximo passo
-1. Determinar a causa do `INSTALL_FAILED_USER_RESTRICTED` por evidência (logcat da sessão de instalação / `pm install` via push), não por nova suposição.
-2. Com install OK: `adb shell pm clear com.servicetrack.service_track`, reconceder as duas permissões de localização e rodar `flutter test integration_test/epic04_flow.dart -d 192.168.67.65:5555`.
+1. Bissecar o tap fantasma em `home-customers`: botão habilitado (`onPressed null? false` medido), tap sem throw e sem navegação. Candidatas: (a) gesto absorvido por outro widget na coordenada — testar via `find.byTooltip('Clientes')`; (b) rota `CustomersRoutes.list()` falhando no build com repos reais — reproduzir em widget test headless com fakes. Uma hipótese por vez.
+2. Com navegação OK: `adb shell pm clear com.servicetrack.service_track`, reconceder as duas permissões de localização e rodar `flutter test integration_test/epic04_flow.dart -d 192.168.67.65:5555`.
 3. **Push**: pendente de autorização explícita do PO + 3 evidências.
 4. **D-01/C-01**: persiste bloqueando persistência de documento do recebedor por design (fail-closed).
 

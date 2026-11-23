@@ -9,7 +9,7 @@ App Flutter 100% standalone para técnicos autônomos com kortex, dnolib, SQLite
 ## Estado Real (Verificado em 2026-11-22)
 - **Branch**: `main`; topo = fatia `UC-04.09` (ver `git log -1`); claim ativo: `OPS-EPIC04-E2E-DEVICE`.
 - **EPIC-00/01/02/03**: **CONCLUÍDOS** (`qa-review-v0.1.0..v0.17.0`).
-- **EPIC-04**: **Implementado em código/testes** (UC-04.01–04.09; D-05 mitigado; modelo de checklist com seed + cadastro alcançável). **Sonda de device executada**: rota=onboarding, GPS OK em 2558 ms. **E2E escrito** (`integration_test/epic04_flow.dart`), execução **pendente** — `adb install` recusa intermitentemente (`INSTALL_FAILED_USER_RESTRICTED`).
+- **EPIC-04**: **Implementado em código/testes** (UC-04.01–04.09; D-05 mitigado; modelo de checklist com seed + cadastro alcançável). **Sonda de device executada**: rota=onboarding, GPS OK em 2558 ms. **E2E executa no device** (install OK, onboarding OK) mas **trava na navegação home→clientes**: tap em `home-customers` não abre `CustomerListPage` (3 execuções). Diagnóstico medido: `onPressed null? false` — botão habilitado, hipótese de fiação nula refutada; resta bissecar gesto vs. rota.
 - **EPIC-06**: **Concluído** — UC-06.01..06.05 (catálogos `*FailureCodes` + gate com prova negativa; tokens 48dp; `SignaturePadWidget` em Kortex/`setState` zero; `AppDependencies` + `*Routes`; `qa-review-v0.20.0.md`).
 - **EPIC-07**: **Concluído** — UC-07.01/02/03 (settings + UI + integração fail-closed D-01/C-01). G2.5/G3/G4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
 - **Toolchain**: `kortex` vem do **pub.dev (`^0.2.1`)**; `dnolib` segue por path (`ci/vendor/dnolib.tar.gz`).

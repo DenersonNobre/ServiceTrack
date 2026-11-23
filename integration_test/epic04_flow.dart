@@ -59,6 +59,10 @@ void main() {
     );
 
     // 2. Cliente com WhatsApp válido (a VO rejeita shape inválido).
+    final botaoClientes = tester.widget<IconButton>(_chave('home-customers'));
+    debugPrint(
+      '[E2E] home-customers onPressed null? ${botaoClientes.onPressed == null}',
+    );
     await tocar(tester, _chave('home-customers'));
     await tester.pump(const Duration(milliseconds: 800));
     await esperarPor(
@@ -174,25 +178,48 @@ void main() {
 ///
 /// Não usa `pumpAndSettle` porque um spinner contínuo (boot, check-in) nunca
 /// "assenta" e o teste morreria no timeout sem dizer em que tela parou.
+/// O heartbeat via `debugPrint` aparece no logcat: se o host perder a conexão
+/// com o device, o logcat ainda diz até onde o device chegou.
 Future<void> esperarPor(
   WidgetTester tester,
   Finder alvo, {
   Duration limite = const Duration(seconds: 30),
 }) async {
+  debugPrint('[E2E] esperarPor $alvo (limite ${limite.inSeconds}s)');
   final fim = DateTime.now().add(limite);
+  var ultimoBeat = DateTime.now();
   while (DateTime.now().isBefore(fim)) {
-    if (alvo.evaluate().isNotEmpty) return;
+    if (alvo.evaluate().isNotEmpty) {
+      debugPrint('[E2E] OK $alvo');
+      return;
+    }
+    if (DateTime.now().difference(ultimoBeat).inSeconds >= 10) {
+      ultimoBeat = DateTime.now();
+      debugPrint('[E2E] ... aguardando $alvo. tela: ${tela(tester)}');
+    }
     await tester.pump(const Duration(milliseconds: 100));
   }
+  debugPrint('[E2E] TIMEOUT $alvo. tela: ${tela(tester)}');
   fail(
     'timeout de ${limite.inSeconds}s esperando $alvo. tela: ${tela(tester)}',
   );
 }
 
 /// Toque com o foco fechado: o teclado virtual desloca o alvo em device real.
+///
+/// Fecha o teclado e espera a animação de dismiss terminar antes de mirar:
+/// sem isso o tap cai na coordenada deslocada e acerta outro widget (ou nada).
 Future<void> tocar(WidgetTester tester, Finder alvo) async {
   FocusManager.instance.primaryFocus?.unfocus();
-  await tester.pump(const Duration(milliseconds: 200));
+  try {
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } on FlutterError catch (e) {
+    debugPrint('[E2E] settle interrompido (animação contínua?), segue: $e');
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+  if (alvo.evaluate().isEmpty) {
+    debugPrint('[E2E] alvo sumiu após fechar o teclado: $alvo');
+  }
   await tester.ensureVisible(alvo);
   await tester.pump(const Duration(milliseconds: 200));
   await tester.tap(alvo);
