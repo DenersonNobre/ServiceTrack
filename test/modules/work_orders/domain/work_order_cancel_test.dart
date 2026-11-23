@@ -2,7 +2,7 @@
 //
 // SRP: validar transições e justificativa obrigatória no domínio.
 
-import 'package:dnolib/core/models/money.dart';
+import 'package:kortex_lib/core/models/money.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/geo_point.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/location_capture.dart';

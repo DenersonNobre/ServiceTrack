@@ -4,7 +4,7 @@ import 'dart:typed_data';
 // SRP: validar transições de pausa/retomada e justificativa obrigatória.
 
 
-import 'package:dnolib/core/models/money.dart';
+import 'package:kortex_lib/core/models/money.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/checklist_completion_proof.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/digital_signature.dart';

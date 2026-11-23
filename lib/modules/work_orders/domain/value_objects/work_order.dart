@@ -4,7 +4,7 @@
 //
 // Pattern: Entity/Value Object com Result.Fail tipado.
 
-import 'package:dnolib/core/models/money.dart';
+import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 

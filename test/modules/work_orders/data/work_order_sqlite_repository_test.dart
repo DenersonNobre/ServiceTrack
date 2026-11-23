@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:io';
 
-import 'package:dnolib/core/models/money.dart';
+import 'package:kortex_lib/core/models/money.dart';
 import 'package:dnolib/sqlite/sqlite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:service_track/modules/work_orders/data/work_order_migration.dart';
