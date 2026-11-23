@@ -1,28 +1,27 @@
 # UC-CURRENT — Handoff de Estado
 
 ## Metadados
-- **Fatia (Slice)**: `UC-07.03` — Integração de Políticas de Conclusão/Evidência
-- **Status**: CONCLUÍDO (código+testes; G2.5 com condicionantes; G3/G4 aprovados com ressalvas)
+- **Fatia (Slice)**: `OPS-EPIC06-RESIDUAL` — Fechamento de UC-06.01/02/03/04
+- **Status**: CONCLUÍDO (código+testes; análise limpa; EPIC-06 sem pendências)
 - **Dono**: `opc01@e03ff640`
-- **Épico**: `EPIC-07`
-- **Gate 2.5 (Segurança)**: INVOKED — APROVADO COM CONDICIONANTES (Média). SEC-01 fonte única via `GetSettings`; SEC-02 leitura por operação; SEC-03 fail-closed se settings falhar; SEC-04 não coletar documento sem proteção em repouso; SEC-05 guard D-01 preservado; SEC-06 sem PII em log/erro; SEC-07 prova de ausência no guard; SEC-08 política de checklist não relaxa INV-03. Invariantes INV-SEC-28..32.
+- **Épico**: `EPIC-06`
+- **Gate 2.5 (Segurança)**: PULADO — refactor de UI/formatação e teste de gate; sem nova superfície sensível, sem nova coleta/persistência de PII (o documento do recebedor segue sob a política C-03 e o guard D-01 já existentes).
 - **Última Atualização**: `2026-11-22`
 
 ## Contexto Atual
-- **Concluído**: `WorkOrderListController` lê `GetSettings` por operação; `require_checklist_template` alimenta a prova real; `require_receiver_document` valida documento e falha com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` enquanto D-01/C-01 estiver aberto. A UI consulta a política antes do diálogo e não renderiza o campo de documento quando a proteção está indisponível.
-- **Wiring**: bools de política removidos de `AppDependencies`, `ServiceTrackApp` e `WorkOrdersRoutes`; `settingsRepository` é a fonte única. `documentAtRestProtectionAvailable` é injetável apenas para testes, com default fail-closed.
-- **Testes**: 4 testes nomeados de política/segurança (SEC-02/03/04/08) + widget test de não-coleta; SEC-07 é asserção de ausência no teste do guard; suíte completa **204 verdes**; análise limpa.
-- **Gates 3/4**: G3 APROVADO COM RESSALVAS (Média); G4 APROVADO COM RESSALVAS (Alta) — `qa-review-v0.21.0.md`. Corrigidos M-01/M-02/M-03/M-04/M-05/B-01/B-02/B-03/B-04 e A1..A7; resta a ressalva de processo Red-Before-Green temporal.
-- **CI**: `origin/main` `7eed9ca` verde (run `45081277660`); o HEAD local com as correções de G3/G4 está pendente de push. O Gitea não possui workflow.
+- **UC-06.01 (concluído)**: zero literal `ERR_*` fora de `*_failure_codes.dart` em `lib/`; o catálogo `EvidenceFailureCodes` ganhou `busy` (`ERR_ASSINATURA_EM_PROCESSAMENTO`) para a proteção de duplo toque do canvas.
+- **UC-06.02 (concluído)**: `Size(48, 48)` migrado para `kMinTouchTargetSize` em lock (`lock_page`), recuperação de PIN (`pin_recovery_page`), item de checklist (`checklist_item_widget`) e canvas de assinatura; `git grep "Size(48, 48)" lib/` = 0.
+- **UC-06.03 (concluído)**: `SignaturePadWidget` virou `StatelessWidget` com `SignaturePadController` (`KortexSignal<bool> saving`, `KortexSignal<String?> error`); `setState` eliminado (`git grep "setState(" lib/` = 0). Exceções de `StatefulWidget` sem `setState` documentadas no épico: `AppEntry` (lifecycle/`WidgetsBindingObserver`) e formulários (`TextEditingController`/`FormState`).
+- **UC-06.04 (concluído)**: gate `test/architecture/failure_codes_gate_test.dart` com allowlist por nome de arquivo, prova de não vacuidade (`filesScanned > 0`) e **prova negativa** (fixture `ERR_NOVO_CODIGO` reprova).
+- **Testes**: 4 testes de widget do canvas (vazio reprova, captura válida emite, documento só sob C-03, 48dp) + 3 testes do gate; suíte completa **210 verdes**.
+- **CI**: `origin/main` `664a841` verde (run `45086240649`); o HEAD local desta fatia está pendente de push. O Gitea não possui workflow.
 
 ## [EVIDENCIA]
-- Leitura: `lib/modules/work_orders/ui/list/work_order_list_controller.dart`, `lib/modules/work_orders/ui/list/work_order_list_page.dart`, `lib/modules/work_orders/ui/work_orders_routes.dart`, `lib/app/app_dependencies.dart`, `lib/app/service_track_app.dart`, `lib/app/app_entry.dart`, `lib/modules/work_orders/domain/value_objects/document_protection.dart` → política única, leitura por operação e fail-closed.
-- Verifica: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test test/modules/settings test/modules/work_orders/ui` → `+24 All tests passed!`.
-- Confirma: `flutter test` → `+204 All tests passed!`; teste do guard confirma que OS permanece `IN_PROGRESS` sem assinatura após falha; CI GitHub `origin/main` run `45081277660` verde (HEAD local pendente de push).
+- Leitura: `lib/modules/evidences/ui/signature/signature_pad_widget.dart`, `lib/modules/evidences/ui/signature/signature_pad_controller.dart`, `lib/modules/evidences/domain/ports/evidence_failure_codes.dart`, `test/architecture/failure_codes_gate_test.dart`, `lib/modules/auth/ui/lock/lock_page.dart`, `lib/modules/auth/ui/recovery/pin_recovery_page.dart`, `lib/modules/checklists/ui/execution/checklist_item_widget.dart` → estado de tela em Kortex, tokens 48dp e gate com prova negativa.
+- Verifica: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test test/modules/evidences/ui/signature_pad_widget_test.dart test/architecture/failure_codes_gate_test.dart` → `+7 All tests passed!`.
+- Confirma: `flutter test` → `+210 All tests passed!`; `git grep -n "setState(" lib/` → nenhuma ocorrência; `git grep -n "Size(48, 48)" lib/` → nenhuma ocorrência.
 
 ## Próximo passo
-1. **EPIC-04**: validação E2E device pendente.
-2. **EPIC-06 residual**: UC-06.01/02 residuais.
-3. **Push**: pendente de autorização explícita do PO + 3 evidências.
-3. **EPIC-06 residual**: UC-06.01/02 residuais.
-4. **Push**: pendente de autorização explícita do PO + 3 evidências.
+1. **EPIC-04**: validação E2E device pendente (template→OS→checklist→conclusão).
+2. **Push**: pendente de autorização explícita do PO + 3 evidências.
+3. **D-01/C-01**: segue bloqueando persistência de documento do recebedor por design.

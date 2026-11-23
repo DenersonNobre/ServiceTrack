@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_touch_target.dart';
 import 'lock_controller.dart';
 import 'widgets/pin_keypad.dart';
 
@@ -125,7 +126,7 @@ final class LockPage extends IKortexPage<LockController> {
                         child: TextButton(
                           key: const Key('lock-forgot-pin'),
                           style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48),
+                            minimumSize: kMinTouchTargetSize,
                             foregroundColor: AppColors.primaryAction,
                           ),
                           onPressed: controller.forgotPin,

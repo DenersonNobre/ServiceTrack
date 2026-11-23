@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_touch_target.dart';
 import '../lock/widgets/pin_keypad.dart';
 import 'pin_recovery_controller.dart';
 
@@ -145,7 +146,7 @@ class _MasterPassword extends StatelessWidget {
           ),
         ),
         TextButton(
-          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
           onPressed: controller.loading.value ? null : controller.backToChoose,
           child: const Text('Voltar'),
         ),
@@ -188,7 +189,7 @@ class _NewPin extends StatelessWidget {
             onSubmit: controller.submitNewPin,
           ),
         TextButton(
-          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          style: TextButton.styleFrom(minimumSize: kMinTouchTargetSize),
           onPressed: controller.loading.value ? null : controller.backToChoose,
           child: const Text('Cancelar'),
         ),

@@ -46,4 +46,7 @@ abstract final class EvidenceFailureCodes {
 
   /// Documento do recebedor fora do formato permitido.
   static const invalidSignerDocument = 'ERR_ASSINANTE_DOCUMENTO_INVALIDO';
+
+  /// Coleta de assinatura já em processamento (proteção contra duplo toque).
+  static const busy = 'ERR_ASSINATURA_EM_PROCESSAMENTO';
 }

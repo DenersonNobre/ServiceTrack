@@ -142,3 +142,19 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - Veredito: APROVADO COM RESSALVAS (Alta), sem bloqueadores (`qa-review-v0.21.0.md`).
 - Corrigidos também M-03 (reset de settings corrompido com `restoreDefaults`), M-05 (`_policyError`) e B-01 (`settingsRepository` obrigatório); A1..A7 tratados ou documentados.
 - Evidência: `flutter test` => **204 passed**; análise limpa; gate de schema OK; CI `origin/main` run `45081277660` verde.
+
+## 2026-11-22 — OPS-EPIC06-RESIDUAL: fechamento do EPIC-06
+
+### 1. Entregas
+- UC-06.01: catálogo `EvidenceFailureCodes` ganhou `busy` (`ERR_ASSINATURA_EM_PROCESSAMENTO`); `git grep "ERR_" lib/` só encontra catálogos e comentários.
+- UC-06.02: `Size(48, 48)` literal migrado para `kMinTouchTargetSize` em lock, recuperação de PIN, item de checklist e canvas; zero ocorrências restantes.
+- UC-06.03: `SignaturePadWidget` virou `StatelessWidget` + `SignaturePadController` (KortexSignal `saving`/`error`); `setState` zero em `lib/`. Exceções de `StatefulWidget` (sem `setState`) documentadas no épico: shell de lifecycle e formulários com `TextEditingController`/`FormState`.
+- UC-06.04: gate `test/architecture/failure_codes_gate_test.dart` extraído em função pura com prova de não vacuidade (`filesScanned > 0`) e prova negativa (fixture `ERR_NOVO_CODIGO` reprova).
+
+### 2. Gotchas (custo real medido nesta fatia)
+- `dart format <diretório>` reformatou 17 arquivos fora do slice (drift de formatter no repo) e inflou o diff de `pin_recovery_page` em ~70 linhas. **Regra**: formatar sempre por **lista explícita de arquivos do slice** e revisar `git status` logo depois; o que não é do slice volta com `git checkout --`.
+- `pumpAndSettle` **nunca** assenta enquanto um `CircularProgressIndicator` de `loading` está na árvore: o teste de captura válida estourou por timeout porque a rasterização (`Picture.toImage`) não completa sob o relógio sintético. **Fix**: injetar `SignatureController` fake (`isEmpty`/`toPngBytes` sobrescritos) e usar `tester.pump()`; o encode real não pertence ao widget test.
+- `claims claim -add-paths` é **modificador booleano**, não uma opção com valor: chamar `claim -add-paths <arquivo>` reprova com "claim exige -slice, -owner e -paths". Para ampliar o claim do próprio dono: `claims claim -slice <S> -owner <O> -paths <novo-arquivo> -add-paths`.
+
+### 3. Evidência
+- `flutter analyze --fatal-infos` => `No issues found!`; `flutter test` => **210 passed**; `git grep "setState(" lib/` e `git grep "Size(48, 48)" lib/` => zero.

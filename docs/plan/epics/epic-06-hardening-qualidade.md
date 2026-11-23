@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03` (base de código estável); **não bloqueia** EPIC-04/05, mas deve evitar colisão de diff |
 | **Prioridade** | Média (Qualidade/Manutenibilidade; reduz dívida antes de escalar EPIC-04/05) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em Andamento (UC-06.05 concluído; UC-06.01/02 residuais; UC-06.03/04 pendentes)` |
+| **Status Atual** | `Concluído (UC-06.01..06.05; exceções de StatefulWidget documentadas)` |
 | **Referências** | [Proposta de Mitigação](../../proposals/proposta-mitigacao-aderencia-dnolib-kortex-core-2026-11-22.md) \| [ADR-002](../../architecture/adr-002-app-shell-di-route-bindings.md) \| [AGENTS.md](../../../AGENTS.md) \| [SPEC](../../architecture/SPEC.md) |
 
 ---
@@ -34,31 +34,33 @@ Reduzir dívida técnica transversal identificada na auditoria de 2026-11-22, se
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
-| **UC-06.01** | Catálogos de Falha por Módulo (`*FailureCodes`) | Nenhuma | `Em Andamento (auth residual)` |
-| **UC-06.02** | Core UI Transversal (Feedback/Touch Target) | Nenhuma | `Em Andamento (touch residual)` |
-| **UC-06.03** | Refator Stateless/Kortex em Widgets Justificados | UC-06.02 (opcional) | `Pendente` |
-| **UC-06.04** | Gate Anti-String-Mágica `ERR_*` | UC-06.01 | `Pendente` |
+| **UC-06.01** | Catálogos de Falha por Módulo (`*FailureCodes`) | Nenhuma | `Concluído` |
+| **UC-06.02** | Core UI Transversal (Feedback/Touch Target) | Nenhuma | `Concluído` |
+| **UC-06.03** | Refator Stateless/Kortex em Widgets Justificados | UC-06.02 (opcional) | `Concluído (exceções documentadas)` |
+| **UC-06.04** | Gate Anti-String-Mágica `ERR_*` | UC-06.01 | `Concluído (com prova negativa)` |
 | **UC-06.05** | Composition Root & Route Bindings | UC-06.02 (helper), EPIC-03/04 | `Concluído (qa-review-v0.20.0.md)` |
 
 ---
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Nenhum literal `ERR_*` fora dos catálogos `*FailureCodes` aprovados (ou allowlist documentada).
-- [ ] `AppFeedback`/helpers de core usados onde havia duplicação real; sem “core dump”.
-- [ ] `StatefulWidget/setState` remanescentes têm justificativa técnica explícita documentada no código/proposta.
-- [ ] Gate automatizado (script/test) falha em novo `ERR_*` literal fora de catálogo.
+- [x] Nenhum literal `ERR_*` fora dos catálogos `*FailureCodes` aprovados (ou allowlist documentada).
+- [x] `AppFeedback`/helpers de core usados onde havia duplicação real; sem “core dump”.
+- [x] `StatefulWidget/setState` remanescentes têm justificativa técnica explícita documentada no código/proposta.
+- [x] Gate automatizado (script/test) falha em novo `ERR_*` literal fora de catálogo.
 - [x] `AppEntry` com **0 `KortexProvider` de controller de módulo** e alvo de **≤ 170 linhas** (medido: 168) após T3.
 - [x] Cada módulo extraído expõe `*Routes` e usa `appScopedRoute` (ou `KortexScope` manual justificado).
 - [x] Gate de fronteira falha se `AppEntry` voltar a compor controller de módulo.
-- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`179 passed`).
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (`210 passed`).
 - [x] Laudo QA por UC/épico conforme governança (`qa-review-v0.20.0.md`).
 
 ### 3.1 Status de Execução (2026-11-22)
 
-- **UC-06.01 (parcial)**: catálogos `CustomerFailureCodes`, `ProfileFailureCodes`, `ChecklistFailureCodes`, `EvidenceFailureCodes`, `WorkOrderFailureCodes` e `AuthFailureCodes` existem. Ainda há literais `ERR_*` inline em value objects/recovery de `auth` (ex.: `ERR_EMAIL_INVALIDO`, `ERR_RECUPERACAO_NAO_AUTORIZADA`), pendentes para fechar o critério “zero literal fora de catálogo”.
-- **UC-06.02 (parcial)**: `AppFeedback` e tokens `kMinTouchTarget*` criados e usados em work_orders/checklists/profile. Ainda há `Size(48, 48)` literal em auth/checklists/evidences; migrar ou justificar.
-- **UC-06.05 (concluído)**: `AppDependencies`, `CustomersRoutes`, `ProfileRoutes`, `AuthRoutes`, `WorkOrdersRoutes` e `appScopedRoute` entregues; `AppEntry` em **168 linhas/0 providers**; gate de fronteira ativo; suíte **179 testes verdes** (`qa-review-v0.20.0.md`).
+- **UC-06.01 (concluído)**: catálogos `CustomerFailureCodes`, `ProfileFailureCodes`, `ChecklistFailureCodes`, `EvidenceFailureCodes`, `WorkOrderFailureCodes`, `SettingsFailureCodes` e `AuthFailureCodes` cobrem todos os códigos; `git grep "ERR_" lib/` só encontra catálogos e comentários — zero literal inline.
+- **UC-06.02 (concluído)**: `AppFeedback` e tokens `kMinTouchTarget*` usados em work_orders/checklists/profile/auth/evidences; zero `Size(48, 48)` literal em `lib/` (migrados lock, recovery de PIN, item de checklist e canvas de assinatura).
+- **UC-06.03 (concluído)**: `SignaturePadWidget` virou `StatelessWidget` com `SignaturePadController` (KortexSignal para `saving`/`error`) e ganhou testes; `git grep "setState(" lib/` = **0 ocorrências**. Exceções remanescentes de `StatefulWidget` (nenhuma usa `setState`): `AppEntry` (gate/lifecycle `WidgetsBindingObserver`), `CustomerFormPage`/`ServiceLocationFormPage`/`WorkOrderFormPage` e `ProfileForm` (ciclo de vida de `TextEditingController` e validação de formulário — estado efêmero de digitação, não estado de tela).
+- **UC-06.04 (concluído)**: `test/architecture/failure_codes_gate_test.dart` reprova literal `ERR_*` fora de `*_failure_codes.dart`; inclui **prova negativa** (fixture com `ERR_NOVO_CODIGO` reprova) e prova de não vacuidade (`filesScanned > 0`).
+- **UC-06.05 (concluído)**: `AppDependencies`, `CustomersRoutes`, `ProfileRoutes`, `AuthRoutes`, `WorkOrdersRoutes` e `appScopedRoute` entregues; `AppEntry` em **168 linhas/0 providers**; gate de fronteira ativo; suíte **210 testes verdes** (`qa-review-v0.20.0.md`).
 
 ---
 
@@ -67,7 +69,7 @@ Reduzir dívida técnica transversal identificada na auditoria de 2026-11-22, se
 ### Caso de Uso UC-06.01 — Catálogos de Falha por Módulo
 
 * **Identificador**: `UC-06.01`
-* **Status**: `Pendente`
+* **Status**: `Concluído (zero literal ERR_* fora de catálogo)`
 
 #### Narrativa
 - **Como** mantenedor do ServiceTrack
@@ -93,7 +95,7 @@ Cenário: Nenhum código de erro literal fora de catálogo após migração
 ### Caso de Uso UC-06.02 — Core UI Transversal
 
 * **Identificador**: `UC-06.02`
-* **Status**: `Pendente`
+* **Status**: `Concluído (tokens 48dp aplicados; zero literal Size(48, 48))`
 
 #### Narrativa
 - **Como** desenvolvedor Flutter
@@ -118,7 +120,7 @@ Cenário: Feedback de erro padronizado
 ### Caso de Uso UC-06.03 — Refator Stateless/Kortex
 
 * **Identificador**: `UC-06.03`
-* **Status**: `Pendente`
+* **Status**: `Concluído (SignaturePadWidget em Kortex; exceções de formulário documentadas)`
 
 #### Narrativa
 - **Como** time de UI
@@ -138,12 +140,19 @@ Cenário: Widget com estado de tela usa Kortex
 1. `TASK-01`: Revisar ocorrências validadas na Seção 7.1 da proposta (foco em `signature_pad_widget.dart` e lifecycle forms).
 2. `TASK-02`: Refatorar somente onde houver ganho real; documentar exceções.
 
+#### Resultado e Exceções Justificadas (2026-11-22)
+- **Refatorado**: `SignaturePadWidget` → `StatelessWidget` + `SignaturePadController` (`KortexSignal<bool> saving`, `KortexSignal<String?> error`); testes em `test/modules/evidences/ui/signature_pad_widget_test.dart`.
+- **Exceções** (nenhuma usa `setState`; mantêm `StatefulWidget` apenas por ciclo de vida de objeto Flutter — regra “StatefulWidget só com justificativa técnica explícita”):
+  - `AppEntry`: `WidgetsBindingObserver` (lock por ciclo de vida do app) e gate de sessão — estado é de plataforma, não de tela.
+  - `CustomerFormPage`/`ServiceLocationFormPage`/`WorkOrderFormPage`/`ProfileForm`: `TextEditingController` + `Form`/`GlobalKey<FormState>` — estado efêmero de digitação; migrar para Kortex não traz ganho e arriscaria o fluxo de validação.
+- **Métrica**: `git grep "setState(" lib/` → 0 ocorrências.
+
 ---
 
 ### Caso de Uso UC-06.04 — Gate Anti-String-Mágica ERR
 
 * **Identificador**: `UC-06.04`
-* **Status**: `Pendente`
+* **Status**: `Concluído (test/architecture/failure_codes_gate_test.dart com prova negativa)`
 * **Dependência**: UC-06.01
 
 #### Narrativa

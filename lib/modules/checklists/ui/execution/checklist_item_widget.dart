@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/ui/app_touch_target.dart';
 import '../../domain/entities/checklist_answer.dart';
 
 /// Item tátil de execução de checklist em campo (alvos >= 48dp).
@@ -153,7 +154,7 @@ final class _ChoiceButton extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(48, 48),
+          minimumSize: kMinTouchTargetSize,
           backgroundColor: selected ? activeBg : AppColors.surfaceCard,
           foregroundColor: selected ? activeColor : AppColors.gray700,
           side: BorderSide(
