@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/app/app_pages.dart';
+import 'package:service_track/app/app_controller.dart';
 import 'package:service_track/app/app_relock_watcher.dart';
-import 'package:service_track/app/app_routes.dart';
 import 'package:service_track/app/app_services.dart';
+import 'package:service_track/app/routes/app_pages.dart';
+import 'package:service_track/app/routes/app_routes.dart';
 import 'package:service_track/modules/auth/domain/ports/auth_credential_repository_port.dart';
 import 'package:service_track/modules/auth/domain/ports/biometric_auth_port.dart';
 import 'package:service_track/modules/auth/domain/value_objects/biometric_auth_result.dart';
@@ -149,19 +151,25 @@ void main() {
       );
 
       final navKey = GlobalKey<NavigatorState>();
-      final pages = AppPages(services: services, navigatorKey: navKey);
+      final controller = AppController(services: services, navigatorKey: navKey);
 
       await tester.pumpWidget(
-        MaterialApp(
-          navigatorKey: navKey,
-          initialRoute: AppRoutes.initial,
-          onGenerateRoute: pages.onGenerateRoute,
+        KortexMaterialApp(
+          providers: [
+            KortexProvider<AppController>.value(value: controller),
+          ],
+          app: MaterialApp(
+            navigatorKey: navKey,
+            initialRoute: AppRoutes.initial,
+            onGenerateRoute: controller.pages.onGenerateRoute,
+          ),
         ),
       );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       await tester.pumpAndSettle();
       expect(find.text('Crie seu acesso'), findsOneWidget);
+      controller.dispose();
     });
 
     testWidgets('despacha para lock quando possui credenciais', (
@@ -174,18 +182,24 @@ void main() {
       );
 
       final navKey = GlobalKey<NavigatorState>();
-      final pages = AppPages(services: services, navigatorKey: navKey);
+      final controller = AppController(services: services, navigatorKey: navKey);
 
       await tester.pumpWidget(
-        MaterialApp(
-          navigatorKey: navKey,
-          initialRoute: AppRoutes.initial,
-          onGenerateRoute: pages.onGenerateRoute,
+        KortexMaterialApp(
+          providers: [
+            KortexProvider<AppController>.value(value: controller),
+          ],
+          app: MaterialApp(
+            navigatorKey: navKey,
+            initialRoute: AppRoutes.initial,
+            onGenerateRoute: controller.pages.onGenerateRoute,
+          ),
         ),
       );
 
       await tester.pumpAndSettle();
       expect(find.text('Digite seu PIN'), findsOneWidget);
+      controller.dispose();
     });
   });
 

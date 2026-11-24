@@ -6,8 +6,8 @@ import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import 'app_controller.dart';
 import 'app_relock_watcher.dart';
-import 'app_routes.dart';
 import 'app_services.dart';
+import 'routes/app_routes.dart';
 import 'theme/app_theme.dart';
 
 /// Aplicativo raiz do ServiceTrack (standalone).

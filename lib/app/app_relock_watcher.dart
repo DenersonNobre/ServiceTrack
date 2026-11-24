@@ -1,29 +1,26 @@
-// Observador de ciclo de vida para bloqueio automático por inatividade/background.
+// Observador de ciclo de vida para bloqueio automático após inatividade.
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-import 'app_routes.dart';
+import 'routes/app_routes.dart';
 
-/// Widget observador de ciclo de vida da aplicação.
-///
-/// Monitora o tempo em que o app fica em segundo plano (paused/hidden).
-/// Se o tempo exceder o TTL estipulado (padrão de 5 minutos), ao retornar (resumed)
-/// dispara o relock navegando para [AppRoutes.lock] ou acionando [onRelock].
+/// Monitor de ciclo de vida da aplicação que força a navegação para [AppRoutes.lock]
+/// quando o aplicativo fica suspenso em background além do tempo limite seguro.
 class AppRelockWatcher extends StatefulWidget {
   const AppRelockWatcher({
     super.key,
     required this.child,
     this.navigatorKey,
-    this.timeout = const Duration(minutes: 5),
     this.onRelock,
-    this.clock,
+    this.timeout = const Duration(minutes: 5),
+    this.clock = DateTime.now,
   });
 
   final Widget child;
   final GlobalKey<NavigatorState>? navigatorKey;
-  final Duration timeout;
   final VoidCallback? onRelock;
-  final DateTime Function()? clock;
+  final Duration timeout;
+  final DateTime Function() clock;
 
   @override
   State<AppRelockWatcher> createState() => _AppRelockWatcherState();
@@ -31,9 +28,7 @@ class AppRelockWatcher extends StatefulWidget {
 
 class _AppRelockWatcherState extends State<AppRelockWatcher>
     with WidgetsBindingObserver {
-  DateTime? _backgroundedAt;
-
-  DateTime _now() => widget.clock != null ? widget.clock!() : DateTime.now();
+  DateTime? _pausedAt;
 
   @override
   void initState() {
@@ -49,18 +44,15 @@ class _AppRelockWatcherState extends State<AppRelockWatcher>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.hidden) {
-      _backgroundedAt ??= _now();
-      return;
-    }
-
-    if (state == AppLifecycleState.resumed) {
-      final bgAt = _backgroundedAt;
-      _backgroundedAt = null;
-      if (bgAt == null) return;
-
-      if (_now().difference(bgAt) > widget.timeout) {
-        _triggerRelock();
+    if (state == AppLifecycleState.paused) {
+      _pausedAt = widget.clock();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_pausedAt != null) {
+        final elapsed = widget.clock().difference(_pausedAt!);
+        _pausedAt = null;
+        if (elapsed >= widget.timeout) {
+          _triggerRelock();
+        }
       }
     }
   }

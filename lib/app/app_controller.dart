@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
-import 'app_pages.dart';
+import '../modules/auth/features/app_entry/resolve_initial_route_use_case.dart';
 import 'app_services.dart';
+import 'routes/app_pages.dart';
+import 'routes/app_routes.dart';
 
 /// Controlador raiz da aplicação responsável por agregar serviços,
 /// gerenciar a chave de navegação, mapeamento de rotas e preferências transversais (tema).
-class AppController {
+class AppController extends IKortexController {
   /// Cria o controlador injetando serviços e chave de navegação opcional.
   AppController({
     required this.services,
@@ -51,8 +53,23 @@ class AppController {
   /// Modo de tema reativo (Light por padrão).
   final KortexSignal<ThemeMode> themeMode;
 
+  /// Resolve a rota inicial com base nas credenciais e sessão lembrada.
+  Future<String> resolveInitialRoute() async {
+    final route = await ResolveInitialRouteUseCase(
+      repo: services.credentialStore,
+    ).execute();
+
+    return switch (route) {
+      AppEntryRoute.onboarding => AppRoutes.onboarding,
+      AppEntryRoute.lock => AppRoutes.lock,
+      AppEntryRoute.home => AppRoutes.home,
+    };
+  }
+
   /// Libera recursos e listeners reativos.
+  @override
   void dispose() {
     themeMode.dispose();
+    super.dispose();
   }
 }

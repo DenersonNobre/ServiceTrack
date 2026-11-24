@@ -6,6 +6,7 @@ import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:service_track/app/app.dart';
 import 'package:service_track/app/app_controller.dart';
 import 'package:service_track/app/app_services.dart';
+import 'package:service_track/app/routes/app_routes.dart';
 import 'package:service_track/modules/auth/domain/ports/auth_credential_repository_port.dart';
 import 'package:service_track/modules/auth/domain/ports/biometric_auth_port.dart';
 import 'package:service_track/modules/auth/domain/value_objects/biometric_auth_result.dart';
@@ -15,8 +16,9 @@ import 'package:service_track/modules/work_orders/domain/ports/location_service_
 import 'package:service_track/modules/work_orders/domain/value_objects/geo_point.dart';
 
 final class _FakeCredentialRepo implements IAuthCredentialRepositoryPort {
-  _FakeCredentialRepo({this.hasCreds = false});
+  _FakeCredentialRepo({this.hasCreds = false, this.rememberedSession = false});
   final bool hasCreds;
+  final bool rememberedSession;
 
   @override
   Future<IResult<bool, ValidationError>> hasCredentials() async =>
@@ -61,7 +63,7 @@ final class _FakeCredentialRepo implements IAuthCredentialRepositoryPort {
 
   @override
   Future<IResult<bool, ValidationError>> hasValidRememberedSession() async =>
-      const Success(false);
+      Success(rememberedSession);
 
   @override
   Future<IResult<bool, ValidationError>> resetPin({
@@ -114,6 +116,38 @@ void main() {
       expect(controller.themeMode.value, ThemeMode.light);
 
       controller.dispose();
+    });
+
+    test('resolveInitialRoute retorna rotas de acordo com use case', () async {
+      final servicesOnboarding = AppServices(
+        credentialStore: _FakeCredentialRepo(hasCreds: false),
+        biometricAuth: _FakeBiometricAuth(),
+        locationService: _FakeLocationService(),
+      );
+      final controllerOnboarding = AppController(services: servicesOnboarding);
+      expect(
+        await controllerOnboarding.resolveInitialRoute(),
+        AppRoutes.onboarding,
+      );
+      controllerOnboarding.dispose();
+
+      final servicesLock = AppServices(
+        credentialStore: _FakeCredentialRepo(hasCreds: true, rememberedSession: false),
+        biometricAuth: _FakeBiometricAuth(),
+        locationService: _FakeLocationService(),
+      );
+      final controllerLock = AppController(services: servicesLock);
+      expect(await controllerLock.resolveInitialRoute(), AppRoutes.lock);
+      controllerLock.dispose();
+
+      final servicesHome = AppServices(
+        credentialStore: _FakeCredentialRepo(hasCreds: true, rememberedSession: true),
+        biometricAuth: _FakeBiometricAuth(),
+        locationService: _FakeLocationService(),
+      );
+      final controllerHome = AppController(services: servicesHome);
+      expect(await controllerHome.resolveInitialRoute(), AppRoutes.home);
+      controllerHome.dispose();
     });
 
     test('fromDatabase fabrica AppServices padrão quando omitido', () {

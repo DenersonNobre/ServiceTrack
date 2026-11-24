@@ -2,16 +2,16 @@
 
 import 'package:flutter/material.dart';
 
-import '../modules/auth/ui/auth_routes.dart';
-import '../modules/checklists/ui/checklists_routes.dart';
-import '../modules/customers/ui/customers_routes.dart';
-import '../modules/home/ui/home_routes.dart';
-import '../modules/profile/ui/profile_routes.dart';
-import '../modules/settings/ui/settings_routes.dart';
-import '../modules/work_orders/ui/work_orders_routes.dart';
-import 'app_gate.dart';
+import '../../modules/auth/ui/auth_routes.dart';
+import '../../modules/checklists/ui/checklists_routes.dart';
+import '../../modules/customers/ui/customers_routes.dart';
+import '../../modules/home/ui/home_routes.dart';
+import '../../modules/profile/ui/profile_routes.dart';
+import '../../modules/settings/ui/settings_routes.dart';
+import '../../modules/work_orders/ui/work_orders_routes.dart';
+import '../app_gate.dart';
+import '../app_services.dart';
 import 'app_routes.dart';
-import 'app_services.dart';
 
 /// Fabrica de rotas do aplicativo integrando os sub-módulos com o Navigator.
 class AppPages {
@@ -79,7 +79,7 @@ class AppPages {
     return switch (settings.name) {
       AppRoutes.initial => MaterialPageRoute<void>(
           settings: settings,
-          builder: (_) => AppGate(services: services),
+          builder: (_) => const AppGate(),
         ),
       AppRoutes.onboarding => _authRoutes.onboarding(
           onCompleted: () => _pushNamedReplacement(AppRoutes.home),
