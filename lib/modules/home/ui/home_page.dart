@@ -78,19 +78,20 @@ final class HomePage extends IKortexPage<HomeDashboardController> {
             return RefreshIndicator(
               onRefresh: controller.load,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 children: [
                   Text(
                     'Painel do dia',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   HomeKpiGrid(data: data, onOpenWorkOrders: onWorkOrders),
                   const SizedBox(height: 24),
                   HomeUpcomingSection(
                     upcoming: data.upcoming,
                     onOpenWorkOrders: onWorkOrders,
                   ),
+                  const SizedBox(height: 80),
                 ],
               ),
             );

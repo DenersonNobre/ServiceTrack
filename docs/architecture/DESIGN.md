@@ -40,12 +40,18 @@
 - **Error** (`#FEEFEF` / borda `#FCA5A5` / texto `#991B1B`): Não Conforme, Cancelada.
 
 ### 2.2 Tipografia & Alvos Táteis
-- **Títulos**: `Inter Display` / `Plus Jakarta Sans` Bold.
-- **Corpo & Rótulos**: `Inter` Medium / Regular.
-- **Dados Técnicos / GPS**: `JetBrains Mono` / Monospace nativo.
+- **Títulos & Headlines**: `Oswald` Bold / SemiBold (impacto visual, destaque de status e contadores de painel).
+- **Corpo & Rótulos de Interface**: `Roboto Condensed` Regular / Medium / SemiBold (interface compacta, técnica e de alta densidade informativa para campo).
+- **Legado / Relatórios PDF**: `Plus Jakarta Sans` Regular / Bold.
+- **Dados Técnicos / GPS / Timestamps**: `JetBrains Mono` / Monospace nativo.
 - **Alvo Mínimo de Toque**: `48dp` x `48dp` em qualquer botão ou seletor.
 
-### 2.3 Raios de Borda & Elevações
+### 2.3 Simetria, Alinhamento & Ocupação de Espaço Útil
+- **Princípio Não-Negociável de UI**: Sempre prezar pela simetria e alinhamento visual. Ocupar uniformemente todo o espaço da área útil disponível.
+- **Grids e Seções**: Divisão proporcional equilibrada (ex.: 2 colunas proporcionais com espaçamento de `16dp`), sem vácuos desnecessários ou quebras visuais assimétricas.
+- **Cards e Listas**: Largura preenchendo a área útil (`double.infinity`), padding interno uniforme (`16dp`), raio de borda consistente (`12dp`).
+
+### 2.4 Raios de Borda & Elevações
 - Botões e Cards de OS: `12px` de raio com sombra suave Level 1 (`0 2px 4px -1px rgba(0,0,0,0.06)`).
 - Chips e Filtros: `24px` (Full Pill).
 - Modais e BottomSheets: `16px` de raio superior com sombra Level 3.

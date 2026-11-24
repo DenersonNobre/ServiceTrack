@@ -54,6 +54,12 @@ flutter:
   assets:
     - assets/images/
   fonts:
+    - family: Oswald
+      fonts:
+        - asset: assets/fonts/Oswald-Variable.ttf
+    - family: RobotoCondensed
+      fonts:
+        - asset: assets/fonts/RobotoCondensed-Variable.ttf
     - family: PlusJakartaSans
       fonts:
         - asset: assets/fonts/PlusJakartaSans-Regular.ttf

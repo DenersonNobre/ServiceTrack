@@ -29,7 +29,7 @@ final class HomeKpiGrid extends StatelessWidget {
                 onTap: onOpenWorkOrders,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: HomeKpiCard(
                 key: const Key('home-kpi-in-progress'),
@@ -41,7 +41,7 @@ final class HomeKpiGrid extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -53,7 +53,7 @@ final class HomeKpiGrid extends StatelessWidget {
                 onTap: onOpenWorkOrders,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: HomeKpiCard(
                 key: const Key('home-kpi-completed-today'),
@@ -91,22 +91,43 @@ final class HomeKpiCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: EdgeInsets.zero,
       child: InkWell(
         key: key == null ? null : Key('${(key as ValueKey<String>).value}-tap'),
         onTap: onTap,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: scheme.primary),
-                const SizedBox(height: 8),
-                Text(value, style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 2),
-                Text(label, style: Theme.of(context).textTheme.bodySmall),
-              ],
+          constraints: const BoxConstraints(minHeight: 100),
+          child: SizedBox(
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(icon, color: scheme.primary, size: 28),
+                  const SizedBox(height: 12),
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

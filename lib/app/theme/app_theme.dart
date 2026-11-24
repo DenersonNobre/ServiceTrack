@@ -10,7 +10,13 @@ import 'app_colors.dart';
 
 /// Temas canônicos Light e Dark do ServiceTrack.
 abstract final class AppTheme {
-  /// Família tipográfica principal da interface (offline em assets/fonts/).
+  /// Família tipográfica para títulos e destaque de impacto.
+  static const fontOswald = 'Oswald';
+
+  /// Família tipográfica principal para corpo, rótulos e interface compacta.
+  static const fontBody = 'RobotoCondensed';
+
+  /// Família tipográfica legado mantida para compatibilidade com relatórios.
   static const fontSans = 'PlusJakartaSans';
 
   /// Família monoespaçada para códigos de OS, GPS e timestamps.
@@ -52,12 +58,95 @@ abstract final class AppTheme {
     tintedDisabledControls: true,
   );
 
+  static TextTheme _buildTextTheme() {
+    return const TextTheme(
+      // Títulos e Headlines com Oswald
+      displayLarge: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
+      ),
+      displaySmall: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.0,
+      ),
+      headlineLarge: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.25,
+      ),
+      headlineMedium: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.0,
+      ),
+      headlineSmall: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.0,
+      ),
+      titleLarge: TextStyle(
+        fontFamily: fontOswald,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.15,
+      ),
+      // Corpo e rótulos com Roboto Condensed
+      titleMedium: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.15,
+      ),
+      titleSmall: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.1,
+      ),
+      bodyLarge: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.normal,
+        letterSpacing: 0.5,
+      ),
+      bodyMedium: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.normal,
+        letterSpacing: 0.25,
+      ),
+      bodySmall: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.normal,
+        letterSpacing: 0.4,
+      ),
+      labelLarge: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+      ),
+      labelMedium: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.5,
+      ),
+      labelSmall: TextStyle(
+        fontFamily: fontBody,
+        fontWeight: FontWeight.normal,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
   /// Tema claro canônico (Styleguide v2.1 — Warm Surface + Deep Petrol Green).
   static ThemeData get light => FlexThemeData.light(
         colors: _lightColors,
         scaffoldBackground: AppColors.surface,
         surface: AppColors.surfaceCard,
-        fontFamily: fontSans,
+        fontFamily: fontBody,
+        textTheme: _buildTextTheme(),
         subThemesData: _subThemes,
         keyColors: const FlexKeyColors(
           useSecondary: true,
@@ -69,7 +158,8 @@ abstract final class AppTheme {
   /// Tema escuro harmônico derivado do mesmo seed Deep Petrol Green.
   static ThemeData get dark => FlexThemeData.dark(
         colors: _darkColors,
-        fontFamily: fontSans,
+        fontFamily: fontBody,
+        textTheme: _buildTextTheme(),
         subThemesData: _subThemes,
         keyColors: const FlexKeyColors(
           useSecondary: true,
