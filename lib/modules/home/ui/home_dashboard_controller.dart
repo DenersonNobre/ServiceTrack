@@ -1,4 +1,4 @@
-// Controller do dashboard da home (MVP operacional).
+// Controller Kortex do dashboard da home (MVP operacional).
 //
 // SRP: carregar OS e expor KPIs/agenda do dia para a home. Não renderiza UI,
 // não persiste, não navega.
@@ -10,34 +10,10 @@ import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 
-import '../modules/work_orders/domain/ports/work_order_repository_port.dart';
-import '../modules/work_orders/domain/value_objects/work_order.dart';
-import '../modules/work_orders/domain/value_objects/work_order_status.dart';
-
-/// Resumo operacional exibido na home.
-final class HomeDashboardData {
-  const HomeDashboardData({
-    required this.scheduledToday,
-    required this.inProgress,
-    required this.paused,
-    required this.completedToday,
-    required this.upcoming,
-  });
-
-  final int scheduledToday;
-  final int inProgress;
-  final int paused;
-  final int completedToday;
-  final List<WorkOrder> upcoming;
-
-  static const empty = HomeDashboardData(
-    scheduledToday: 0,
-    inProgress: 0,
-    paused: 0,
-    completedToday: 0,
-    upcoming: <WorkOrder>[],
-  );
-}
+import '../../work_orders/domain/ports/work_order_repository_port.dart';
+import '../../work_orders/domain/value_objects/work_order.dart';
+import '../../work_orders/domain/value_objects/work_order_status.dart';
+import '../domain/models/home_dashboard_data.dart';
 
 /// Controller Kortex do dashboard da home.
 final class HomeDashboardController extends IKortexController {

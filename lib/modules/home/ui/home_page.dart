@@ -9,11 +9,10 @@ import 'widgets/home_kpi_grid.dart';
 import 'widgets/home_upcoming_section.dart';
 
 /// Tela principal após desbloqueio do aplicativo.
-final class HomePage extends StatelessWidget {
+final class HomePage extends IKortexPage<HomeDashboardController> {
   /// Cria a tela inicial com callbacks de navegação dos módulos.
   const HomePage({
     super.key,
-    required this.controller,
     required this.onProfile,
     required this.onCustomers,
     required this.onWorkOrders,
@@ -22,7 +21,6 @@ final class HomePage extends StatelessWidget {
     required this.onSettings,
   });
 
-  final HomeDashboardController controller;
   final VoidCallback onProfile;
   final VoidCallback onCustomers;
   final VoidCallback onWorkOrders;
@@ -31,7 +29,7 @@ final class HomePage extends StatelessWidget {
   final VoidCallback onSettings;
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildPage(BuildContext context, HomeDashboardController controller) {
     controller.ensureLoaded();
     return Scaffold(
       appBar: AppBar(title: const Text('ServiceTrack')),

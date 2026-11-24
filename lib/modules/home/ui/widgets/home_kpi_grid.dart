@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../home_dashboard_controller.dart';
+import '../../domain/models/home_dashboard_data.dart';
 
 /// Grade de KPIs operacionais do dia na Home.
 final class HomeKpiGrid extends StatelessWidget {

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/app/home_dashboard_controller.dart';
+import 'package:service_track/modules/home/ui/home_dashboard_controller.dart';
 import 'package:service_track/modules/work_orders/domain/ports/work_order_repository_port.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order_status.dart';
@@ -47,26 +47,30 @@ WorkOrder _wo({
 
 void main() {
   group('HomeDashboardController.load async guard & dispose', () {
-    test('load() não lança StateError e aborta quando controller é disposed durante findAll()', () async {
-      final repo = _FakeWorkOrderRepository();
-      repo.findAllCompleter = Completer<IResult<List<WorkOrder>, ValidationError>>();
+    test(
+      'load() não lança StateError e aborta quando controller é disposed durante findAll()',
+      () async {
+        final repo = _FakeWorkOrderRepository();
+        repo.findAllCompleter =
+            Completer<IResult<List<WorkOrder>, ValidationError>>();
 
-      final controller = HomeDashboardController(repository: repo);
+        final controller = HomeDashboardController(repository: repo);
 
-      // Inicia a carga assíncrona
-      final loadFuture = controller.load();
+        // Inicia a carga assíncrona
+        final loadFuture = controller.load();
 
-      // Controller é descartado antes do findAll resolver (ex: transição de rota / pop)
-      controller.dispose();
+        // Controller é descartado antes do findAll resolver (ex: transição de rota / pop)
+        controller.dispose();
 
-      // Agora resolve o repositório com sucesso
-      repo.findAllCompleter!.complete(
-        const Success<List<WorkOrder>, ValidationError>([]),
-      );
+        // Agora resolve o repositório com sucesso
+        repo.findAllCompleter!.complete(
+          const Success<List<WorkOrder>, ValidationError>([]),
+        );
 
-      // Não deve lançar StateError (Bad state: KortexSignal used after dispose())
-      await expectLater(loadFuture, completes);
-    });
+        // Não deve lançar StateError (Bad state: KortexSignal used after dispose())
+        await expectLater(loadFuture, completes);
+      },
+    );
 
     test('load() aborta imediatamente se controller já estiver disposed', () async {
       final repo = _FakeWorkOrderRepository();
@@ -78,16 +82,22 @@ void main() {
       await expectLater(controller.load(), completes);
     });
 
-    test('load() captura exceções não tratadas do repositório, preenche error e desliga loading', () async {
-      final repo = _FakeWorkOrderRepository();
-      repo.findAllError = Exception('Falha de conexão com SQLite');
-      final controller = HomeDashboardController(repository: repo);
+    test(
+      'load() captura exceções não tratadas do repositório, preenche error e desliga loading',
+      () async {
+        final repo = _FakeWorkOrderRepository();
+        repo.findAllError = Exception('Falha de conexão com SQLite');
+        final controller = HomeDashboardController(repository: repo);
 
-      await controller.load();
+        await controller.load();
 
-      expect(controller.loading.value, isFalse);
-      expect(controller.error.value, contains('Falha ao carregar dados: Exception: Falha de conexão com SQLite'));
-    });
+        expect(controller.loading.value, isFalse);
+        expect(
+          controller.error.value,
+          contains('Falha ao carregar dados: Exception: Falha de conexão com SQLite'),
+        );
+      },
+    );
   });
 
   group('HomeDashboardController.compute', () {
@@ -118,7 +128,7 @@ void main() {
       expect(data.inProgress, 1);
       expect(data.paused, 1);
       expect(data.completedToday, 1);
-      expect(data.upcoming.map((e) => e.id), ['2', '3', '1', '6']);
+      expect(data.upcoming.map((e) => e.id).toList(), ['2', '3', '1', '6']);
     });
 
     test('upcoming ignora concluídas/canceladas e limita a 5', () {

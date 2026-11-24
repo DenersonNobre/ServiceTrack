@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../modules/work_orders/domain/value_objects/work_order.dart';
-import '../../modules/work_orders/domain/value_objects/work_order_status.dart';
+import '../../../work_orders/domain/value_objects/work_order.dart';
+import '../../../work_orders/domain/value_objects/work_order_status.dart';
 
 /// Seção com a lista das próximas visitas da Home.
 final class HomeUpcomingSection extends StatelessWidget {

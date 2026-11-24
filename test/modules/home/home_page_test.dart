@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/app/home_dashboard_controller.dart';
-import 'package:service_track/app/home_page.dart';
+import 'package:service_track/modules/home/ui/home_dashboard_controller.dart';
+import 'package:service_track/modules/home/ui/home_page.dart';
 import 'package:service_track/modules/work_orders/domain/ports/work_order_repository_port.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order_status.dart';
@@ -66,14 +67,18 @@ void main() {
 
     Widget buildTestHarness(HomeDashboardController ctrl) {
       return MaterialApp(
-        home: HomePage(
-          controller: ctrl,
-          onProfile: () => profileTapped = true,
-          onCustomers: () => customersTapped = true,
-          onWorkOrders: () => workOrdersTapped = true,
-          onNewWorkOrder: () => newWorkOrderTapped = true,
-          onChecklists: () => checklistsTapped = true,
-          onSettings: () => settingsTapped = true,
+        home: KortexScope(
+          providers: [
+            KortexProvider<HomeDashboardController>.value(value: ctrl),
+          ],
+          child: HomePage(
+            onProfile: () => profileTapped = true,
+            onCustomers: () => customersTapped = true,
+            onWorkOrders: () => workOrdersTapped = true,
+            onNewWorkOrder: () => newWorkOrderTapped = true,
+            onChecklists: () => checklistsTapped = true,
+            onSettings: () => settingsTapped = true,
+          ),
         ),
       );
     }
