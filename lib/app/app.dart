@@ -4,20 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
-import 'app_pages.dart';
+import 'app_controller.dart';
 import 'app_relock_watcher.dart';
 import 'app_routes.dart';
 import 'app_services.dart';
 import 'theme/app_theme.dart';
 
 /// Aplicativo raiz do ServiceTrack (standalone).
-class App extends StatefulWidget {
-  /// Cria o app; serviços transversais podem ser injetados em testes ou derivados do [database].
+///
+/// Widget 100% puro e declarativo (`StatelessWidget`), delegando o gerenciamento
+/// de estado e ciclo de vida ao [AppController].
+class App extends StatelessWidget {
+  /// Cria o app; aceita injeção direta de [controller] ou fabrica a partir de [database] e [services].
   const App({
     super.key,
     this.database,
     this.services,
     this.navigatorKey,
+    this.controller,
   });
 
   /// Instância do banco SQLite local (opcional para testes unitários).
@@ -29,46 +33,37 @@ class App extends StatefulWidget {
   /// Chave de navegação global (opcional).
   final GlobalKey<NavigatorState>? navigatorKey;
 
-  @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  late final GlobalKey<NavigatorState> _navigatorKey;
-  late final AppServices _appServices;
-  late final AppPages _appPages;
-
-  @override
-  void initState() {
-    super.initState();
-    _navigatorKey = widget.navigatorKey ?? GlobalKey<NavigatorState>();
-    _appServices =
-        widget.services ?? AppServices.fromDatabase(database: widget.database);
-    _appPages = AppPages(
-      services: _appServices,
-      navigatorKey: _navigatorKey,
-    );
-  }
+  /// Controlador raiz da aplicação (se omitido, resolvido a partir de [services]/[database]).
+  final AppController? controller;
 
   @override
   Widget build(BuildContext context) {
-    final db = widget.database ?? _appServices.database;
+    final appController = controller ??
+        AppController.fromDatabase(
+          database: database,
+          services: services,
+          navigatorKey: navigatorKey,
+        );
+
+    final effectiveServices = appController.services;
+    final db = database ?? effectiveServices.database;
 
     return KortexMaterialApp(
       providers: [
-        KortexProvider<AppServices>.value(value: _appServices),
+        KortexProvider<AppController>.value(value: appController),
+        KortexProvider<AppServices>.value(value: effectiveServices),
         if (db != null) KortexProvider<SqliteProvider>.value(value: db),
       ],
       app: MaterialApp(
-        navigatorKey: _navigatorKey,
+        navigatorKey: appController.navigatorKey,
         title: 'ServiceTrack',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.light,
+        themeMode: appController.themeMode.value,
         initialRoute: AppRoutes.initial,
-        onGenerateRoute: _appPages.onGenerateRoute,
+        onGenerateRoute: appController.pages.onGenerateRoute,
         builder: (context, child) => AppRelockWatcher(
-          navigatorKey: _navigatorKey,
+          navigatorKey: appController.navigatorKey,
           child: child ?? const SizedBox.shrink(),
         ),
       ),
