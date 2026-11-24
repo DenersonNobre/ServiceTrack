@@ -2,28 +2,24 @@
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
-import '../modules/auth/data/biometric/.index.dart';
-import '../modules/auth/data/credential_store/.index.dart';
 import '../modules/auth/domain/ports/.index.dart';
 import '../modules/checklists/.index.dart';
-import '../modules/customers/data/.index.dart';
 import '../modules/customers/domain/ports/.index.dart';
-import '../modules/profile/data/.index.dart';
 import '../modules/profile/domain/ports/.index.dart';
 import '../modules/settings/domain/.index.dart';
-import '../modules/work_orders/data/.index.dart';
 import '../modules/work_orders/domain/ports/.index.dart';
-import 'adapters/checklist_proof_adapter.dart';
 import 'app_dependencies.dart';
 import 'app_entry.dart';
 import 'theme/app_theme.dart';
 
 /// Aplicativo raiz do ServiceTrack (standalone).
 class ServiceTrackApp extends StatelessWidget {
-  /// Cria o app; dependências podem ser injetadas em testes.
+  /// Cria o app; dependências podem ser injetadas em testes ou derivadas do [database].
   const ServiceTrackApp({
     super.key,
+    this.database,
     this.credentialRepository,
     this.biometricAuth,
     this.profileRepository,
@@ -34,8 +30,11 @@ class ServiceTrackApp extends StatelessWidget {
     this.checklistTemplateRepository,
     this.checklistAnswerRepository,
     this.checklistProofPort,
-    required this.settingsRepository,
+    this.settingsRepository,
   });
+
+  /// Instância do banco SQLite local (opcional para testes unitários).
+  final SqliteProvider? database;
 
   /// Repositório de credenciais (injeção para testes).
   final IAuthCredentialRepositoryPort? credentialRepository;
@@ -67,51 +66,32 @@ class ServiceTrackApp extends StatelessWidget {
   /// Porta de prova de checklist para conclusão de OS (injeção para testes).
   final IChecklistProofPort? checklistProofPort;
 
-  /// Repositório de configurações locais (obrigatório; SQLite em produção).
-  final ISettingsRepositoryPort settingsRepository;
+  /// Repositório de configurações locais (injeção para testes).
+  final ISettingsRepositoryPort? settingsRepository;
 
   @override
   Widget build(BuildContext context) {
-    final repo =
-        credentialRepository ??
-        SecureCredentialStore(backend: const FlutterSecureStorageBackend());
-    final bio = biometricAuth ?? LocalAuthBiometricAdapter();
-    final profileRepo =
-        profileRepository ?? MemoryTechnicianProfileRepository();
-    final customerRepo = customerRepository ?? MemoryCustomerRepository();
-    final locationRepo =
-        serviceLocationRepository ?? MemoryServiceLocationRepository();
-    final workOrderRepo = workOrderRepository ?? MemoryWorkOrderRepository();
-    final location = locationService ?? GeolocatorLocationService();
-    final checklistTemplateRepo =
-        checklistTemplateRepository ?? MemoryChecklistTemplateRepository();
-    final checklistAnswerRepo =
-        checklistAnswerRepository ?? MemoryChecklistAnswerRepository();
-    final proofPort =
-        checklistProofPort ??
-        ChecklistProofAdapter(
-          templateRepository: checklistTemplateRepo,
-          answerRepository: checklistAnswerRepo,
-        );
-    final settingsRepo = settingsRepository;
-    final dependencies = AppDependencies(
-      credentialRepository: repo,
-      biometricAuth: bio,
-      profileRepository: profileRepo,
-      customerRepository: customerRepo,
-      locationRepository: locationRepo,
-      workOrderRepository: workOrderRepo,
-      locationService: location,
-      checklistProofPort: proofPort,
-      checklistTemplateRepository: checklistTemplateRepo,
-      checklistAnswerRepository: checklistAnswerRepo,
-      settingsRepository: settingsRepo,
+    final dependencies = AppDependencies.fromDatabase(
+      database: database,
+      credentialRepository: credentialRepository,
+      biometricAuth: biometricAuth,
+      profileRepository: profileRepository,
+      customerRepository: customerRepository,
+      serviceLocationRepository: serviceLocationRepository,
+      workOrderRepository: workOrderRepository,
+      locationService: locationService,
+      checklistTemplateRepository: checklistTemplateRepository,
+      checklistAnswerRepository: checklistAnswerRepository,
+      checklistProofPort: checklistProofPort,
+      settingsRepository: settingsRepository,
     );
+    final db = database;
     return KortexMaterialApp(
       providers: [
         KortexProvider<AppDependencies>(
           create: (_) => dependencies,
         ),
+        if (db != null) KortexProvider<SqliteProvider>.value(value: db),
       ],
       app: MaterialApp(
         title: 'ServiceTrack',
