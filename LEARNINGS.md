@@ -2,6 +2,14 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-24 — Governança de Personas do Oráculo & Blindagem Anti-Monolito
+
+### 1. Desvio de Persona e Restauração da Esteira Multi-Agente
+- **Fato**: Durante a execução inicial do `UC-05.01`, o agente orquestrador implementou o código diretamente na thread principal em vez de delegar as fases de Coder e Reviewer para subagentes especializados via `invoke_subagent`.
+- **Causa Raiz**: Ausência de um gate explícito e mandatório de personas em `AGENTS.md`, permitindo atalhos na esteira de desenvolvimento.
+- **Ação Corretiva**: Blindagem de `AGENTS.md` tornando compulsória a divisão de papéis: Orquestrador (coordena claims/fatias), Coder (subagente TDD Red-Before-Green), Reviewer (subagente antagônico Gate 3) e QA (verificação completa Gate 4).
+- **Regra**: O agente orquestrador não escreve código de produção; delega sempre a subagentes dedicados com isolamento de contexto e TDD estrito.
+
 ---
 
 ## 2026-11-20 — Fundação Técnica (EPIC-00)

@@ -17,6 +17,12 @@
   - Tablets (`>= 600dp`): Suporte a Paisagem (`Landscape`) com layout Master-Detail.
 - **Tratamento de Falhas**: Fluxo esperado deve retornar `Result<T>` ou falha tipada de negócio. Exceções são restritas a I/O, corrupção de disco ou falhas catastróficas.
 - **Alvos Táteis de Campo**: Botões e campos interativos devem ter no mínimo `48dp` x `48dp`.
+- **Governança Estrita de Personas (Oráculo Pipeline)**:
+  - O agente principal atua **estritamente como Orquestrador** (`/orchestrator`), coordenando fatias, claims e invocação de subagentes.
+  - Toda implementação de código de produção e testes de unidade/widget deve ser executada por um subagente **Coder** (`invoke_subagent` com role `Coder`) com TDD Red-Before-Green.
+  - Toda fatia concluída pelo Coder deve passar por auditoria independente de um subagente **Reviewer** (`invoke_subagent` com role `Reviewer`) validando Diff Budget, SOLID, estilo e ausência de regressões antes de qualquer merge/conclusão (Gate 3).
+  - A validação final (Gate 4) é executada com suíte completa (`flutter analyze` e `flutter test`) antes do commit e liberação do claim.
+  - É expressamente proibido ao agente orquestrador escrever diretamente código de produção sem a esteira de subagentes.
 
 ---
 
