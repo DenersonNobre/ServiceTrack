@@ -73,7 +73,7 @@ void main() {
     );
 
     await tester.pumpWidget(App(services: services));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Crie seu acesso'), findsOneWidget);
   });
 }
