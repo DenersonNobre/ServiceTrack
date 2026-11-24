@@ -2,6 +2,28 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-24 — Refatoração Arquitetural: `AppServices`, Route Bindings e FakeAsync com SQLite
+
+### 1. `AppServices` vs `AppDependencies` (Composition Root Enxuto)
+- **Fato**: O antigo `AppDependencies` acumulava dezenas de repositórios de domínio de múltiplos bounded contexts (`customerRepo`, `workOrderRepo`, `checklistRepo`, etc.), gerando acoplamento desnecessário na raiz do aplicativo.
+- **Decisão**: Substituído definitivamente por **`AppServices`** (`lib/app/app_services.dart`). `AppServices` contém **exclusivamente** serviços de infraestrutura e plataforma/hardware (`database`, `credentialStore`, `biometricAuth`, `locationService`).
+- **Invariante**: **Zero repositórios de domínio em `AppServices`**. Módulos recebem a conexão com o banco e instanciam seus próprios repositórios internamente (`*Routes.fromDatabase(database)`).
+- **Resultado**: `lib/app/app.dart` e classe `App` (antigo `ServiceTrackApp`) tornaram-se puramente declarativos; o `main.dart` foi reduzido a apenas 14 linhas de bootstrap.
+
+### 2. Simplificação de Nomenclatura (Anti-Redundância)
+- **Regra**: Evitar prefixos/sufixos compostos redundantes em módulos com escopo evidente.
+- **Ação**: No módulo `home/`, renomeado `HomeDashboardController` para `HomeController` (`home_controller.dart`) e `HomeDashboardData` para `HomeData`.
+
+### 3. Gotcha Técnico: SQLite FFI em `testWidgets` e Deadlock de FakeAsync
+- **Sintoma**: `test/smoke_test.dart` travava por 10 minutos com `TimeoutException` após a migração para `AppServices`.
+- **Causa Raiz**: O `databaseFactoryFfi` despacha chamadas I/O em isolate de background. O `testWidgets` do Flutter roda dentro de uma zona simulada `FakeAsync`. Abrir e inicializar um banco SQLite FFI real dentro de `testWidgets` sem `tester.runAsync` causa deadlock porque o microtask loop do `FakeAsync` não avança com threads nativas externas.
+- **Solução**:
+  - `AppServices.database` foi tornado opcional (`SqliteProvider?`).
+  - Para `testWidgets` de casca/smoke (ex.: tela inicial de autenticação), passar `AppServices(database: null, ...)` com repositórios e serviços em memória (`FakeCredentialStore`, etc.).
+  - Testes que realmente necessitam do banco SQLite integrado devem ser testes normais de unidade/integração (`test(...)`) ou isolados com mocks/fakes puros.
+
+---
+
 ## 2026-11-24 — Governança de Personas do Oráculo & Blindagem Anti-Monolito
 
 ### 1. Desvio de Persona e Restauração da Esteira Multi-Agente

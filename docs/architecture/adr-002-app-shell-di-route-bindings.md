@@ -17,8 +17,8 @@
 
 ## Decisão
 
-1. **Composition root explícito**: `AppDependencies` (`lib/app/app_dependencies.dart`) agrega portas/adaptadores e políticas; `ServiceTrackApp` monta o objeto e o injeta no `AppEntry`.
-2. **Binding por módulo**: cada módulo expõe `*Routes` (ex.: `CustomersRoutes`, `ProfileRoutes`) em `lib/modules/<modulo>/ui/`, com métodos que retornam `Route<void>`.
+1. **Composition root explícito**: `AppServices` (`lib/app/app_services.dart`) agrega exclusivamente infraestrutura, plataforma e hardware (`SqliteProvider`, biometria, GPS, Secure Storage). Zero repositórios de negócio em `AppServices`. `App` monta `AppServices` e o repassa ao `AppEntry`.
+2. **Binding por módulo**: cada módulo expõe `*Routes` (ex.: `CustomersRoutes.fromDatabase(db)`, `WorkOrdersRoutes.fromDatabase(db)`) em `lib/modules/<modulo>/ui/`, instanciando seus próprios repositórios sob demanda e expondo métodos que retornam `Route<void>`.
 3. **Helper canônico**: `appScopedRoute<T, R>` (`lib/core/ui/app_scoped_route.dart`) encapsula `MaterialPageRoute` + `KortexScope` + `KortexProvider` + `readKortex` + auto-dispose para rotas com **um** controller.
 4. **Exceção justificada**: `KortexScope` manual permanece apenas quando a rota precisa de múltiplos providers; a justificativa fica no código/PR.
 5. **Shell enxuto**: `AppEntry` mantém gate de rota inicial, lifecycle/relock e dispatch das rotas; não compõe controllers de módulo nem conhece regras de negócio.
