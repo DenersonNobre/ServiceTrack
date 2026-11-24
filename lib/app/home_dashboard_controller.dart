@@ -48,10 +48,15 @@ final class HomeDashboardController extends IKortexController {
   );
 
   bool _loaded = false;
+  bool _isDisposed = false;
+
+  /// Indica se o controller já foi descartado.
+  @override
+  bool get isDisposed => _isDisposed;
 
   /// Carrega dados na primeira exibição.
   void ensureLoaded() {
-    if (_loaded) return;
+    if (_isDisposed || _loaded) return;
     _loaded = true;
     // ignore: discarded_futures
     load();
@@ -59,9 +64,11 @@ final class HomeDashboardController extends IKortexController {
 
   /// Recarrega KPIs e próximas visitas.
   Future<void> load() async {
+    if (_isDisposed) return;
     loading.value = true;
     error.value = null;
     final result = await repository.findAll();
+    if (_isDisposed) return;
     switch (result) {
       case Success(:final value):
         data.value = compute(value, DateTime.now());
@@ -121,6 +128,7 @@ final class HomeDashboardController extends IKortexController {
 
   @override
   void onDispose() {
+    _isDisposed = true;
     loading.dispose();
     error.dispose();
     data.dispose();

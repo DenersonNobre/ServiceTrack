@@ -1,8 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kortex_lib/core/models/money.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:service_track/app/home_dashboard_controller.dart';
+import 'package:service_track/modules/work_orders/domain/ports/work_order_repository_port.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order_status.dart';
+
+class _FakeWorkOrderRepository implements IWorkOrderRepositoryPort {
+  Completer<IResult<List<WorkOrder>, ValidationError>>? findAllCompleter;
+
+  @override
+  Future<IResult<List<WorkOrder>, ValidationError>> findAll() {
+    if (findAllCompleter != null) {
+      return findAllCompleter!.future;
+    }
+    return Future.value(const Success<List<WorkOrder>, ValidationError>([]));
+  }
+
+  @override
+  Future<IResult<WorkOrder, ValidationError>> save(WorkOrder workOrder) {
+    throw UnimplementedError();
+  }
+}
 
 WorkOrder _wo({
   required String id,
@@ -20,6 +42,39 @@ WorkOrder _wo({
 }
 
 void main() {
+  group('HomeDashboardController.load async guard & dispose', () {
+    test('load() não lança StateError e aborta quando controller é disposed durante findAll()', () async {
+      final repo = _FakeWorkOrderRepository();
+      repo.findAllCompleter = Completer<IResult<List<WorkOrder>, ValidationError>>();
+
+      final controller = HomeDashboardController(repository: repo);
+
+      // Inicia a carga assíncrona
+      final loadFuture = controller.load();
+
+      // Controller é descartado antes do findAll resolver (ex: transição de rota / pop)
+      controller.dispose();
+
+      // Agora resolve o repositório com sucesso
+      repo.findAllCompleter!.complete(
+        const Success<List<WorkOrder>, ValidationError>([]),
+      );
+
+      // Não deve lançar StateError (Bad state: KortexSignal used after dispose())
+      await expectLater(loadFuture, completes);
+    });
+
+    test('load() aborta imediatamente se controller já estiver disposed', () async {
+      final repo = _FakeWorkOrderRepository();
+      final controller = HomeDashboardController(repository: repo);
+
+      controller.dispose();
+
+      // Chamada a load com controller já disposed não deve tentar mutar loading nem chamar repo
+      await expectLater(controller.load(), completes);
+    });
+  });
+
   group('HomeDashboardController.compute', () {
     test('calcula KPIs do dia e próximas visitas', () {
       final now = DateTime(2026, 11, 23, 10, 0);
