@@ -67,15 +67,23 @@ final class HomeDashboardController extends IKortexController {
     if (_isDisposed) return;
     loading.value = true;
     error.value = null;
-    final result = await repository.findAll();
-    if (_isDisposed) return;
-    switch (result) {
-      case Success(:final value):
-        data.value = compute(value, DateTime.now());
-      case Failure(value: final failure):
-        error.value = failure.message;
+    try {
+      final result = await repository.findAll();
+      if (_isDisposed) return;
+      switch (result) {
+        case Success(:final value):
+          data.value = compute(value, DateTime.now());
+        case Failure(value: final failure):
+          error.value = failure.message;
+      }
+    } catch (e) {
+      if (_isDisposed) return;
+      error.value = 'Falha ao carregar dados: $e';
+    } finally {
+      if (!_isDisposed) {
+        loading.value = false;
+      }
     }
-    loading.value = false;
   }
 
   /// Calcula KPIs e agenda a partir da lista de OS. Visível para teste.

@@ -11,9 +11,13 @@ import 'package:service_track/modules/work_orders/domain/value_objects/work_orde
 
 class _FakeWorkOrderRepository implements IWorkOrderRepositoryPort {
   Completer<IResult<List<WorkOrder>, ValidationError>>? findAllCompleter;
+  Object? findAllError;
 
   @override
   Future<IResult<List<WorkOrder>, ValidationError>> findAll() {
+    if (findAllError != null) {
+      return Future.error(findAllError!);
+    }
     if (findAllCompleter != null) {
       return findAllCompleter!.future;
     }
@@ -72,6 +76,17 @@ void main() {
 
       // Chamada a load com controller já disposed não deve tentar mutar loading nem chamar repo
       await expectLater(controller.load(), completes);
+    });
+
+    test('load() captura exceções não tratadas do repositório, preenche error e desliga loading', () async {
+      final repo = _FakeWorkOrderRepository();
+      repo.findAllError = Exception('Falha de conexão com SQLite');
+      final controller = HomeDashboardController(repository: repo);
+
+      await controller.load();
+
+      expect(controller.loading.value, isFalse);
+      expect(controller.error.value, contains('Falha ao carregar dados: Exception: Falha de conexão com SQLite'));
     });
   });
 
