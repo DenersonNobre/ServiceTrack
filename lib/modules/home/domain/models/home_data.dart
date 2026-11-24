@@ -6,8 +6,8 @@
 import '../../../work_orders/domain/value_objects/work_order.dart';
 
 /// Resumo operacional exibido na home.
-final class HomeDashboardData {
-  const HomeDashboardData({
+final class HomeData {
+  const HomeData({
     required this.scheduledToday,
     required this.inProgress,
     required this.paused,
@@ -21,7 +21,7 @@ final class HomeDashboardData {
   final int completedToday;
   final List<WorkOrder> upcoming;
 
-  static const empty = HomeDashboardData(
+  static const empty = HomeData(
     scheduledToday: 0,
     inProgress: 0,
     paused: 0,

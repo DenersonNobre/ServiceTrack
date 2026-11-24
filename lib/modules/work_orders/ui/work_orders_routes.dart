@@ -3,18 +3,25 @@
 // SRP: compor rotas escopadas de OS e execução de checklist.
 // Não implementa regra de negócio nem conhece o shell do app.
 
-import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:flutter/material.dart';
+import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
+import '../../../app/adapters/checklist_proof_adapter.dart';
 import '../../../core/ui/app_scoped_route.dart';
+import '../../checklists/data/checklist_answer_sqlite_repository.dart';
+import '../../checklists/data/checklist_template_sqlite_repository.dart';
 import '../../checklists/domain/ports/checklist_answer_repository_port.dart';
 import '../../checklists/domain/ports/checklist_template_repository_port.dart';
 import '../../checklists/ui/checklists_routes.dart';
 import '../../checklists/ui/execution/checklist_execution_controller.dart';
 import '../../checklists/ui/execution/checklist_execution_page.dart';
+import '../../customers/data/customer_sqlite_repository.dart';
 import '../../customers/domain/ports/customer_repository_port.dart';
+import '../../settings/data/settings_sqlite_repository.dart';
 import '../../settings/domain/.index.dart';
 import '../../settings/features/.index.dart';
+import '../data/work_order_sqlite_repository.dart';
 import '../domain/ports/checklist_proof_port.dart';
 import '../domain/ports/location_service_port.dart';
 import '../domain/ports/work_order_repository_port.dart';
@@ -35,6 +42,34 @@ final class WorkOrdersRoutes {
     required this.checklistAnswerRepository,
     required this.settingsRepository,
   });
+
+  factory WorkOrdersRoutes.fromDatabase({
+    required SqliteProvider database,
+    required ILocationServicePort locationService,
+    IChecklistProofPort? checklistProofPort,
+  }) {
+    final workOrderRepo = WorkOrderSqliteRepository(provider: database);
+    final customerRepo = CustomerSqliteRepository(provider: database);
+    final templateRepo = ChecklistTemplateSqliteRepository(provider: database);
+    final answerRepo = ChecklistAnswerSqliteRepository(provider: database);
+    final settingsRepo = SettingsSqliteRepository(provider: database);
+    final proof =
+        checklistProofPort ??
+        ChecklistProofAdapter(
+          templateRepository: templateRepo,
+          answerRepository: answerRepo,
+        );
+
+    return WorkOrdersRoutes(
+      workOrderRepository: workOrderRepo,
+      customerRepository: customerRepo,
+      locationService: locationService,
+      checklistProofPort: proof,
+      checklistTemplateRepository: templateRepo,
+      checklistAnswerRepository: answerRepo,
+      settingsRepository: settingsRepo,
+    );
+  }
 
   final IWorkOrderRepositoryPort workOrderRepository;
   final ICustomerRepositoryPort customerRepository;

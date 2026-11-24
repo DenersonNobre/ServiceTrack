@@ -1,4 +1,4 @@
-// Controller Kortex do dashboard da home (MVP operacional).
+// Controller Kortex da home (MVP operacional).
 //
 // SRP: carregar OS e expor KPIs/agenda do dia para a home. Não renderiza UI,
 // não persiste, não navega.
@@ -13,18 +13,18 @@ import 'package:kortex_lib/core/patterns/validation_error.dart';
 import '../../work_orders/domain/ports/work_order_repository_port.dart';
 import '../../work_orders/domain/value_objects/work_order.dart';
 import '../../work_orders/domain/value_objects/work_order_status.dart';
-import '../domain/models/home_dashboard_data.dart';
+import '../domain/models/home_data.dart';
 
-/// Controller Kortex do dashboard da home.
-final class HomeDashboardController extends IKortexController {
-  HomeDashboardController({required this.repository});
+/// Controller Kortex da home.
+final class HomeController extends IKortexController {
+  HomeController({required this.repository});
 
   final IWorkOrderRepositoryPort repository;
 
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
   final KortexSignal<String?> error = KortexSignal<String?>(null);
-  final KortexSignal<HomeDashboardData> data = KortexSignal<HomeDashboardData>(
-    HomeDashboardData.empty,
+  final KortexSignal<HomeData> data = KortexSignal<HomeData>(
+    HomeData.empty,
   );
 
   bool _loaded = false;
@@ -45,7 +45,7 @@ final class HomeDashboardController extends IKortexController {
   /// Recarrega KPIs e próximas visitas.
   Future<void> load() async {
     if (_isDisposed) return;
-    debugPrint('[HomeDashboardController] load() started');
+    debugPrint('[HomeController] load() started');
     loading.value = true;
     error.value = null;
     try {
@@ -85,7 +85,7 @@ final class HomeDashboardController extends IKortexController {
   }
 
   /// Calcula KPIs e agenda a partir da lista de OS. Visível para teste.
-  static HomeDashboardData compute(List<WorkOrder> items, DateTime now) {
+  static HomeData compute(List<WorkOrder> items, DateTime now) {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
 
@@ -123,7 +123,7 @@ final class HomeDashboardController extends IKortexController {
 
     upcoming.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
 
-    return HomeDashboardData(
+    return HomeData(
       scheduledToday: scheduledToday,
       inProgress: inProgress,
       paused: paused,

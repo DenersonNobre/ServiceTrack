@@ -4,8 +4,10 @@
 // Não implementa regra de negócio nem conhece o shell do app.
 
 import 'package:flutter/material.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../../core/ui/app_scoped_route.dart';
+import '../data/checklist_template_sqlite_repository.dart';
 import '../domain/ports/checklist_template_repository_port.dart';
 import 'templates/checklist_template_form_controller.dart';
 import 'templates/checklist_template_form_page.dart';
@@ -16,6 +18,12 @@ import 'templates/checklist_template_list_page.dart';
 final class ChecklistsRoutes {
   /// Cria as rotas sobre a porta de modelos.
   const ChecklistsRoutes({required this.templateRepository});
+
+  factory ChecklistsRoutes.fromDatabase(SqliteProvider database) {
+    return ChecklistsRoutes(
+      templateRepository: ChecklistTemplateSqliteRepository(provider: database),
+    );
+  }
 
   /// Porta de persistência de modelos de checklist.
   final IChecklistTemplateRepositoryPort templateRepository;

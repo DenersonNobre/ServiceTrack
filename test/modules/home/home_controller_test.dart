@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/modules/home/ui/home_dashboard_controller.dart';
+import 'package:service_track/modules/home/ui/home_controller.dart';
 import 'package:service_track/modules/work_orders/domain/ports/work_order_repository_port.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order_status.dart';
@@ -46,7 +46,7 @@ WorkOrder _wo({
 }
 
 void main() {
-  group('HomeDashboardController.load async guard & dispose', () {
+  group('HomeController.load async guard & dispose', () {
     test(
       'load() não lança StateError e aborta quando controller é disposed durante findAll()',
       () async {
@@ -54,7 +54,7 @@ void main() {
         repo.findAllCompleter =
             Completer<IResult<List<WorkOrder>, ValidationError>>();
 
-        final controller = HomeDashboardController(repository: repo);
+        final controller = HomeController(repository: repo);
 
         // Inicia a carga assíncrona
         final loadFuture = controller.load();
@@ -74,7 +74,7 @@ void main() {
 
     test('load() aborta imediatamente se controller já estiver disposed', () async {
       final repo = _FakeWorkOrderRepository();
-      final controller = HomeDashboardController(repository: repo);
+      final controller = HomeController(repository: repo);
 
       controller.dispose();
 
@@ -87,7 +87,7 @@ void main() {
       () async {
         final repo = _FakeWorkOrderRepository();
         repo.findAllError = Exception('Falha de conexão com SQLite');
-        final controller = HomeDashboardController(repository: repo);
+        final controller = HomeController(repository: repo);
 
         await controller.load();
 
@@ -100,14 +100,14 @@ void main() {
     );
   });
 
-  group('HomeDashboardController.compute', () {
+  group('HomeController.compute', () {
     test('calcula KPIs do dia e próximas visitas', () {
       final now = DateTime(2026, 11, 23, 10, 0);
       final today = DateTime(2026, 11, 23, 14, 0);
       final tomorrow = DateTime(2026, 11, 24, 9, 0);
       final yesterday = DateTime(2026, 11, 22, 9, 0);
 
-      final data = HomeDashboardController.compute([
+      final data = HomeController.compute([
         _wo(id: '1', status: WorkOrderStatus.scheduled, scheduledAt: today),
         _wo(
           id: '2',
@@ -142,7 +142,7 @@ void main() {
         ),
       );
 
-      final data = HomeDashboardController.compute(items, now);
+      final data = HomeController.compute(items, now);
 
       expect(data.upcoming, hasLength(5));
       expect(data.upcoming.first.id, '0');

@@ -1,15 +1,15 @@
-// Tela inicial do ServiceTrack (dashboard operacional + navegação).
+// Tela inicial do ServiceTrack (navegação e resumo operacional).
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
-import 'home_dashboard_controller.dart';
+import 'home_controller.dart';
 import 'widgets/home_drawer.dart';
 import 'widgets/home_kpi_grid.dart';
 import 'widgets/home_upcoming_section.dart';
 
 /// Tela principal após desbloqueio do aplicativo.
-final class HomePage extends IKortexPage<HomeDashboardController> {
+final class HomePage extends IKortexPage<HomeController> {
   /// Cria a tela inicial com callbacks de navegação dos módulos.
   const HomePage({
     super.key,
@@ -29,7 +29,7 @@ final class HomePage extends IKortexPage<HomeDashboardController> {
   final VoidCallback onSettings;
 
   @override
-  Widget buildPage(BuildContext context, HomeDashboardController controller) {
+  Widget buildPage(BuildContext context, HomeController controller) {
     controller.ensureLoaded();
     return Scaffold(
       appBar: AppBar(title: const Text('ServiceTrack')),

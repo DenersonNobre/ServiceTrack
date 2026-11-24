@@ -6,7 +6,7 @@ import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/modules/home/ui/home_dashboard_controller.dart';
+import 'package:service_track/modules/home/ui/home_controller.dart';
 import 'package:service_track/modules/home/ui/home_page.dart';
 import 'package:service_track/modules/work_orders/domain/ports/work_order_repository_port.dart';
 import 'package:service_track/modules/work_orders/domain/value_objects/work_order.dart';
@@ -57,7 +57,7 @@ WorkOrder _makeWorkOrder({
 
 void main() {
   group('HomePage widget tests', () {
-    late HomeDashboardController controller;
+    late HomeController controller;
     bool profileTapped = false;
     bool customersTapped = false;
     bool workOrdersTapped = false;
@@ -65,11 +65,11 @@ void main() {
     bool checklistsTapped = false;
     bool settingsTapped = false;
 
-    Widget buildTestHarness(HomeDashboardController ctrl) {
+    Widget buildTestHarness(HomeController ctrl) {
       return MaterialApp(
         home: KortexScope(
           providers: [
-            KortexProvider<HomeDashboardController>.value(value: ctrl),
+            KortexProvider<HomeController>.value(value: ctrl),
           ],
           child: HomePage(
             onProfile: () => profileTapped = true,
@@ -97,7 +97,7 @@ void main() {
     ) async {
       final repo = _FakeWorkOrderRepository();
       repo.completer = Completer<IResult<List<WorkOrder>, ValidationError>>();
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pump();
@@ -115,7 +115,7 @@ void main() {
       tester,
     ) async {
       final repo = _FakeWorkOrderRepository(failWith: 'Erro ao carregar banco');
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pumpAndSettle();
@@ -130,7 +130,7 @@ void main() {
 
     testWidgets('renderiza painel com dados vazios (empty state)', (tester) async {
       final repo = _FakeWorkOrderRepository(initialData: []);
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pumpAndSettle();
@@ -161,7 +161,7 @@ void main() {
           ),
         ],
       );
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pumpAndSettle();
@@ -183,7 +183,7 @@ void main() {
       tester,
     ) async {
       final repo = _FakeWorkOrderRepository(initialData: []);
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pumpAndSettle();
@@ -240,7 +240,7 @@ void main() {
 
     testWidgets('tocar em cards de KPI chama onWorkOrders', (tester) async {
       final repo = _FakeWorkOrderRepository(initialData: []);
-      controller = HomeDashboardController(repository: repo);
+      controller = HomeController(repository: repo);
 
       await tester.pumpWidget(buildTestHarness(controller));
       await tester.pumpAndSettle();

@@ -4,8 +4,11 @@
 // Não implementa regra de negócio nem conhece o shell do app.
 
 import 'package:flutter/material.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../../core/ui/app_scoped_route.dart';
+import '../data/customer_sqlite_repository.dart';
+import '../data/service_location_sqlite_repository.dart';
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/ports/service_location_repository_port.dart';
 import '../domain/value_objects/customer.dart';
@@ -27,6 +30,13 @@ final class CustomersRoutes {
     required this.customerRepository,
     required this.locationRepository,
   });
+
+  factory CustomersRoutes.fromDatabase(SqliteProvider database) {
+    return CustomersRoutes(
+      customerRepository: CustomerSqliteRepository(provider: database),
+      locationRepository: ServiceLocationSqliteRepository(provider: database),
+    );
+  }
 
   final ICustomerRepositoryPort customerRepository;
   final IServiceLocationRepositoryPort locationRepository;

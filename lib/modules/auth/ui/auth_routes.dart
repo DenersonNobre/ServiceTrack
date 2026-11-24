@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
+import '../../../app/app_services.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../domain/ports/auth_credential_repository_port.dart';
 import '../domain/ports/biometric_auth_port.dart';
@@ -27,6 +28,13 @@ final class AuthRoutes {
     required this.credentialRepository,
     required this.biometricAuth,
   });
+
+  factory AuthRoutes.fromServices(AppServices services) {
+    return AuthRoutes(
+      credentialRepository: services.credentialStore,
+      biometricAuth: services.biometricAuth,
+    );
+  }
 
   /// Porta de persistência segura de credenciais.
   final IAuthCredentialRepositoryPort credentialRepository;

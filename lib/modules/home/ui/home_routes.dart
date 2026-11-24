@@ -5,15 +5,23 @@
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../../core/ui/app_scoped_route.dart';
+import '../../work_orders/data/work_order_sqlite_repository.dart';
 import '../../work_orders/domain/ports/work_order_repository_port.dart';
-import 'home_dashboard_controller.dart';
+import 'home_controller.dart';
 import 'home_page.dart';
 
 /// Bindings de navegação do módulo de home.
 final class HomeRoutes {
   const HomeRoutes({required this.workOrderRepository});
+
+  factory HomeRoutes.fromDatabase(SqliteProvider database) {
+    return HomeRoutes(
+      workOrderRepository: WorkOrderSqliteRepository(provider: database),
+    );
+  }
 
   final IWorkOrderRepositoryPort workOrderRepository;
 
@@ -26,8 +34,8 @@ final class HomeRoutes {
     required VoidCallback onChecklists,
     required VoidCallback onSettings,
   }) {
-    return appScopedRoute<HomeDashboardController, void>(
-      create: (_) => HomeDashboardController(repository: workOrderRepository),
+    return appScopedRoute<HomeController, void>(
+      create: (_) => HomeController(repository: workOrderRepository),
       builder: (_, _) => HomePage(
         onProfile: onProfile,
         onCustomers: onCustomers,
@@ -50,8 +58,8 @@ final class HomeRoutes {
   }) {
     return KortexScope(
       providers: [
-        KortexProvider<HomeDashboardController>(
-          create: (_) => HomeDashboardController(repository: workOrderRepository),
+        KortexProvider<HomeController>(
+          create: (_) => HomeController(repository: workOrderRepository),
           dispose: (controller) => controller.dispose(),
         ),
       ],

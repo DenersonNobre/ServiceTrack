@@ -10,13 +10,13 @@ import '../modules/home/ui/home_routes.dart';
 import '../modules/profile/ui/profile_routes.dart';
 import '../modules/settings/ui/.index.dart';
 import '../modules/work_orders/ui/work_orders_routes.dart';
-import 'app_dependencies.dart';
+import 'app_services.dart';
 
 /// Porta de entrada do aplicativo após o [MaterialApp].
 class AppEntry extends StatefulWidget {
-  const AppEntry({super.key, required this.deps});
+  const AppEntry({super.key, required this.services});
 
-  final AppDependencies deps;
+  final AppServices services;
 
   @override
   State<AppEntry> createState() => _AppEntryState();
@@ -25,12 +25,12 @@ class AppEntry extends StatefulWidget {
 class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   late final Future<AppEntryRoute> _routeFuture;
   late final AuthRoutes _authRoutes;
-  late final ChecklistsRoutes _checklistsRoutes;
-  late final CustomersRoutes _customersRoutes;
-  late final HomeRoutes _homeRoutes;
-  late final ProfileRoutes _profileRoutes;
-  late final SettingsRoutes _settingsRoutes;
-  late final WorkOrdersRoutes _workOrdersRoutes;
+  ChecklistsRoutes? _checklistsRoutes;
+  CustomersRoutes? _customersRoutes;
+  HomeRoutes? _homeRoutes;
+  ProfileRoutes? _profileRoutes;
+  SettingsRoutes? _settingsRoutes;
+  WorkOrdersRoutes? _workOrdersRoutes;
   DateTime? _backgroundedAt;
   bool _isLockVisible = false;
   static const _backgroundLockTtl = Duration(minutes: 5);
@@ -39,37 +39,21 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _authRoutes = AuthRoutes(
-      credentialRepository: widget.deps.credentialRepository,
-      biometricAuth: widget.deps.biometricAuth,
-    );
-    _checklistsRoutes = ChecklistsRoutes(
-      templateRepository: widget.deps.checklistTemplateRepository,
-    );
-    _customersRoutes = CustomersRoutes(
-      customerRepository: widget.deps.customerRepository,
-      locationRepository: widget.deps.locationRepository,
-    );
-    _homeRoutes = HomeRoutes(
-      workOrderRepository: widget.deps.workOrderRepository,
-    );
-    _profileRoutes = ProfileRoutes(
-      profileRepository: widget.deps.profileRepository,
-    );
-    _settingsRoutes = SettingsRoutes(
-      settingsRepository: widget.deps.settingsRepository,
-    );
-    _workOrdersRoutes = WorkOrdersRoutes(
-      workOrderRepository: widget.deps.workOrderRepository,
-      customerRepository: widget.deps.customerRepository,
-      locationService: widget.deps.locationService,
-      checklistProofPort: widget.deps.checklistProofPort,
-      checklistTemplateRepository: widget.deps.checklistTemplateRepository,
-      checklistAnswerRepository: widget.deps.checklistAnswerRepository,
-      settingsRepository: widget.deps.settingsRepository,
-    );
+    final db = widget.services.database;
+    _authRoutes = AuthRoutes.fromServices(widget.services);
+    if (db != null) {
+      _checklistsRoutes = ChecklistsRoutes.fromDatabase(db);
+      _customersRoutes = CustomersRoutes.fromDatabase(db);
+      _homeRoutes = HomeRoutes.fromDatabase(db);
+      _profileRoutes = ProfileRoutes.standard();
+      _settingsRoutes = SettingsRoutes.fromDatabase(db);
+      _workOrdersRoutes = WorkOrdersRoutes.fromDatabase(
+        database: db,
+        locationService: widget.services.locationService,
+      );
+    }
     _routeFuture = ResolveInitialRouteUseCase(
-      repo: widget.deps.credentialRepository,
+      repo: widget.services.credentialStore,
     ).execute();
   }
 
@@ -97,40 +81,40 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   }
 
   void _goProfile() {
-    if (!mounted) return;
-    Navigator.of(context).push(_profileRoutes.edit());
+    if (!mounted || _profileRoutes == null) return;
+    Navigator.of(context).push(_profileRoutes!.edit());
   }
 
   void _goCustomers() {
-    if (!mounted) return;
-    Navigator.of(context).push(_customersRoutes.list());
-  }
-
-  void _goSettings() {
-    if (!mounted) return;
-    Navigator.of(context).push(_settingsRoutes.edit());
-  }
-
-  void _goChecklists() {
-    if (!mounted) return;
-    Navigator.of(context).push(_checklistsRoutes.list());
+    if (!mounted || _customersRoutes == null) return;
+    Navigator.of(context).push(_customersRoutes!.list());
   }
 
   void _goWorkOrders() {
-    if (!mounted) return;
-    Navigator.of(context).push(_workOrdersRoutes.list());
+    if (!mounted || _workOrdersRoutes == null) return;
+    Navigator.of(context).push(_workOrdersRoutes!.list());
   }
 
   void _goNewWorkOrder() {
-    if (!mounted) return;
-    Navigator.of(context).push(_workOrdersRoutes.form());
+    if (!mounted || _workOrdersRoutes == null) return;
+    Navigator.of(context).push(_workOrdersRoutes!.form());
+  }
+
+  void _goChecklists() {
+    if (!mounted || _checklistsRoutes == null) return;
+    Navigator.of(context).push(_checklistsRoutes!.list());
+  }
+
+  void _goSettings() {
+    if (!mounted || _settingsRoutes == null) return;
+    Navigator.of(context).push(_settingsRoutes!.edit());
   }
 
   void _goHome() {
-    if (!mounted) return;
+    if (!mounted || _homeRoutes == null) return;
     _isLockVisible = false;
     Navigator.of(context).pushReplacement(
-      _homeRoutes.home(
+      _homeRoutes!.home(
         onProfile: _goProfile,
         onCustomers: _goCustomers,
         onWorkOrders: _goWorkOrders,
@@ -185,14 +169,18 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             onUnlocked: _goHome,
             onForgotPin: _goRecovery,
           ),
-          AppEntryRoute.home => _homeRoutes.homeWidget(
-            onProfile: _goProfile,
-            onCustomers: _goCustomers,
-            onWorkOrders: _goWorkOrders,
-            onNewWorkOrder: _goNewWorkOrder,
-            onChecklists: _goChecklists,
-            onSettings: _goSettings,
-          ),
+          AppEntryRoute.home => _homeRoutes != null
+              ? _homeRoutes!.homeWidget(
+                  onProfile: _goProfile,
+                  onCustomers: _goCustomers,
+                  onWorkOrders: _goWorkOrders,
+                  onNewWorkOrder: _goNewWorkOrder,
+                  onChecklists: _goChecklists,
+                  onSettings: _goSettings,
+                )
+              : const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                ),
         };
       },
     );

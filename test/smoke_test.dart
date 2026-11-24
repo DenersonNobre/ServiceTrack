@@ -1,17 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
-import 'package:service_track/app/adapters/checklist_proof_adapter.dart';
-import 'package:service_track/app/app_dependencies.dart';
-import 'package:service_track/main.dart';
-import 'package:service_track/modules/auth/data/biometric/.index.dart';
+import 'package:service_track/app/app.dart';
+import 'package:service_track/app/app_services.dart';
+import 'package:service_track/modules/auth/data/biometric/local_auth_biometric_adapter.dart';
 import 'package:service_track/modules/auth/domain/ports/.index.dart';
 import 'package:service_track/modules/auth/domain/value_objects/.index.dart';
-import 'package:service_track/modules/checklists/data/.index.dart';
-import 'package:service_track/modules/customers/data/.index.dart';
-import 'package:service_track/modules/profile/data/.index.dart';
-import 'package:service_track/modules/settings/.index.dart';
-import 'package:service_track/modules/work_orders/data/.index.dart';
+import 'package:service_track/modules/work_orders/data/geolocator_location_service.dart';
 
 final class _FakeCredentialRepository implements IAuthCredentialRepositoryPort {
   @override
@@ -71,27 +66,14 @@ void main() {
   testWidgets('Smoke test inicial da aplicacao ServiceTrack', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      ServiceTrackApp(
-        dependencies: AppDependencies(
-          credentialRepository: _FakeCredentialRepository(),
-          settingsRepository: MemorySettingsRepository(),
-          biometricAuth: LocalAuthBiometricAdapter(),
-          profileRepository: MemoryTechnicianProfileRepository(),
-          customerRepository: MemoryCustomerRepository(),
-          locationRepository: MemoryServiceLocationRepository(),
-          workOrderRepository: MemoryWorkOrderRepository(),
-          locationService: GeolocatorLocationService(),
-          checklistProofPort: ChecklistProofAdapter(
-            templateRepository: MemoryChecklistTemplateRepository(),
-            answerRepository: MemoryChecklistAnswerRepository(),
-          ),
-          checklistTemplateRepository: MemoryChecklistTemplateRepository(),
-          checklistAnswerRepository: MemoryChecklistAnswerRepository(),
-        ),
-      ),
+    final services = AppServices(
+      credentialStore: _FakeCredentialRepository(),
+      biometricAuth: LocalAuthBiometricAdapter(),
+      locationService: GeolocatorLocationService(),
     );
-    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(App(services: services));
+    await tester.pump();
     expect(find.text('Crie seu acesso'), findsOneWidget);
   });
 }
