@@ -4,7 +4,6 @@ import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:service_track/app/app_controller.dart';
-import 'package:service_track/app/app_relock_watcher.dart';
 import 'package:service_track/app/app_services.dart';
 import 'package:service_track/app/routes/app_pages.dart';
 import 'package:service_track/app/routes/app_routes.dart';
@@ -200,45 +199,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Digite seu PIN'), findsOneWidget);
       controller.dispose();
-    });
-  });
-
-  group('AppRelockWatcher', () {
-    testWidgets('dispara relock após tempo limite em background', (
-      tester,
-    ) async {
-      var relockTriggered = false;
-      var simulatedTime = DateTime(2026, 1, 1, 12, 0);
-
-      final widget = AppRelockWatcher(
-        clock: () => simulatedTime,
-        timeout: const Duration(minutes: 5),
-        onRelock: () => relockTriggered = true,
-        child: const Text('Conteúdo'),
-      );
-
-      await tester.pumpWidget(MaterialApp(home: widget));
-      expect(find.text('Conteúdo'), findsOneWidget);
-
-      final state = tester.state<State<AppRelockWatcher>>(
-        find.byType(AppRelockWatcher),
-      ) as WidgetsBindingObserver;
-
-      // App vai para background
-      state.didChangeAppLifecycleState(AppLifecycleState.paused);
-
-      // Avança menos de 5 min
-      simulatedTime = simulatedTime.add(const Duration(minutes: 4));
-      state.didChangeAppLifecycleState(AppLifecycleState.resumed);
-      expect(relockTriggered, isFalse);
-
-      // App vai novamente para background
-      state.didChangeAppLifecycleState(AppLifecycleState.paused);
-
-      // Avança mais de 5 min
-      simulatedTime = simulatedTime.add(const Duration(minutes: 5, seconds: 1));
-      state.didChangeAppLifecycleState(AppLifecycleState.resumed);
-      expect(relockTriggered, isTrue);
     });
   });
 }

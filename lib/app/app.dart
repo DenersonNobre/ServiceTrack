@@ -5,7 +5,6 @@ import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import 'app_controller.dart';
-import 'app_relock_watcher.dart';
 import 'app_services.dart';
 import 'routes/app_routes.dart';
 import 'theme/app_theme.dart';
@@ -62,10 +61,6 @@ class App extends StatelessWidget {
         themeMode: appController.themeMode.value,
         initialRoute: AppRoutes.initial,
         onGenerateRoute: appController.pages.onGenerateRoute,
-        builder: (context, child) => AppRelockWatcher(
-          navigatorKey: appController.navigatorKey,
-          child: child ?? const SizedBox.shrink(),
-        ),
       ),
     );
   }

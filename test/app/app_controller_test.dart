@@ -157,6 +157,64 @@ void main() {
       expect(controller.pages, isNotNull);
       controller.dispose();
     });
+
+    test('monitora ciclo de vida do SO e não dispara relock antes do timeout', () {
+      var relockTriggered = false;
+      var simulatedTime = DateTime(2026, 1, 1, 12, 0);
+
+      final services = AppServices(
+        credentialStore: _FakeCredentialRepo(),
+        biometricAuth: _FakeBiometricAuth(),
+        locationService: _FakeLocationService(),
+      );
+
+      final controller = AppController(
+        services: services,
+        clock: () => simulatedTime,
+        lockTimeout: const Duration(minutes: 5),
+        onRelock: () => relockTriggered = true,
+        enableLifecycleObserver: false,
+      );
+
+      // App vai para background
+      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+
+      // Avança 4 minutos e volta ao primeiro plano
+      simulatedTime = simulatedTime.add(const Duration(minutes: 4));
+      controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
+
+      expect(relockTriggered, isFalse);
+      controller.dispose();
+    });
+
+    test('monitora ciclo de vida do SO e dispara relock após timeout de 5 minutos', () {
+      var relockTriggered = false;
+      var simulatedTime = DateTime(2026, 1, 1, 12, 0);
+
+      final services = AppServices(
+        credentialStore: _FakeCredentialRepo(),
+        biometricAuth: _FakeBiometricAuth(),
+        locationService: _FakeLocationService(),
+      );
+
+      final controller = AppController(
+        services: services,
+        clock: () => simulatedTime,
+        lockTimeout: const Duration(minutes: 5),
+        onRelock: () => relockTriggered = true,
+        enableLifecycleObserver: false,
+      );
+
+      // App vai para background
+      controller.didChangeAppLifecycleState(AppLifecycleState.paused);
+
+      // Avança 5 minutos e 1 segundo e volta ao primeiro plano
+      simulatedTime = simulatedTime.add(const Duration(minutes: 5, seconds: 1));
+      controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
+
+      expect(relockTriggered, isTrue);
+      controller.dispose();
+    });
   });
 
   group('App Widget (Stateless)', () {
