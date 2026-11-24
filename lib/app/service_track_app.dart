@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 
-import '../core/ui/.index.dart';
 import '../modules/auth/data/biometric/.index.dart';
 import '../modules/auth/data/credential_store/.index.dart';
 import '../modules/auth/domain/ports/.index.dart';

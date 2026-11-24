@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   # Shared Kernel & Arquitetura do Autor
-  kortex: ^0.2.3
+  kortex: ^0.2.4
   kortex_lib: ^0.1.0
 
   # Persistência Local Relacional (SQLite)
