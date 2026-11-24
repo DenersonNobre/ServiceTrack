@@ -20,4 +20,10 @@ abstract final class ReportFailureCodes {
 
   /// Falha ao acionar serviço ou folha nativa de compartilhamento.
   static const shareFailed = 'ERR_LAUDO_COMPARTILHAMENTO_FALHOU';
+
+  /// Falha na gravação ou leitura no armazenamento local de laudos.
+  static const storageFailed = 'ERR_LAUDO_STORAGE_FALHOU';
+
+  /// Laudo salvo não encontrado para a OS.
+  static const reportNotFound = 'ERR_LAUDO_NAO_ENCONTRADO';
 }

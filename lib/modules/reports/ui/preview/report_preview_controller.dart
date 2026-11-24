@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../domain/models/report_data.dart';
 import '../../domain/ports/pdf_report_generator_port.dart';
+import '../../domain/ports/report_storage_port.dart';
 import '../../domain/ports/share_service_port.dart';
 
 /// Assinatura da função resolutora de caminho de arquivo temporário (injetável para testes).
@@ -25,6 +26,7 @@ final class ReportPreviewController extends IKortexController {
     required this.reportData,
     required this.pdfGenerator,
     required this.shareService,
+    this.reportStorage,
     TempPathResolver? tempPathResolver,
     FileSaver? fileSaver,
   })  : _tempPathResolver = tempPathResolver ?? _defaultTempPathResolver(reportData.workOrderId),
@@ -33,6 +35,7 @@ final class ReportPreviewController extends IKortexController {
   final ReportData reportData;
   final IPdfReportGeneratorPort pdfGenerator;
   final IShareServicePort shareService;
+  final IReportStoragePort? reportStorage;
   final TempPathResolver _tempPathResolver;
   final FileSaver _fileSaver;
 
@@ -52,16 +55,48 @@ final class ReportPreviewController extends IKortexController {
     await generate();
   }
 
-  /// Gera o laudo PDF e salva o arquivo em disco local temporário para visualização/compartilhamento.
+  /// Gera ou recupera o laudo PDF e salva o arquivo em disco local temporário para visualização/compartilhamento.
   Future<void> generate() async {
     loading.value = true;
     errorMessage.value = null;
+
+    final storage = reportStorage;
+    if (storage != null) {
+      final exists = await storage.hasSavedReport(reportData.workOrderId);
+      if (exists) {
+        final savedResult = await storage.getSavedReport(reportData.workOrderId);
+        switch (savedResult) {
+          case Success<Uint8List, ValidationError>(:final value):
+            generatedBytes.value = value;
+            try {
+              final path = await _tempPathResolver();
+              await _fileSaver(path, value);
+              filePath.value = path;
+              loading.value = false;
+              return;
+            } catch (e) {
+              loading.value = false;
+              errorMessage.value = 'Falha ao salvar arquivo temporário do laudo: $e';
+              return;
+            }
+          case Failure<Uint8List, ValidationError>():
+            // Se falhou ao ler do storage, continua para gerar normalmente com o generator
+            break;
+        }
+      }
+    }
 
     final result = await pdfGenerator.generatePdf(reportData);
 
     switch (result) {
       case Success<Uint8List, ValidationError>(:final value):
         generatedBytes.value = value;
+        if (storage != null) {
+          await storage.saveReport(
+            workOrderId: reportData.workOrderId,
+            bytes: value,
+          );
+        }
         try {
           final path = await _tempPathResolver();
           await _fileSaver(path, value);

@@ -22,12 +22,16 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     this.onAdd,
     this.onChecklist,
     this.onTemplates,
+    this.onReport,
   });
   final VoidCallback? onAdd;
   final void Function(String workOrderId, String templateId)? onChecklist;
 
   /// Abre o cadastro/listagem de modelos de checklist (UC-04.09).
   final VoidCallback? onTemplates;
+
+  /// Visualiza o laudo técnico da OS concluída (UC-05.04).
+  final void Function(String workOrderId)? onReport;
 
   @override
   Widget buildPage(BuildContext context, WorkOrderListController controller) {
@@ -128,114 +132,132 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
                               minTileHeight: 56,
                               trailing:
                                   (wo.status == WorkOrderStatus.scheduled ||
-                                      wo.status == WorkOrderStatus.inProgress ||
-                                      wo.status == WorkOrderStatus.paused)
-                                  ? isBusy
-                                        ? const SizedBox(
-                                            width: 48,
-                                            height: 48,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
+                                          wo.status ==
+                                              WorkOrderStatus.inProgress ||
+                                          wo.status == WorkOrderStatus.paused ||
+                                          wo.status ==
+                                              WorkOrderStatus.completed)
+                                      ? isBusy
+                                          ? const SizedBox(
+                                              width: 48,
+                                              height: 48,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(12),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
                                               ),
-                                            ),
-                                          )
-                                        : PopupMenuButton<String>(
-                                            key: Key('wo-actions-${wo.id}'),
-                                            icon: const Icon(Icons.more_vert),
-                                            tooltip: 'Ações',
-                                            onSelected: (v) {
-                                              if (v == 'start') {
-                                                _startService(
-                                                  context,
-                                                  controller,
-                                                  wo.id,
-                                                );
-                                              }
-                                              if (v == 'pause') {
-                                                _pauseWorkOrder(
-                                                  context,
-                                                  controller,
-                                                  wo.id,
-                                                );
-                                              }
-                                              if (v == 'resume') {
-                                                _resumeWorkOrder(
-                                                  context,
-                                                  controller,
-                                                  wo.id,
-                                                );
-                                              }
-                                              if (v == 'complete') {
-                                                _completeWorkOrder(
-                                                  context,
-                                                  controller,
-                                                  wo.id,
-                                                );
-                                              }
-                                              if (v == 'cancel') {
-                                                _cancelWorkOrder(
-                                                  context,
-                                                  controller,
-                                                  wo.id,
-                                                );
-                                              }
-                                              if (v == 'checklist') {
-                                                final tpl =
-                                                    wo.checklistTemplateId;
-                                                if (tpl != null) {
-                                                  onChecklist?.call(wo.id, tpl);
+                                            )
+                                          : PopupMenuButton<String>(
+                                              key: Key('wo-actions-${wo.id}'),
+                                              icon: const Icon(Icons.more_vert),
+                                              tooltip: 'Ações',
+                                              onSelected: (v) {
+                                                if (v == 'start') {
+                                                  _startService(
+                                                    context,
+                                                    controller,
+                                                    wo.id,
+                                                  );
                                                 }
-                                              }
-                                            },
-                                            itemBuilder: (_) => [
-                                              if (wo.status ==
-                                                  WorkOrderStatus.scheduled)
-                                                const PopupMenuItem(
-                                                  value: 'start',
-                                                  child: Text(
-                                                    'Iniciar atendimento',
-                                                  ),
-                                                ),
-                                              if (wo.status ==
-                                                  WorkOrderStatus
-                                                      .inProgress) ...[
-                                                if (wo.checklistTemplateId !=
-                                                    null)
+                                                if (v == 'pause') {
+                                                  _pauseWorkOrder(
+                                                    context,
+                                                    controller,
+                                                    wo.id,
+                                                  );
+                                                }
+                                                if (v == 'resume') {
+                                                  _resumeWorkOrder(
+                                                    context,
+                                                    controller,
+                                                    wo.id,
+                                                  );
+                                                }
+                                                if (v == 'complete') {
+                                                  _completeWorkOrder(
+                                                    context,
+                                                    controller,
+                                                    wo.id,
+                                                  );
+                                                }
+                                                if (v == 'cancel') {
+                                                  _cancelWorkOrder(
+                                                    context,
+                                                    controller,
+                                                    wo.id,
+                                                  );
+                                                }
+                                                if (v == 'checklist') {
+                                                  final tpl =
+                                                      wo.checklistTemplateId;
+                                                  if (tpl != null) {
+                                                    onChecklist?.call(wo.id, tpl);
+                                                  }
+                                                }
+                                                if (v == 'report') {
+                                                  onReport?.call(wo.id);
+                                                }
+                                              },
+                                              itemBuilder: (_) => [
+                                                if (wo.status ==
+                                                    WorkOrderStatus.scheduled)
                                                   const PopupMenuItem(
-                                                    value: 'checklist',
-                                                    child: Text('Checklist'),
+                                                    value: 'start',
+                                                    child: Text(
+                                                      'Iniciar atendimento',
+                                                    ),
                                                   ),
-                                                const PopupMenuItem(
-                                                  value: 'pause',
-                                                  child: Text('Pausar OS'),
-                                                ),
-                                                const PopupMenuItem(
-                                                  value: 'complete',
-                                                  child: Text('Concluir OS'),
-                                                ),
+                                                if (wo.status ==
+                                                    WorkOrderStatus
+                                                        .inProgress) ...[
+                                                  if (wo.checklistTemplateId !=
+                                                      null)
+                                                    const PopupMenuItem(
+                                                      value: 'checklist',
+                                                      child: Text('Checklist'),
+                                                    ),
+                                                  const PopupMenuItem(
+                                                    value: 'pause',
+                                                    child: Text('Pausar OS'),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'complete',
+                                                    child: Text('Concluir OS'),
+                                                  ),
+                                                ],
+                                                if (wo.status ==
+                                                    WorkOrderStatus.paused)
+                                                  const PopupMenuItem(
+                                                    value: 'resume',
+                                                    child: Text(
+                                                      'Retomar atendimento',
+                                                    ),
+                                                  ),
+                                                if (wo.status ==
+                                                    WorkOrderStatus.completed)
+                                                  PopupMenuItem(
+                                                    key: Key(
+                                                      'wo-action-report-${wo.id}',
+                                                    ),
+                                                    value: 'report',
+                                                    child: const Text(
+                                                      'Visualizar Laudo',
+                                                    ),
+                                                  ),
+                                                if (wo.status !=
+                                                        WorkOrderStatus
+                                                            .completed &&
+                                                    wo.status !=
+                                                        WorkOrderStatus.cancelled)
+                                                  const PopupMenuItem(
+                                                    value: 'cancel',
+                                                    child: Text('Cancelar OS'),
+                                                  ),
                                               ],
-                                              if (wo.status ==
-                                                  WorkOrderStatus.paused)
-                                                const PopupMenuItem(
-                                                  value: 'resume',
-                                                  child: Text(
-                                                    'Retomar atendimento',
-                                                  ),
-                                                ),
-                                              if (wo.status !=
-                                                      WorkOrderStatus
-                                                          .completed &&
-                                                  wo.status !=
-                                                      WorkOrderStatus.cancelled)
-                                                const PopupMenuItem(
-                                                  value: 'cancel',
-                                                  child: Text('Cancelar OS'),
-                                                ),
-                                            ],
-                                          )
-                                  : null,
+                                            )
+                                      : null,
                             );
                           },
                         ),
@@ -450,6 +472,21 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
     if (!context.mounted) return;
     if (result.isFailure) {
       AppFeedback.showError(context, result.getOrNullFailure()!.message);
+      return;
+    }
+
+    if (onReport != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Ordem de Serviço concluída com sucesso!'),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Ver Laudo',
+            textColor: Colors.white,
+            onPressed: () => onReport?.call(workOrderId),
+          ),
+        ),
+      );
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../domain/models/report_data.dart';
 import '../domain/ports/pdf_report_generator_port.dart';
+import '../domain/ports/report_storage_port.dart';
 import '../domain/ports/share_service_port.dart';
 import 'preview/report_preview_controller.dart';
 import 'preview/report_preview_page.dart';
@@ -16,12 +17,14 @@ final class ReportsRoutes {
   const ReportsRoutes({
     required this.pdfGenerator,
     required this.shareService,
+    this.reportStorage,
     this.tempPathResolver,
     this.fileSaver,
   });
 
   final IPdfReportGeneratorPort pdfGenerator;
   final IShareServicePort shareService;
+  final IReportStoragePort? reportStorage;
   final TempPathResolver? tempPathResolver;
   final FileSaver? fileSaver;
 
@@ -32,6 +35,7 @@ final class ReportsRoutes {
         reportData: data,
         pdfGenerator: pdfGenerator,
         shareService: shareService,
+        reportStorage: reportStorage,
         tempPathResolver: tempPathResolver,
         fileSaver: fileSaver,
       ),

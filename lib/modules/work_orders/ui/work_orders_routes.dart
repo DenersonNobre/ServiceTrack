@@ -44,8 +44,8 @@ final class WorkOrdersRoutes {
   final IChecklistAnswerRepositoryPort checklistAnswerRepository;
   final ISettingsRepositoryPort settingsRepository;
 
-  /// Lista de OS com atalhos para cadastro e execução de checklist.
-  Route<void> list() {
+  /// Lista de OS com atalhos para cadastro, checklist e laudo.
+  Route<void> list({void Function(String workOrderId)? onReport}) {
     return appScopedRoute<WorkOrderListController, void>(
       create: (_) => WorkOrderListController(
         repository: workOrderRepository,
@@ -64,6 +64,7 @@ final class WorkOrdersRoutes {
           context,
           checklistExecution(workOrderId: workOrderId, templateId: templateId),
         ),
+        onReport: onReport,
       ),
     );
   }

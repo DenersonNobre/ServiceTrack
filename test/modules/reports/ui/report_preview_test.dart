@@ -8,6 +8,7 @@ import 'package:kortex_lib/kortex_lib.dart';
 import 'package:service_track/modules/reports/domain/models/report_data.dart';
 import 'package:service_track/modules/reports/domain/ports/pdf_report_generator_port.dart';
 import 'package:service_track/modules/reports/domain/ports/report_failure_codes.dart';
+import 'package:service_track/modules/reports/domain/ports/report_storage_port.dart';
 import 'package:service_track/modules/reports/domain/ports/share_service_port.dart';
 import 'package:service_track/modules/reports/ui/preview/report_preview_controller.dart';
 import 'package:service_track/modules/reports/ui/preview/report_preview_page.dart';
@@ -44,6 +45,54 @@ final class FakeShareService implements IShareServicePort {
     lastSharedPath = filePath;
     lastTitle = title;
     return result ?? const Success(null);
+  }
+}
+
+final class FakeReportStorage implements IReportStoragePort {
+  FakeReportStorage({
+    this.hasReport = false,
+    this.savedBytes,
+  });
+
+  bool hasReport;
+  Uint8List? savedBytes;
+  int getCount = 0;
+  int saveCount = 0;
+  int hasCount = 0;
+  String? lastSavedWorkOrderId;
+  Uint8List? lastSavedBytes;
+
+  @override
+  Future<bool> hasSavedReport(String workOrderId) async {
+    hasCount++;
+    return hasReport;
+  }
+
+  @override
+  Future<IResult<Uint8List, ValidationError>> getSavedReport(String workOrderId) async {
+    getCount++;
+    if (savedBytes != null) {
+      return Success(savedBytes!);
+    }
+    return const Failure(
+      ValidationError(
+        code: ReportFailureCodes.reportNotFound,
+        message: 'Laudo não encontrado',
+      ),
+    );
+  }
+
+  @override
+  Future<IResult<String, ValidationError>> saveReport({
+    required String workOrderId,
+    required Uint8List bytes,
+  }) async {
+    saveCount++;
+    lastSavedWorkOrderId = workOrderId;
+    lastSavedBytes = bytes;
+    hasReport = true;
+    savedBytes = bytes;
+    return Success('/storage/reports/OS-$workOrderId.pdf');
   }
 }
 
@@ -136,6 +185,68 @@ void main() {
       expect(controller.loading.value, isFalse);
       expect(controller.generatedBytes.value, isNotNull);
       expect(controller.errorMessage.value, isNull);
+
+      controller.dispose();
+    });
+
+    test('UC-05.04: Quando laudo já existe no storage, carrega direto sem chamar generator', () async {
+      final cachedBytes = Uint8List.fromList([37, 80, 68, 70, 99, 99]);
+      final fakeGenerator = FakePdfReportGenerator();
+      final fakeShare = FakeShareService();
+      final fakeStorage = FakeReportStorage(
+        hasReport: true,
+        savedBytes: cachedBytes,
+      );
+
+      final controller = ReportPreviewController(
+        reportData: sampleData,
+        pdfGenerator: fakeGenerator,
+        shareService: fakeShare,
+        reportStorage: fakeStorage,
+        tempPathResolver: () async => '/tmp/laudo_cached.pdf',
+        fileSaver: (path, bytes) async {},
+      );
+
+      await controller.generate();
+
+      expect(fakeStorage.hasCount, 1);
+      expect(fakeStorage.getCount, 1);
+      expect(fakeGenerator.callCount, 0, reason: 'Não deve recompilar se já existe em storage');
+      expect(controller.generatedBytes.value, equals(cachedBytes));
+      expect(controller.loading.value, isFalse);
+      expect(controller.errorMessage.value, isNull);
+
+      controller.dispose();
+    });
+
+    test('UC-05.04: Quando laudo não existe no storage, gera com generator e salva no storage', () async {
+      final generatedBytes = Uint8List.fromList([37, 80, 68, 70, 10, 20]);
+      final fakeGenerator = FakePdfReportGenerator(
+        result: Success(generatedBytes),
+      );
+      final fakeShare = FakeShareService();
+      final fakeStorage = FakeReportStorage(
+        hasReport: false,
+      );
+
+      final controller = ReportPreviewController(
+        reportData: sampleData,
+        pdfGenerator: fakeGenerator,
+        shareService: fakeShare,
+        reportStorage: fakeStorage,
+        tempPathResolver: () async => '/tmp/laudo_new.pdf',
+        fileSaver: (path, bytes) async {},
+      );
+
+      await controller.generate();
+
+      expect(fakeStorage.hasCount, 1);
+      expect(fakeGenerator.callCount, 1, reason: 'Deve compilar via generator');
+      expect(fakeStorage.saveCount, 1, reason: 'Deve salvar laudo compilado no storage');
+      expect(fakeStorage.lastSavedWorkOrderId, 'OS-1001');
+      expect(fakeStorage.lastSavedBytes, equals(generatedBytes));
+      expect(controller.generatedBytes.value, equals(generatedBytes));
+      expect(controller.loading.value, isFalse);
 
       controller.dispose();
     });
