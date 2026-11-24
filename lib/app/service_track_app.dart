@@ -1,7 +1,9 @@
 // Widget raiz do aplicativo ServiceTrack (composição de tema e portas).
 
 import 'package:flutter/material.dart';
+import 'package:kortex/kortex.dart';
 
+import '../core/ui/.index.dart';
 import '../modules/auth/data/biometric/.index.dart';
 import '../modules/auth/data/credential_store/.index.dart';
 import '../modules/auth/domain/ports/.index.dart';
@@ -106,12 +108,19 @@ class ServiceTrackApp extends StatelessWidget {
       checklistAnswerRepository: checklistAnswerRepo,
       settingsRepository: settingsRepo,
     );
-    return MaterialApp(
-      title: 'ServiceTrack',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.light,
-      home: AppEntry(deps: dependencies),
+    return KortexMaterialApp(
+      providers: [
+        KortexProvider<AppDependencies>(
+          create: (_) => dependencies,
+        ),
+      ],
+      app: MaterialApp(
+        title: 'ServiceTrack',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.light,
+        home: AppEntry(deps: dependencies),
+      ),
     );
   }
 }
