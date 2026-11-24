@@ -51,6 +51,9 @@ final class HomePage extends StatelessWidget {
       body: SafeArea(
         child: KortexWatch(
           builder: (context, _) {
+            debugPrint(
+              '[HomePage] KortexWatch builder running, loading=${controller.loading.value}, error=${controller.error.value}',
+            );
             if (controller.loading.value) {
               return const Center(child: CircularProgressIndicator());
             }

@@ -3,8 +3,12 @@
 // SRP: carregar OS e expor KPIs/agenda do dia para a home. Não renderiza UI,
 // não persiste, não navega.
 
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/core/patterns/result.dart';
+import 'package:kortex_lib/core/patterns/validation_error.dart';
 
 import '../modules/work_orders/domain/ports/work_order_repository_port.dart';
 import '../modules/work_orders/domain/value_objects/work_order.dart';
@@ -65,10 +69,22 @@ final class HomeDashboardController extends IKortexController {
   /// Recarrega KPIs e próximas visitas.
   Future<void> load() async {
     if (_isDisposed) return;
+    debugPrint('[HomeDashboardController] load() started');
     loading.value = true;
     error.value = null;
     try {
-      final result = await repository.findAll();
+      debugPrint('[HomeDashboardController] calling repository.findAll()...');
+      final result = await repository.findAll().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => const Failure(
+          ValidationError(
+            code: 'timeout',
+            message:
+                'Tempo limite excedido ao carregar ordens de serviço (timeout de 5s)',
+          ),
+        ),
+      );
+      debugPrint('[HomeDashboardController] repository.findAll() finished: $result');
       if (_isDisposed) return;
       switch (result) {
         case Success(:final value):
@@ -76,12 +92,18 @@ final class HomeDashboardController extends IKortexController {
         case Failure(value: final failure):
           error.value = failure.message;
       }
-    } catch (e) {
+    } on TimeoutException catch (e) {
+      debugPrint('[HomeDashboardController] TimeoutException: $e');
+      if (_isDisposed) return;
+      error.value = 'Tempo limite excedido ao carregar dados';
+    } catch (e, stack) {
+      debugPrint('[HomeDashboardController] catch exception: $e\n$stack');
       if (_isDisposed) return;
       error.value = 'Falha ao carregar dados: $e';
     } finally {
       if (!_isDisposed) {
         loading.value = false;
+        debugPrint('[HomeDashboardController] loading set to false');
       }
     }
   }
