@@ -17,4 +17,7 @@ abstract final class ReportFailureCodes {
 
   /// Ordem de serviço não encontrada no repositório.
   static const workOrderNotFound = 'ERR_OS_NAO_ENCONTRADA';
+
+  /// Falha ao acionar serviço ou folha nativa de compartilhamento.
+  static const shareFailed = 'ERR_LAUDO_COMPARTILHAMENTO_FALHOU';
 }
