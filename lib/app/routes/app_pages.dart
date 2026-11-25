@@ -7,6 +7,7 @@ import '../../modules/checklists/ui/checklists_routes.dart';
 import '../../modules/customers/ui/customers_routes.dart';
 import '../../modules/home/ui/home_routes.dart';
 import '../../modules/profile/ui/profile_routes.dart';
+import '../../modules/schedule/ui/schedule_routes.dart';
 import '../../modules/settings/ui/settings_routes.dart';
 import '../../modules/work_orders/ui/work_orders_routes.dart';
 import '../app_gate.dart';
@@ -25,13 +26,15 @@ class AppPages {
     ProfileRoutes? profileRoutes,
     ChecklistsRoutes? checklistsRoutes,
     SettingsRoutes? settingsRoutes,
+    ScheduleRoutes? scheduleRoutes,
   })  : _authRoutes = authRoutes ?? AuthRoutes.fromServices(services),
         _initialHomeRoutes = homeRoutes,
         _initialCustomersRoutes = customersRoutes,
         _initialWorkOrdersRoutes = workOrdersRoutes,
         _initialProfileRoutes = profileRoutes,
         _initialChecklistsRoutes = checklistsRoutes,
-        _initialSettingsRoutes = settingsRoutes {
+        _initialSettingsRoutes = settingsRoutes,
+        _initialScheduleRoutes = scheduleRoutes {
     _initSubRoutes();
   }
 
@@ -44,6 +47,7 @@ class AppPages {
   final ProfileRoutes? _initialProfileRoutes;
   final ChecklistsRoutes? _initialChecklistsRoutes;
   final SettingsRoutes? _initialSettingsRoutes;
+  final ScheduleRoutes? _initialScheduleRoutes;
 
   HomeRoutes? _homeRoutes;
   CustomersRoutes? _customersRoutes;
@@ -51,6 +55,7 @@ class AppPages {
   ProfileRoutes? _profileRoutes;
   ChecklistsRoutes? _checklistsRoutes;
   SettingsRoutes? _settingsRoutes;
+  ScheduleRoutes? _scheduleRoutes;
 
   void _initSubRoutes() {
     _homeRoutes = _initialHomeRoutes;
@@ -59,6 +64,7 @@ class AppPages {
     _profileRoutes = _initialProfileRoutes;
     _checklistsRoutes = _initialChecklistsRoutes;
     _settingsRoutes = _initialSettingsRoutes;
+    _scheduleRoutes = _initialScheduleRoutes;
 
     final db = services.database;
     if (db != null) {
@@ -71,6 +77,7 @@ class AppPages {
       _profileRoutes ??= ProfileRoutes.standard();
       _checklistsRoutes ??= ChecklistsRoutes.fromDatabase(db);
       _settingsRoutes ??= SettingsRoutes.fromDatabase(db);
+      _scheduleRoutes ??= ScheduleRoutes.fromDatabase(db);
     }
   }
 
@@ -103,7 +110,7 @@ class AppPages {
       AppRoutes.profile => _profileRoutes?.edit(),
       AppRoutes.customers => _customersRoutes?.list(),
       AppRoutes.workOrders => _workOrdersRoutes?.list(),
-      AppRoutes.schedule => _workOrdersRoutes?.list(),
+      AppRoutes.schedule => _scheduleRoutes?.schedule() ?? _workOrdersRoutes?.list(),
       AppRoutes.newWorkOrder => _workOrdersRoutes?.form(),
       AppRoutes.checklists => _checklistsRoutes?.list(),
       AppRoutes.settings => _settingsRoutes?.edit(),
