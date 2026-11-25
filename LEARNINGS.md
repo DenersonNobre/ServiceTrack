@@ -2,6 +2,35 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-25 — Evolução da Agenda (2D Fullscreen e Timeline Diária) e Formatação Universal com Kortex
+
+### 1. Calendário Mensal em Tela Cheia com Navegação Bidimensional
+- **Fato**: A agenda mensal anterior compartilhava espaço vertical de forma restrita, prejudicando a visão de múltiplos agendamentos em telas menores.
+- **Decisão**: A `SchedulePage` passou a ocupar 100% da viewport útil (Full Screen), integrando gestos bidimensionais (arrastar na horizontal para trocar de mês, arrastar na vertical para navegar entre anos).
+- **Interação**: Ao tocar em qualquer dia com ou sem agendamentos, o app navega de forma determinística para a **Agenda Diária** (`ScheduleDayPage`).
+
+### 2. Agenda Diária com Timeline de Ocupação e Parametrização da Jornada
+- **Implementação**: Criados `ScheduleDayPage` e `ScheduleDayController` em Kortex reativo puro (`IKortexPage`, `IKortexController`, `KortexSignal`, `KortexWatch`).
+- **Resolução de Horários**: A timeline vertical é renderizada a partir das configurações dinâmicas de jornada do usuário (`schedule_day_start`, `schedule_day_end`, `schedule_slot_interval`).
+- **Ocupação Visual**: Blocos de compromissos (`WorkOrder`) preenchem os slots horários com título, badges de status (`AppStatusBadge`) e identificador. O toque no compromisso abre a tela de detalhes da OS, e o toque em um slot livre abre o agendamento pré-preenchido.
+
+### 3. Persistência Resiliente de Configurações no SQLite (`ConflictAlgorithm.replace`)
+- **Sintoma**: As configurações falhavam ao salvar na UI com snackbar de erro em certas compilações SQLite devido a sintaxe raw `INSERT ... ON CONFLICT(key)`.
+- **Causa Raiz**: Queries manuais `INSERT ... ON CONFLICT` dependem de versões e flags específicas do SQLite em runtimes embarcados/FFI, sendo propensas a falhas de parsing ou violação de constraints.
+- **Solução**: Uso do método padrão da biblioteca `db.insert(table, map, conflictAlgorithm: ConflictAlgorithm.replace)`. Garante atomicidade nativa (upsert) tanto em desenvolvimento FFI quanto nos runtimes Android/iOS.
+
+### 4. Formatação Dinâmica ao Digitar com `kortex_lib/brlib`
+- **Fato**: Campos de entrada de dados como CPF/CNPJ, Telefone/WhatsApp, CEP, Moeda (R$) e Datas necessitavam de formatação instantânea na digitação sem corromper o valor limpo consumido pelos controladores.
+- **Solução**: Uso dos formatters prontos e testados de `package:kortex_lib/brlib/brlib.dart`:
+  - `DocumentInputFormatter`: Comutação dinâmica automática entre `CpfInputFormatter` (11 dígitos) e `CnpjInputFormatter` (14 dígitos).
+  - `PhoneBrInputFormatter`: Formatação padrão brasileira para telefones fixos e celulares com nono dígito.
+  - `CepInputFormatter`: Formatação de CEP (`99999-999`).
+  - `CurrencyInputFormatter`: Formatação de moeda em tempo real (`R$ 0,00`).
+  - `DateInputFormatter`: Formatação de data (`dd/MM/yyyy`).
+- **Regra**: Evitar criar formatters manuais com regex artesanal quando o ecossistema `kortex_lib/brlib` já fornece as implementações canônicas homologadas.
+
+---
+
 ## 2026-11-24 — Refatoração Arquitetural: `AppServices`, Route Bindings e FakeAsync com SQLite
 
 ### 1. `AppServices` vs `AppDependencies` (Composition Root Enxuto)
