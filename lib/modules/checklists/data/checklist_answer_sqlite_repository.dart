@@ -29,13 +29,9 @@ final class ChecklistAnswerSqliteRepository
       final db = await provider.db;
       await db.execute(
         '''
-        INSERT INTO ${ChecklistMigration.answersTable}
+        INSERT OR REPLACE INTO ${ChecklistMigration.answersTable}
           (work_order_id, item_id, status, notes, answered_at_utc)
         VALUES (?, ?, ?, ?, ?)
-        ON CONFLICT(work_order_id, item_id) DO UPDATE SET
-          status = excluded.status,
-          notes = excluded.notes,
-          answered_at_utc = excluded.answered_at_utc
         ''',
         [
           answer.workOrderId,

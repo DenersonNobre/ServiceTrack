@@ -13,7 +13,7 @@ App Flutter 100% standalone para técnicos autônomos com kortex, kortex_lib (pu
   - `Settings`: persistência SQLite com `ConflictAlgorithm.replace`; jornada (`schedule_day_start/end/slot_interval`).
   - `Formulários & Máscaras`: `kortex_lib/brlib` em clientes (CPF/CNPJ, WhatsApp), locais (CEP) e OS (moeda R$, data dd/MM/yyyy, horários 30 min).
   - `Agenda (Schedule)`: calendário mensal 2D + agenda diária com timeline/ocupação e navegação para detalhe/novo agendamento.
-- **EPIC-04 E2E (device M2010J19CG, Android 10)**: navegação home→clientes/OS destravada; espera de persistência do checklist trocada para wall-clock (`esperarConforme`). `flutter analyze`/296 testes verdes; revalidação E2E em device pendente.
+- **EPIC-04 E2E (device M2010J19CG, Android 10)**: navegação home→clientes/OS destravada; espera checklist em wall-clock (`esperarConforme`). Bug real achado: `ChecklistAnswerSqliteRepository` usava `ON CONFLICT DO UPDATE` incompatível com SQLite 3.22 (Android 10/API 29) — trocado para `INSERT OR REPLACE`. `flutter analyze`/296 testes verdes; revalidação E2E device pendente.
 - **Laudos (EPIC-05)**: gerador PDF/isolate, preview, share adapter e cache local por OS existem com testes; falta integrar `ReportsRoutes`/`onReport`, mapear `ReportData` real e histórico visual. Ver [status](docs/plan/epics/epic-05-laudo-pdf-share.md).
 - **Suíte & Qualidade**: `flutter analyze --fatal-infos` limpo; `flutter test` headless 296/296 verdes (2026-11-25).
 - **Travas Vivas & Governança**: claims obrigatórios; Coder TDD; Reviewer Gate 3; Gate 4 antes de commit; push só com autorização expressa.
