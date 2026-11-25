@@ -54,17 +54,12 @@ void main() {
     await tocar(tester, _chave('onboarding-submit'));
     await esperarPor(
       tester,
-      _chave('home-customers'),
+      _chave('home-new-work-order'),
       limite: const Duration(seconds: 90),
     );
 
     // 2. Cliente com WhatsApp válido (a VO rejeita shape inválido).
-    final botaoClientes = tester.widget<IconButton>(_chave('home-customers'));
-    debugPrint(
-      '[E2E] home-customers onPressed null? ${botaoClientes.onPressed == null}',
-    );
-    await tocar(tester, _chave('home-customers'));
-    await tester.pump(const Duration(milliseconds: 800));
+    await abrirDrawerETocar(tester, 'drawer-customers');
     await esperarPor(
       tester,
       find.byType(CustomerListPage),
@@ -79,8 +74,12 @@ void main() {
     await voltar(tester);
 
     // 3. OS amarrada ao cliente e a um modelo de checklist (política exige).
-    await esperarPor(tester, _chave('home-work-orders'));
-    await tocar(tester, _chave('home-work-orders'));
+    await esperarPor(
+      tester,
+      _chave('home-new-work-order'),
+      limite: const Duration(seconds: 60),
+    );
+    await abrirDrawerETocar(tester, 'drawer-work-orders');
     await esperarPor(tester, _chave('wo-add'));
     await tocar(tester, _chave('wo-add'));
     await esperarPor(
@@ -242,6 +241,29 @@ Future<void> voltar(WidgetTester tester) async {
   );
   await tester.tap(botao.first);
   await tester.pump(const Duration(milliseconds: 500));
+}
+
+/// Abre o drawer da Home e toca no item identificado pela chave.
+///
+/// Usa `ScaffoldState.openDrawer()` para evitar dependência de tooltip/localização
+/// do botão hambúrguer. O drawer fecha ao navegar (`_navigate` faz pop + action).
+Future<void> abrirDrawerETocar(WidgetTester tester, String chave) async {
+  FocusManager.instance.primaryFocus?.unfocus();
+  await tester.pump(const Duration(milliseconds: 200));
+  final scaffoldFinder = find.byWidgetPredicate(
+    (w) => w is Scaffold && w.drawer != null,
+  );
+  await esperarPor(
+    tester,
+    scaffoldFinder,
+    limite: const Duration(seconds: 30),
+  );
+  tester.state<ScaffoldState>(scaffoldFinder.first).openDrawer();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  await esperarPor(tester, _chave(chave));
+  await tocar(tester, _chave(chave));
+  await tester.pump(const Duration(milliseconds: 300));
 }
 
 /// Traço no canvas de assinatura (a conclusão rejeita assinatura vazia).

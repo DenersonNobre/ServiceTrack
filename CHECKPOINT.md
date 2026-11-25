@@ -7,19 +7,17 @@
 App Flutter 100% standalone para técnicos autônomos com kortex, kortex_lib (pub.dev), SQLite local, biometria/PIN e geração de laudos em PDF no aparelho.
 
 ## Estado Real (Verificado em 2026-11-25)
-- **Git local**: `main`, árvore limpa, sem divergência com `origin/main`; HEAD `ce20712`. Esta checagem local não confirma sincronização com Gitea/GitHub nem CI para este HEAD.
+- **Git local**: `main`; HEAD `2cc9d2a` sincronizado com `origin/main` (checagem local; não confirma CI).
 - **Arquitetura & Shell**: `AppServices` composition root puro de infraestrutura/hardware; rotas em `lib/app/routes/app_pages.dart` com bindings por módulo (`*Routes.fromDatabase`).
 - **Evolução Recente Concluída**:
-  - `Settings`: Persistência corrigida com `ConflictAlgorithm.replace` no SQLite; suporte às configurações de jornada (`schedule_day_start`, `schedule_day_end`, `schedule_slot_interval`).
-  - `Formulários & Máscaras`: Formatação ao digitar via `kortex_lib/brlib` em clientes (CPF/CNPJ e WhatsApp), locais (CEP) e OS (moeda R$, data dd/MM/yyyy e combobox de horários de 30 em 30 min).
-  - `Agenda (Schedule)`: Calendário mensal full-screen com navegação 2D (meses na horizontal, anos na vertical); Agenda Diária (`ScheduleDayPage`) com timeline vertical, ocupação visual de tempo e navegação para detalhes/novo agendamento.
-- **Laudos (EPIC-05)**: gerador PDF em isolate, preview, adaptador de compartilhamento e cache local por OS já existem com testes de módulo. Ainda falta integrar `ReportsRoutes`/`onReport` em `AppPages`, mapear dados reais para `ReportData` e criar uma tela de histórico; ver [status detalhado](docs/plan/epics/epic-05-laudo-pdf-share.md).
-- **Suíte & Qualidade**:
-  - Última evidência registrada no checkpoint: `flutter analyze --fatal-infos` sem issues e `flutter test` com 296/296 testes verdes. Essa execução não foi repetida nesta atualização documental.
-- **Travas Vivas & Governança**:
-  - Governança de personas estrita: Orquestrador reivindica claims; Coder TDD Red-Before-Green; Reviewer Gate 3; Gate 4 antes de commit.
-  - Push somente sob autorização expressa do usuário.
+  - `Settings`: persistência SQLite com `ConflictAlgorithm.replace`; jornada (`schedule_day_start/end/slot_interval`).
+  - `Formulários & Máscaras`: `kortex_lib/brlib` em clientes (CPF/CNPJ, WhatsApp), locais (CEP) e OS (moeda R$, data dd/MM/yyyy, horários 30 min).
+  - `Agenda (Schedule)`: calendário mensal 2D + agenda diária com timeline/ocupação e navegação para detalhe/novo agendamento.
+- **EPIC-04 E2E (device M2010J19CG, Android 10)**: navegação home→clientes/OS destravada no `epic04_flow.dart` (drawer keys atuais). Fluxo avança até checklist; falha nova: item "Conferir local e infraestrutura elétrica" não persiste como `conforme` (`selectedStatus == null`, `epic04_flow.dart:148`).
+- **Laudos (EPIC-05)**: gerador PDF/isolate, preview, share adapter e cache local por OS existem com testes; falta integrar `ReportsRoutes`/`onReport`, mapear `ReportData` real e histórico visual. Ver [status](docs/plan/epics/epic-05-laudo-pdf-share.md).
+- **Suíte & Qualidade**: `flutter analyze --fatal-infos` limpo; `flutter test` headless 296/296 verdes (2026-11-25).
+- **Travas Vivas & Governança**: claims obrigatórios; Coder TDD; Reviewer Gate 3; Gate 4 antes de commit; push só com autorização expressa.
 
 ## Próximo Passo Acionável
-1. Integrar o módulo de laudos ao fluxo de OS, montar `ReportData` com dados reais e implementar o histórico visual (EPIC-05).
-2. Validação visual e testes E2E adicionais nas novas telas de agenda se solicitado.
+1. Investigar/fixar falha E2E EPIC-04 no checklist: item "Conferir local e infraestrutura elétrica" não persiste como `conforme` no device (fatia separada, TDD).
+2. Integrar módulo de laudos ao fluxo de OS, montar `ReportData` real e histórico visual (EPIC-05).
