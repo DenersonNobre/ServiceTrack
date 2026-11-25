@@ -29,7 +29,7 @@ final class ChecklistTemplateFormPage
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
-        title: const Text('Novo modelo'),
+        title: Text(controller.isEditing ? 'Editar modelo' : 'Novo modelo'),
       ),
       body: SafeArea(
         child: KortexWatch(
@@ -42,8 +42,9 @@ final class ChecklistTemplateFormPage
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextField(
+                  TextFormField(
                     key: const Key('checklist-template-title'),
+                    initialValue: controller.title.value,
                     onChanged: (value) => controller.title.value = value,
                     decoration: _decoration(
                       label: 'Título do modelo',

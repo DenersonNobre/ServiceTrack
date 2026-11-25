@@ -8,6 +8,7 @@ import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../../core/ui/app_scoped_route.dart';
 import '../data/checklist_template_sqlite_repository.dart';
+import '../domain/entities/checklist_template.dart';
 import '../domain/ports/checklist_template_repository_port.dart';
 import 'templates/checklist_template_form_controller.dart';
 import 'templates/checklist_template_form_page.dart';
@@ -35,15 +36,21 @@ final class ChecklistsRoutes {
           ChecklistTemplateListController(repository: templateRepository),
       builder: (context, controller) => ChecklistTemplateListPage(
         onAdd: () => _push(context, form(onSaved: controller.load)),
+        onSelect: (template) => _push(
+          context,
+          form(initialTemplate: template, onSaved: controller.load),
+        ),
       ),
     );
   }
 
   /// Cadastro de modelo; ao salvar, fecha a rota e notifica o chamador.
-  Route<void> form({VoidCallback? onSaved}) {
+  Route<void> form({ChecklistTemplate? initialTemplate, VoidCallback? onSaved}) {
     return appScopedRoute<ChecklistTemplateFormController, void>(
-      create: (_) =>
-          ChecklistTemplateFormController(repository: templateRepository),
+      create: (_) => ChecklistTemplateFormController(
+        repository: templateRepository,
+        initialTemplate: initialTemplate,
+      ),
       builder: (context, _) => ChecklistTemplateFormPage(
         onSaved: () {
           Navigator.of(context).pop();

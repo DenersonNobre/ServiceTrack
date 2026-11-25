@@ -131,5 +131,48 @@ void main() {
         reason: 'remoção descarta a identidade, sem reaproveitar o id',
       );
     });
+
+    test('inicialização com initialTemplate preenche dados e isEditing é true', () async {
+      final item1 = ChecklistItem.tryCreate(
+        id: 'i1',
+        title: 'Item Existente 1',
+        order: 0,
+      ).getOrNull()!;
+      final item2 = ChecklistItem.tryCreate(
+        id: 'i2',
+        title: 'Item Existente 2',
+        order: 1,
+      ).getOrNull()!;
+      final existingTemplate = ChecklistTemplate.tryCreate(
+        id: 'tpl-123',
+        title: 'Template Existente',
+        items: [item1, item2],
+      ).getOrNull()!;
+
+      final editController = ChecklistTemplateFormController(
+        repository: repository,
+        initialTemplate: existingTemplate,
+      );
+
+      expect(editController.isEditing, isTrue);
+      expect(editController.title.value, 'Template Existente');
+      expect(editController.itemDrafts.value, hasLength(2));
+      expect(editController.itemDrafts.value[0].id, 'i1');
+      expect(editController.itemDrafts.value[0].title, 'Item Existente 1');
+      expect(editController.itemDrafts.value[1].id, 'i2');
+      expect(editController.itemDrafts.value[1].title, 'Item Existente 2');
+
+      editController.updateItem(0, 'Item 1 Modificado');
+      await editController.save();
+
+      expect(editController.saved.value, isTrue);
+      expect(repository.saved, hasLength(1));
+      final savedTemplate = repository.saved.single;
+      expect(savedTemplate.id, 'tpl-123', reason: 'deve preservar o id original');
+      expect(savedTemplate.title, 'Template Existente');
+      expect(savedTemplate.items[0].title, 'Item 1 Modificado');
+
+      editController.dispose();
+    });
   });
 }

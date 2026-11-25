@@ -34,17 +34,36 @@ final class ChecklistItemDraft {
 /// Controller Kortex do formulário de modelo de checklist.
 final class ChecklistTemplateFormController extends IKortexController {
   /// Cria o controller sobre [repository].
-  ChecklistTemplateFormController({required this.repository});
+  ChecklistTemplateFormController({
+    required this.repository,
+    this.initialTemplate,
+  })  : _id = initialTemplate?.id ?? const Uuid().v4(),
+        title = KortexSignal<String>(initialTemplate?.title ?? ''),
+        itemDrafts = KortexSignal<List<ChecklistItemDraft>>(
+          initialTemplate != null
+              ? initialTemplate.items
+                  .map((i) => ChecklistItemDraft(id: i.id, title: i.title))
+                  .toList()
+              : const <ChecklistItemDraft>[],
+        );
+
+  /// Modelo inicial se estiver em modo de edição.
+  final ChecklistTemplate? initialTemplate;
+
+  /// Identificador do template em edição ou novo.
+  final String _id;
+
+  /// Indica se está em modo de edição de um modelo existente.
+  bool get isEditing => initialTemplate != null;
 
   /// Porta de persistência.
   final IChecklistTemplateRepositoryPort repository;
 
   /// Título do modelo em edição.
-  final KortexSignal<String> title = KortexSignal<String>('');
+  final KortexSignal<String> title;
 
   /// Rascunhos de itens, na ordem exibida.
-  final KortexSignal<List<ChecklistItemDraft>> itemDrafts =
-      KortexSignal<List<ChecklistItemDraft>>(const <ChecklistItemDraft>[]);
+  final KortexSignal<List<ChecklistItemDraft>> itemDrafts;
 
   /// Indica gravação em andamento.
   final KortexSignal<bool> saving = KortexSignal<bool>(false);
@@ -97,7 +116,7 @@ final class ChecklistTemplateFormController extends IKortexController {
     error.value = null;
     _lastFailureCode = null;
 
-    final id = const Uuid().v4();
+    final id = _id;
     final filled = _filledTitles;
 
     final items = <ChecklistItem>[];

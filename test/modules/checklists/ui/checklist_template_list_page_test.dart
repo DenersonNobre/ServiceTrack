@@ -48,4 +48,40 @@ void main() {
     expect(find.text('Manutenção Preventiva'), findsOneWidget);
     expect(find.text('1 item(ns)'), findsOneWidget);
   });
+
+  testWidgets('UC-04.01 - tocar em um item dispara onSelect', (tester) async {
+    final repo = MemoryChecklistTemplateRepository();
+    final i1 = ChecklistItem.tryCreate(id: 'i1', title: 'Item 1').getOrNull()!;
+    final tpl = ChecklistTemplate.tryCreate(
+      id: 't1',
+      title: 'Manutenção Preventiva',
+      items: [i1],
+    ).getOrNull()!;
+    await repo.save(tpl);
+
+    ChecklistTemplate? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KortexScope(
+          providers: [
+            KortexProvider<ChecklistTemplateListController>(
+              create: (_) => ChecklistTemplateListController(repository: repo),
+              dispose: (c) => c.dispose(),
+            ),
+          ],
+          child: ChecklistTemplateListPage(
+            onSelect: (item) => selected = item,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Manutenção Preventiva'));
+    await tester.pump();
+
+    expect(selected, isNotNull);
+    expect(selected!.id, 't1');
+    expect(selected!.title, 'Manutenção Preventiva');
+  });
 }
