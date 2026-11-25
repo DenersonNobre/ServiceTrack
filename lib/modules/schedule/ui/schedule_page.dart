@@ -19,10 +19,14 @@ final class SchedulePage extends IKortexPage<ScheduleController> {
   const SchedulePage({
     super.key,
     this.onWorkOrderTapped,
+    this.onDayTapped,
   });
 
   /// Callback ao clicar em uma Ordem de Serviço na listagem do dia.
   final void Function(String workOrderId)? onWorkOrderTapped;
+
+  /// Callback ao tocar em um dia do mês para navegar para a Agenda Diária.
+  final void Function(DateTime date)? onDayTapped;
 
   static const _monthNamesPtBr = <int, String>{
     1: 'Janeiro',
@@ -279,7 +283,10 @@ final class SchedulePage extends IKortexPage<ScheduleController> {
           isToday: isToday,
           isSelected: isSelected,
           orderCount: count,
-          onTap: () => controller.selectDate(date),
+          onTap: () {
+            controller.selectDate(date);
+            onDayTapped?.call(date);
+          },
         ),
       );
     }

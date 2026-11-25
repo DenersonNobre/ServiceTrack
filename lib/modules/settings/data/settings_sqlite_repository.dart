@@ -21,7 +21,7 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
     try {
       final db = await provider.db;
       final rows = await db.query(SettingsMigration.table);
-      final values = <SettingKey, bool>{};
+      final values = <SettingKey, Object>{};
 
       for (final row in rows) {
         final rawKey = row['key'];
@@ -31,20 +31,43 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
         if (key == null) continue;
 
         final rawValue = row['value'];
-        if (rawValue == 'true') {
-          values[key] = true;
-          continue;
+        if (rawValue is! String) continue;
+
+        // Trata booleanos
+        if (key.defaultValue is bool) {
+          if (rawValue == 'true') {
+            values[key] = true;
+            continue;
+          }
+          if (rawValue == 'false') {
+            values[key] = false;
+            continue;
+          }
+          return const Failure(
+            ValidationError(
+              code: SettingsFailureCodes.invalidValue,
+              message: 'Valor de configuração inválido.',
+            ),
+          );
         }
-        if (rawValue == 'false') {
-          values[key] = false;
-          continue;
+
+        // Trata inteiros
+        if (key.defaultValue is int) {
+          final parsed = int.tryParse(rawValue);
+          if (parsed != null) {
+            values[key] = parsed;
+            continue;
+          }
+          return const Failure(
+            ValidationError(
+              code: SettingsFailureCodes.invalidValue,
+              message: 'Valor de configuração inválido.',
+            ),
+          );
         }
-        return const Failure(
-          ValidationError(
-            code: SettingsFailureCodes.invalidValue,
-            message: 'Valor de configuração inválido.',
-          ),
-        );
+
+        // Trata strings e outros tipos
+        values[key] = rawValue;
       }
 
       return Success(SettingsSnapshot(values));
@@ -67,7 +90,7 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) async {
     try {
       final db = await provider.db;

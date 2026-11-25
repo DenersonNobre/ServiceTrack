@@ -12,6 +12,6 @@ abstract interface class ISettingsRepositoryPort {
   /// Persiste uma política tipada e retorna o snapshot atualizado.
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   );
 }

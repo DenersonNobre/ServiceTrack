@@ -116,6 +116,87 @@ final class SettingsPage extends IKortexPage<SettingsController> {
                           ? null
                           : controller.setRequireReceiverDocument,
                     ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Jornada de Trabalho (Agenda)',
+                      style: TextStyle(
+                        color: AppColors.gray700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      key: const Key('settings-schedule-day-start'),
+                      leading: const Icon(Icons.wb_sunny_outlined, color: AppColors.primaryAction),
+                      title: const Text('Início da jornada'),
+                      subtitle: Text('Horário inicial da grade diária: ${snapshot.scheduleDayStart}'),
+                      trailing: Text(
+                        snapshot.scheduleDayStart,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      onTap: saving ? null : () async {
+                        final parts = snapshot.scheduleDayStart.split(':');
+                        final initialHour = int.tryParse(parts[0]) ?? 8;
+                        final initialMin = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(hour: initialHour, minute: initialMin),
+                        );
+                        if (picked != null) {
+                          final h = picked.hour.toString().padLeft(2, '0');
+                          final m = picked.minute.toString().padLeft(2, '0');
+                          await controller.setScheduleDayStart('$h:$m');
+                        }
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      key: const Key('settings-schedule-day-end'),
+                      leading: const Icon(Icons.nightlight_outlined, color: AppColors.primaryAction),
+                      title: const Text('Fim da jornada'),
+                      subtitle: Text('Horário final da grade diária: ${snapshot.scheduleDayEnd}'),
+                      trailing: Text(
+                        snapshot.scheduleDayEnd,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      onTap: saving ? null : () async {
+                        final parts = snapshot.scheduleDayEnd.split(':');
+                        final initialHour = int.tryParse(parts[0]) ?? 18;
+                        final initialMin = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(hour: initialHour, minute: initialMin),
+                        );
+                        if (picked != null) {
+                          final h = picked.hour.toString().padLeft(2, '0');
+                          final m = picked.minute.toString().padLeft(2, '0');
+                          await controller.setScheduleDayEnd('$h:$m');
+                        }
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      key: const Key('settings-schedule-interval'),
+                      leading: const Icon(Icons.timer_outlined, color: AppColors.primaryAction),
+                      title: const Text('Intervalo da grade'),
+                      subtitle: const Text('Duração de cada intervalo de horário'),
+                      trailing: DropdownButton<int>(
+                        value: snapshot.scheduleSlotInterval,
+                        underline: const SizedBox.shrink(),
+                        items: const [
+                          DropdownMenuItem(value: 15, child: Text('15 min')),
+                          DropdownMenuItem(value: 30, child: Text('30 min')),
+                          DropdownMenuItem(value: 60, child: Text('60 min')),
+                        ],
+                        onChanged: saving
+                            ? null
+                            : (val) {
+                                if (val != null) {
+                                  controller.setScheduleSlotInterval(val);
+                                }
+                              },
+                      ),
+                    ),
                   ],
                 );
               },

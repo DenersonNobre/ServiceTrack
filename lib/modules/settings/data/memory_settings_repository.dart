@@ -18,7 +18,7 @@ final class MemorySettingsRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) async {
     _snapshot = _snapshot.withValue(key, value);
     return Success(_snapshot);

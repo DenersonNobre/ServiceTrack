@@ -75,7 +75,19 @@ final class SettingsController extends IKortexController {
     await load();
   }
 
-  Future<void> _update(SettingKey key, bool value) async {
+  /// Atualiza a hora de início da jornada na agenda.
+  Future<void> setScheduleDayStart(String value) =>
+      _update(SettingKey.scheduleDayStart, value);
+
+  /// Atualiza a hora de término da jornada na agenda.
+  Future<void> setScheduleDayEnd(String value) =>
+      _update(SettingKey.scheduleDayEnd, value);
+
+  /// Atualiza o intervalo em minutos dos slots de tempo da agenda.
+  Future<void> setScheduleSlotInterval(int value) =>
+      _update(SettingKey.scheduleSlotInterval, value);
+
+  Future<void> _update(SettingKey key, Object value) async {
     if (saving.value) return;
     saving.value = true;
     error.value = null;

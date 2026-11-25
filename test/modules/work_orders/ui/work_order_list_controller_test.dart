@@ -31,7 +31,7 @@ class _FailingSettingsRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) => load();
 }
 

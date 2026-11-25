@@ -19,7 +19,7 @@ final class _RecoveringSettingsRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) async {
     _recovered = true;
     return Success(SettingsSnapshot.defaults());
@@ -34,7 +34,7 @@ final class _FailingUpdateRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) async => const Failure(
     ValidationError(
       code: SettingsFailureCodes.persistence,

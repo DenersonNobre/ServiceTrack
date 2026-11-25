@@ -110,7 +110,10 @@ class AppPages {
       AppRoutes.profile => _profileRoutes?.edit(),
       AppRoutes.customers => _customersRoutes?.list(),
       AppRoutes.workOrders => _workOrdersRoutes?.list(),
-      AppRoutes.schedule => _scheduleRoutes?.schedule() ?? _workOrdersRoutes?.list(),
+      AppRoutes.schedule => _scheduleRoutes?.schedule(
+            onWorkOrderTapped: (id) => _pushNamed(AppRoutes.workOrders),
+            onEmptySlotTapped: (date, time) => _pushNamed(AppRoutes.newWorkOrder),
+          ) ?? _workOrdersRoutes?.list(),
       AppRoutes.newWorkOrder => _workOrdersRoutes?.form(),
       AppRoutes.checklists => _checklistsRoutes?.list(),
       AppRoutes.settings => _settingsRoutes?.edit(),

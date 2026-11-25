@@ -13,7 +13,7 @@ final class UpdateSetting {
   /// Valida a chave contra o catálogo e persiste o novo valor.
   Future<IResult<SettingsSnapshot, ValidationError>> execute({
     required String key,
-    required bool value,
+    required Object value,
   }) async {
     final settingKey = SettingKey.fromStorageKey(key);
     if (settingKey == null) {

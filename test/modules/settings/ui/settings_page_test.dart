@@ -19,7 +19,7 @@ final class _LoadFailingRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) => load();
 }
 
@@ -31,7 +31,7 @@ final class _UpdateFailingRepository implements ISettingsRepositoryPort {
   @override
   Future<IResult<SettingsSnapshot, ValidationError>> update(
     SettingKey key,
-    bool value,
+    Object value,
   ) async => const Failure(
     ValidationError(
       code: SettingsFailureCodes.persistence,

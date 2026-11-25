@@ -49,5 +49,28 @@ void main() {
       expect(find.byType(SchedulePage), findsOneWidget);
       expect(find.text('Agenda'), findsOneWidget);
     });
+
+    testWidgets('day() retorna Route que monta ScheduleDayPage', (tester) async {
+      final dayRoute = routes.day(initialDate: DateTime(2026, 11, 25));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              return ElevatedButton(
+                onPressed: () => Navigator.of(context).push(dayRoute),
+                child: const Text('Open Day View'),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Day View'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Agenda Diária'), findsOneWidget);
+      expect(find.textContaining('25'), findsWidgets);
+    });
   });
 }
