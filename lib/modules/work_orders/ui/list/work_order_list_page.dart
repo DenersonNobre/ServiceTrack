@@ -360,8 +360,10 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Concluir OS'),
-        content: SingleChildScrollView(
-          child: Column(
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -417,6 +419,7 @@ final class WorkOrderListPage extends IKortexPage<WorkOrderListController> {
               ),
             ],
           ),
+        ),
         ),
         actions: [
           TextButton(
