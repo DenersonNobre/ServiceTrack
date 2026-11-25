@@ -41,7 +41,7 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 ## 3. Definição de Pronto (DoD) do Épico
 
 - [ ] Desempenho abaixo de 2.0s confirmado em aparelho alvo e ausência de congelamento da UI (`INV-05`). Há teste com `Stopwatch` no host, que não substitui a medição no aparelho.
-- [ ] Teste automatizado valida cabeçalho `%PDF-` e conteúdo das seções obrigatórias. O cabeçalho já é verificado; as seções ainda não têm assertions explícitas.
+- [x] Teste automatizado valida cabeçalho `%PDF-` e conteúdo das seções obrigatórias (helper de extração de texto por streams zlib/latin1 + asserts de seções/conteúdo-chave em OS sem fotos e com fotos).
 - [x] Adaptador de compartilhamento nativo isolado pela porta `IShareServicePort` e coberto por testes do módulo.
 - [x] `flutter analyze --fatal-infos` limpo e `flutter test` completo **310/310 passed** (evidência local 2026-11-25, inclui slice UC-05.04-HISTORY).
 
