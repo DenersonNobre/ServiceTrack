@@ -208,6 +208,7 @@ Future<void> esperarPor(
 ///
 /// Polling por tempo real (wall-clock + pump 100ms), como [esperarPor]:
 /// o save é I/O real no SQLite e um único pump fixo não garante conclusão.
+/// Retenta o tap uma vez após 5s se o status ainda for null (hit-test miss).
 Future<void> esperarConforme(
   WidgetTester tester,
   int index, {
@@ -216,8 +217,10 @@ Future<void> esperarConforme(
   debugPrint(
     '[E2E] esperarConforme index=$index (limite ${limite.inSeconds}s)',
   );
-  final fim = DateTime.now().add(limite);
-  var ultimoBeat = DateTime.now();
+  final inicio = DateTime.now();
+  final fim = inicio.add(limite);
+  var ultimoBeat = inicio;
+  var retapFeito = false;
   while (DateTime.now().isBefore(fim)) {
     final widgets = tester
         .widgetList<ChecklistItemWidget>(find.byType(ChecklistItemWidget))
@@ -228,6 +231,26 @@ Future<void> esperarConforme(
         '[E2E] OK conforme index=$index "${widgets[index].title}"',
       );
       return;
+    }
+    final atualStatus =
+        index < widgets.length ? widgets[index].selectedStatus : null;
+    if (!retapFeito &&
+        atualStatus == null &&
+        DateTime.now().difference(inicio).inSeconds >= 5) {
+      retapFeito = true;
+      debugPrint(
+        '[E2E] retap conforme index=$index (status ainda null após 5s)',
+      );
+      final alvo = find.descendant(
+        of: find.byType(ChecklistItemWidget).at(index),
+        matching: _chave('checklist-btn-conforme'),
+      );
+      if (alvo.evaluate().isNotEmpty) {
+        await tester.ensureVisible(alvo);
+        await tester.pump(const Duration(milliseconds: 200));
+        await tester.tap(alvo, warnIfMissed: false);
+        await tester.pump(const Duration(milliseconds: 400));
+      }
     }
     if (DateTime.now().difference(ultimoBeat).inSeconds >= 10) {
       ultimoBeat = DateTime.now();
