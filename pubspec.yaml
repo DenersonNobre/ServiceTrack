@@ -22,6 +22,7 @@ dependencies:
 
   # Segurança & Criptografia Local
   crypto: ^3.0.8
+  encrypt: ^5.0.3
   flutter_secure_storage: ^9.2.2
   local_auth: ^2.2.0
   local_auth_platform_interface: ^1.1.0

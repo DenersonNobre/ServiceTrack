@@ -4,9 +4,10 @@
 // para persistir `documentNumber` (D-01/C-01). A UI e os consumidores devem
 // consultar esta constante antes de coletar/exigir o documento.
 
-/// `false` enquanto D-01/C-01 estiver aberto: o documento não pode ser
-/// persistido em claro (INV-SEC-30).
-const bool kDocumentAtRestProtectionAvailable = false;
+/// `true` com D-01/C-01 mitigado: documento cifrado em repouso via
+/// `IDocumentAtRestCipher` (AES-GCM, chave no Keystore/Keychain).
+/// Consumidores devem falhar fail-closed se o cifrador não estiver disponível.
+const bool kDocumentAtRestProtectionAvailable = true;
 
 /// Mensagem canônica da falha de proteção em repouso (evita divergência UI/controller).
 const String kDocumentProtectionUnavailableMessage =

@@ -150,7 +150,7 @@ Decisão completa e plano de migração: [ADR-002](adr-002-app-shell-di-route-bi
 - **Persistência**: tabela `app_settings (key, value, updated_at_utc)` na migration `v11`; `app_database` em `dbVersion: 11`.
 - **Falhas tipadas**: `ERR_CONFIGURACAO_CHAVE_INVALIDA`, `ERR_CONFIGURACAO_VALOR_INVALIDO`, `ERR_CONFIGURACAO_PERSISTENCIA`.
 - **Consumidores**: devem usar os use cases/porta; nunca acessar a tabela ou strings de chave diretamente. A política é relida **por operação** de conclusão (SEC-02) e falha fail-closed se o settings não puder ser lido (SEC-03).
-- **Documento do recebedor**: `require_receiver_document` default `false`; enquanto `kDocumentAtRestProtectionAvailable=false` (D-01/C-01), o fluxo não coleta o documento e a conclusão falha com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` se a política exigir (SEC-04/SEC-05).
+- **Documento do recebedor**: `require_receiver_document` default `false`. Com D-01/C-01 mitigado por cifragem de campo AES-GCM 256 (`IDocumentAtRestCipher`, chave Keystore/Keychain), `kDocumentAtRestProtectionAvailable=true`; `signature_document_number` é persistido cifrado (`enc:v1:`). Sem cifrador disponível o fluxo falha fail-closed com `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` (SEC-04/SEC-05).
 - **Checklist**: `require_checklist_template=false` remove apenas a exigência de template; completude de itens obrigatórios (INV-03) permanece obrigatória (SEC-08).
 
 Decisão completa: [ADR-003](adr-003-settings-locais-tipadas.md).

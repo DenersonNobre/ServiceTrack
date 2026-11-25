@@ -95,16 +95,23 @@ class AppPages {
 
     final db = services.database;
     if (db != null) {
-      _homeRoutes ??= HomeRoutes.fromDatabase(db);
+      _homeRoutes ??= HomeRoutes.fromDatabase(
+        db,
+        documentCipher: services.documentCipher,
+      );
       _customersRoutes ??= CustomersRoutes.fromDatabase(db);
       _workOrdersRoutes ??= WorkOrdersRoutes.fromDatabase(
         database: db,
         locationService: services.locationService,
+        documentCipher: services.documentCipher,
       );
       _profileRoutes ??= ProfileRoutes.standard();
       _checklistsRoutes ??= ChecklistsRoutes.fromDatabase(db);
       _settingsRoutes ??= SettingsRoutes.fromDatabase(db);
-      _scheduleRoutes ??= ScheduleRoutes.fromDatabase(db);
+      _scheduleRoutes ??= ScheduleRoutes.fromDatabase(
+        db,
+        documentCipher: services.documentCipher,
+      );
       _reportsRoutes ??= ReportsRoutes(
         pdfGenerator: const PdfReportGeneratorAdapter(),
         shareService: const ShareServiceAdapter(),
@@ -128,7 +135,10 @@ class AppPages {
     }
 
     try {
-      final workOrderRepository = WorkOrderSqliteRepository(provider: db);
+      final workOrderRepository = WorkOrderSqliteRepository(
+        provider: db,
+        documentCipher: services.documentCipher,
+      );
       final customerRepository = CustomerSqliteRepository(provider: db);
       final templateRepository = ChecklistTemplateSqliteRepository(provider: db);
       final answerRepository = ChecklistAnswerSqliteRepository(provider: db);
@@ -226,7 +236,10 @@ class AppPages {
     }
 
     try {
-      final workOrderRepository = WorkOrderSqliteRepository(provider: db);
+      final workOrderRepository = WorkOrderSqliteRepository(
+        provider: db,
+        documentCipher: services.documentCipher,
+      );
       final customerRepository = CustomerSqliteRepository(provider: db);
       final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 

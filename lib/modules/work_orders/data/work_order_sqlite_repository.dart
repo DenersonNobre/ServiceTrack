@@ -10,6 +10,7 @@ import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
+import '../../../core/security/document_at_rest_cipher_port.dart';
 import '../domain/ports/work_order_failure_codes.dart';
 import '../domain/ports/work_order_repository_port.dart';
 import '../domain/value_objects/check_in_bypass_reason.dart';
@@ -23,8 +24,9 @@ import 'work_order_migration.dart';
 
 /// Repositório SQLite de Ordens de Serviço.
 final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
-  WorkOrderSqliteRepository({required this.provider});
+  WorkOrderSqliteRepository({required this.provider, this.documentCipher});
   final SqliteProvider provider;
+  final IDocumentAtRestCipher? documentCipher;
 
   @override
   Future<IResult<WorkOrder, ValidationError>> save(WorkOrder workOrder) async {
@@ -53,6 +55,8 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
         'check_out_at': null,
         'signature_name': null,
         'signature_image_base64': null,
+        'signature_document_number': null,
+        'signature_signed_at_utc': null,
         'checklist_mandatory_total': null,
         'checklist_answered_mandatory': null,
         'checklist_template_id': workOrder.checklistTemplateId,
@@ -76,18 +80,27 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       }
       final sig = workOrder.signature;
       if (sig != null) {
-        if (sig.documentNumber != null) {
-          return const Failure(
-            ValidationError(
-              code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
-              message:
-                  'Documento do recebedor não pode ser persistido sem proteção em repouso (D-01/C-01).',
-            ),
-          );
-        }
         data['signature_name'] = sig.signerName;
         data['signature_image_base64'] = sig.toBase64();
         data['signature_signed_at_utc'] = sig.signedAtUtc?.toIso8601String();
+        final documentNumber = sig.documentNumber;
+        if (documentNumber != null) {
+          final cipher = documentCipher;
+          if (cipher == null) {
+            return const Failure(
+              ValidationError(
+                code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
+                message:
+                    'Documento do recebedor não pode ser persistido sem proteção em repouso (D-01/C-01).',
+              ),
+            );
+          }
+          final encrypted = await cipher.encrypt(documentNumber);
+          if (encrypted.isFailure) {
+            return Failure(encrypted.getOrNullFailure()!);
+          }
+          data['signature_document_number'] = encrypted.getOrNull()!;
+        }
       }
       final proof = workOrder.checklistProof;
       if (proof != null) {
@@ -133,7 +146,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
       final rows = await db.query(WorkOrderMigration.table, orderBy: 'scheduled_at DESC');
       final items = <WorkOrder>[];
       for (final row in rows) {
-        final mapped = _mapRow(row);
+        final mapped = await _mapRow(row);
         if (mapped.isFailure) return Failure(mapped.getOrNullFailure()!);
         items.add(mapped.getOrNull()!);
       }
@@ -145,7 +158,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     }
   }
 
-  IResult<WorkOrder, ValidationError> _mapRow(Map<String, Object?> row) {
+  Future<IResult<WorkOrder, ValidationError>> _mapRow(Map<String, Object?> row) async {
     final statusCode = (row['status'] ?? '') as String;
     final status = WorkOrderStatus.fromCode(statusCode);
     if (status == null) {
@@ -171,7 +184,7 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     if (checkInR case Failure<CheckInRecord?, ValidationError>(:final value)) return Failure(value);
     final checkOutR = _mapCheckOut(row);
     if (checkOutR case Failure<GeoPoint?, ValidationError>(:final value)) return Failure(value);
-    final sigR = _mapSignature(row);
+    final sigR = await _mapSignature(row);
     if (sigR case Failure<DigitalSignature?, ValidationError>(:final value)) return Failure(value);
     final proofR = _mapChecklistProof(row);
     if (proofR case Failure<ChecklistCompletionProof?, ValidationError>(:final value)) return Failure(value);
@@ -248,34 +261,74 @@ final class WorkOrderSqliteRepository implements IWorkOrderRepositoryPort {
     };
   }
 
-  IResult<DigitalSignature?, ValidationError> _mapSignature(Map<String, Object?> row) {
+  Future<IResult<DigitalSignature?, ValidationError>> _mapSignature(
+    Map<String, Object?> row,
+  ) async {
     final name = row['signature_name'] as String?;
     final img = row['signature_image_base64'] as String?;
-    if ((name == null || name.isEmpty) && (img == null || img.isEmpty)) return const Success(null);
+    if ((name == null || name.isEmpty) && (img == null || img.isEmpty)) {
+      return const Success(null);
+    }
     if (name == null || img == null) {
-      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
+      return const Failure(
+        ValidationError(
+          code: WorkOrderFailureCodes.invalidData,
+          message: 'Dados de OS inválidos.',
+        ),
+      );
     }
     final Uint8List bytes;
     try {
       bytes = base64Decode(img);
     } catch (_) {
-      return const Failure(ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'));
+      return const Failure(
+        ValidationError(
+          code: WorkOrderFailureCodes.invalidData,
+          message: 'Dados de OS inválidos.',
+        ),
+      );
     }
     final signedAtRaw = row['signature_signed_at_utc'] as String?;
     DateTime? signedAtUtc;
     if (signedAtRaw != null && signedAtRaw.isNotEmpty) {
       signedAtUtc = DateTime.tryParse(signedAtRaw)?.toUtc();
     }
+
+    String? documentNumber = row['signature_document_number'] as String?;
+    if (documentNumber != null && documentNumber.isNotEmpty) {
+      if (documentNumber.startsWith('enc:v1:')) {
+        final cipher = documentCipher;
+        if (cipher == null) {
+          return const Failure(
+            ValidationError(
+              code: WorkOrderFailureCodes.signatureDocumentProtectionUnavailable,
+              message:
+                  'Documento do recebedor protegido não pode ser lido sem proteção em repouso (D-01/C-01).',
+            ),
+          );
+        }
+        final decrypted = await cipher.decrypt(documentNumber);
+        if (decrypted.isFailure) {
+          return Failure(decrypted.getOrNullFailure()!);
+        }
+        documentNumber = decrypted.getOrNull()!;
+      }
+      // Valor sem prefixo enc:v1: é tratado como legado (não esperado após D-01).
+    }
+
     final sig = DigitalSignature.restore(
       signatureBytes: bytes,
       signerName: name,
-      documentNumber: row['signature_document_number'] as String?,
+      documentNumber: documentNumber,
       signedAtUtc: signedAtUtc,
     );
     return switch (sig) {
       Success<DigitalSignature, ValidationError>(:final value) => Success(value),
       Failure<DigitalSignature, ValidationError>() => const Failure(
-          ValidationError(code: WorkOrderFailureCodes.invalidData, message: 'Dados de OS inválidos.'),
+          ValidationError(
+            code: WorkOrderFailureCodes.invalidData,
+            message: 'Dados de OS inválidos.',
+          ),
         ),
     };
   }

@@ -46,7 +46,7 @@
 **Negativas / custos**
 - Tabela key/value exige parse/validação de valor na borda.
 - Tipos futuros (int/text) exigem extensão do catálogo/Snapshot.
-- Ainda depende de D-01 para persistir documento do recebedor com proteção em repouso.
+- D-01/C-01: `documentNumber` protegido por cifragem de campo AES-GCM 256 (`IDocumentAtRestCipher`, chave Keystore/Keychain) com persistência fail-closed; DB full-db/sqlcipher permanece débito residual.
 
 ## Estado da implementação
 

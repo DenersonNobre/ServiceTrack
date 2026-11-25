@@ -8,6 +8,7 @@ import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
 import '../../../app/adapters/checklist_proof_adapter.dart';
+import '../../../core/security/document_at_rest_cipher_port.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../../checklists/data/checklist_answer_sqlite_repository.dart';
 import '../../checklists/data/checklist_template_sqlite_repository.dart';
@@ -47,8 +48,12 @@ final class WorkOrdersRoutes {
     required SqliteProvider database,
     required ILocationServicePort locationService,
     IChecklistProofPort? checklistProofPort,
+    IDocumentAtRestCipher? documentCipher,
   }) {
-    final workOrderRepo = WorkOrderSqliteRepository(provider: database);
+    final workOrderRepo = WorkOrderSqliteRepository(
+      provider: database,
+      documentCipher: documentCipher,
+    );
     final customerRepo = CustomerSqliteRepository(provider: database);
     final templateRepo = ChecklistTemplateSqliteRepository(provider: database);
     final answerRepo = ChecklistAnswerSqliteRepository(provider: database);

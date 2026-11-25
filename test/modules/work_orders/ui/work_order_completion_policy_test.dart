@@ -74,6 +74,7 @@ void main() {
         locationService: _LocationOk(),
         checklistProofPort: _ProofOk(),
         getSettings: GetSettings(repository: settings),
+        documentAtRestProtectionAvailable: false,
       );
 
       await tester.pumpWidget(

@@ -93,8 +93,8 @@ Negativas/riscos:
 
 | ID | Sev. | Condicionante | Status |
 |---|---|---|---|
-| C-01 | Alta | Antes de persistir `documentNumber`, definir base legal/finalidade/minimização/retenção (LGPD) e proteção em repouso (cifra DB/campo, chave Keystore/Keychain; segredos fora do SQLite). | Aberto |
-| C-02 | Alta | Endurecer backup: Android `allowBackup="false"` enquanto sem backup cifrado controlado; excluir DB/artefatos sensíveis; tratar iOS equivalente. (D-01) | Aberto |
+| C-01 | Alta | Antes de persistir `documentNumber`, definir base legal/finalidade/minimização/retenção (LGPD) e proteção em repouso (cifra DB/campo, chave Keystore/Keychain; segredos fora do SQLite). | Parcial — proteção técnica em repouso implementada (AES-GCM 256 campo, chave Keystore/Keychain, fail-closed; `enc:v1:`); pendente base legal/finalidade/retenção LGPD e política de produto |
+| C-02 | Alta | Endurecer backup: Android `allowBackup="false"` enquanto sem backup cifrado controlado; excluir DB/artefatos sensíveis; tratar iOS equivalente. (D-01) | Parcial — Android `allowBackup="false"` e `fullBackupContent="false"` aplicados; pendente iOS e exclusões granulares de backup cifrado controlado |
 | C-03 | Alta | Decisão PO D2 com justificativa documentada; recomendação segurança: não coletar documento por padrão (minimização). | **Decidido PO 2026-11-22**: obrigatório por política/configuração; default seguro/minimização |
 | C-04 | Média | Migração bidirecional na leitura/unidirecional na escrita; não fabricar `signedAtUtc`/documento ausente; semântica explícita (`nullable`/`migratedAtUtc`). | Aberto |
 | C-05 | Média | Limite por bytes reais decodificados (não comprimento base64); política para legado acima do limite: preservar imutável ou marcar, nunca truncar. | Aberto |

@@ -8,6 +8,7 @@ import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
+import '../../../core/security/document_at_rest_cipher_port.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../../settings/data/settings_sqlite_repository.dart';
 import '../../settings/domain/entities/settings_snapshot.dart';
@@ -29,9 +30,15 @@ final class ScheduleRoutes {
   });
 
   /// Constrói as rotas injetando o repositório SQLite de Ordens de Serviço.
-  factory ScheduleRoutes.fromDatabase(SqliteProvider database) {
+  factory ScheduleRoutes.fromDatabase(
+    SqliteProvider database, {
+    IDocumentAtRestCipher? documentCipher,
+  }) {
     return ScheduleRoutes(
-      repository: WorkOrderSqliteRepository(provider: database),
+      repository: WorkOrderSqliteRepository(
+        provider: database,
+        documentCipher: documentCipher,
+      ),
       settingsRepository: SettingsSqliteRepository(provider: database),
     );
   }

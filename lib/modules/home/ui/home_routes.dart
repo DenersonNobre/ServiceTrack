@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
 
+import '../../../core/security/document_at_rest_cipher_port.dart';
 import '../../../core/ui/app_scoped_route.dart';
 import '../../work_orders/data/work_order_sqlite_repository.dart';
 import '../../work_orders/domain/ports/work_order_repository_port.dart';
@@ -17,9 +18,15 @@ import 'home_page.dart';
 final class HomeRoutes {
   const HomeRoutes({required this.workOrderRepository});
 
-  factory HomeRoutes.fromDatabase(SqliteProvider database) {
+  factory HomeRoutes.fromDatabase(
+    SqliteProvider database, {
+    IDocumentAtRestCipher? documentCipher,
+  }) {
     return HomeRoutes(
-      workOrderRepository: WorkOrderSqliteRepository(provider: database),
+      workOrderRepository: WorkOrderSqliteRepository(
+        provider: database,
+        documentCipher: documentCipher,
+      ),
     );
   }
 

@@ -14,12 +14,13 @@ App Flutter 100% standalone para técnicos autônomos com kortex, kortex_lib (pu
   - `Formulários & Máscaras`: `kortex_lib/brlib` em clientes (CPF/CNPJ, WhatsApp), locais (CEP) e OS (moeda R$, data dd/MM/yyyy, horários 30 min).
   - `Agenda (Schedule)`: calendário mensal 2D + agenda diária com timeline/ocupação e navegação para detalhe/novo agendamento.
 - **EPIC-04 E2E (device M2010J19CG, Android 10, 2026-11-25)**: **verde** (`01:52 +1: All tests passed`) — onboarding→cliente→OS→check-in IN_PROGRESS→checklist 3/3 conforme→conclusão COMPLETED. Fixes: nav drawer keys, `esperarConforme` wall-clock, `INSERT OR REPLACE` (SQLite 3.22/Android 10), `AlertDialog` content com `SizedBox(width: double.maxFinite)`.
-- **EPIC-05 (2026-11-25)**: integração app + histórico visual dedicado implementados. `AppRoutes.reportPreview/reportHistory`, `ReportDataAssembler`, loader por OS, `onReport` em OS concluída, drawer "Histórico de Laudos" (`drawer-report-history`) abrindo preview por `workOrderId`. Cache/regeneração/reabertura por OS concluída. Códigos de carga de laudo/histórico padronizados em `ReportFailureCodes`/SPEC. Testes automatizados do PDF validam `%PDF-` e conteúdo das seções obrigatórias (extração zlib/latin1). **INV-05 validado em device alvo**: `flutter test -d 192.168.67.65:5555 test/modules/reports/data/pdf_report_generator_adapter_test.dart` (M2010J19CG, Android 10 / API 29) **3/3 passed**, incluindo caso 6 fotos com `elapsedMilliseconds < 2000`; ausência de congelamento de UI permanece observação qualitativa. Ver [status](docs/plan/epics/epic-05-laudo-pdf-share.md).
-- **Suíte & Qualidade (2026-11-25, evidência local)**: `flutter analyze --fatal-infos` limpo (0 issues). `flutter test` completo: **310/310 passed** (`All tests passed!`). CI verde nos pushes `45679325088`, `45680872412`, `45686528255`.
-- **Plano**: `docs/plan/README.md` e `docs/plan/epics/epic-04-checklists-evidencias.md` atualizados para refletir EPIC-05 concluído e EPIC-04 E2E device verde (D-01/C-01 permanece bloqueado por design).
-- **Travas Vivas & Governança**: claim ativo `DOC-PLAN-COHERENCE-EPIC04-05` (coder-agent) para higiene documental. Push só com autorização expressa.
+- **EPIC-05 (2026-11-25)**: concluído em evidência local/device. Preview/share/cache/histórico dedicados, `ReportDataAssembler`, códigos de falha padronizados, asserções de conteúdo do PDF e INV-05 <2s validado no M2010J19CG (Android 10, 3/3 on-device). Ver [status](docs/plan/epics/epic-05-laudo-pdf-share.md).
+- **D-01/C-01 (parcial, 2026-11-25)**: `documentNumber` protegido em repouso por cifragem de campo AES-GCM 256 (`IDocumentAtRestCipher` + `AesGcmDocumentAtRestCipher`, chave Keystore/Keychain via `flutter_secure_storage`); `WorkOrderSqliteRepository` cifra/decifra `signature_document_number` (`enc:v1:`), fail-closed sem cifrador; `kDocumentAtRestProtectionAvailable=true`. Residual: LGPD base legal/finalidade/retenção, full-db/sqlcipher, iOS, validação Keystore por fabricante.
+- **EPIC-08 (proposto)**: `docs/plan/epics/epic-08-hardening-residual-backup-compliance.md` criado; README/DAG atualizados.
+- **Suíte & Qualidade (2026-11-25, evidência local)**: `flutter analyze --fatal-infos` limpo (0 issues). `flutter test` completo **314/314 passed**.
+- **Travas Vivas & Governança**: claim ativo `OPS-D01-C01-EPIC08` (coder-agent) para commit/push final; push autorizado pelo PO, acompanhar CI até verde.
 
 ## Próximo Passo Acionável
-1. Commit atômico da higiene do plano + release claim `DOC-PLAN-COHERENCE-EPIC04-05`.
-2. Com autorização explícita do PO: push + CI verde.
-3. **Decisão de PO/backlog**: D-01/C-01 (EPIC-04) bloqueado por design; não há EPIC-08 definido no plano — definir próximo épico/prioridade.
+1. Commit atômico D-01+C-01 técnico + EPIC-08 backlog + release claim.
+2. Push com autorização já concedida pelo PO + acompanhar CI até verde.
+3. Priorização PO do EPIC-08 (UC-08.01..04) e residual LGPD formal C-01.

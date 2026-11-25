@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device verde (M2010J19CG, Android 10, 2026-11-25); D-01/C-01 bloqueado por design (fail-closed)` |
+| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device verde (M2010J19CG, Android 10, 2026-11-25); D-01/C-01 parcialmente mitigado (cifragem de campo AES-GCM para documentNumber, fail-closed sem cifrador; residual LGPD/full-db/iOS)` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
