@@ -19,6 +19,7 @@ final class HomePage extends IKortexPage<HomeController> {
     required this.onNewWorkOrder,
     required this.onChecklists,
     required this.onSettings,
+    this.onSchedule,
   });
 
   final VoidCallback onProfile;
@@ -27,6 +28,20 @@ final class HomePage extends IKortexPage<HomeController> {
   final VoidCallback onNewWorkOrder;
   final VoidCallback onChecklists;
   final VoidCallback onSettings;
+  final VoidCallback? onSchedule;
+
+  void _onBottomNavTapped(int index) {
+    switch (index) {
+      case 0:
+        onCustomers();
+      case 1:
+        onWorkOrders();
+      case 2:
+        onChecklists();
+      case 3:
+        (onSchedule ?? onWorkOrders)();
+    }
+  }
 
   @override
   Widget buildPage(BuildContext context, HomeController controller) {
@@ -39,6 +54,46 @@ final class HomePage extends IKortexPage<HomeController> {
         onWorkOrders: onWorkOrders,
         onChecklists: onChecklists,
         onSettings: onSettings,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        iconSize: 22,
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(fontSize: 10),
+        currentIndex: 0,
+        onTap: _onBottomNavTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline, key: Key('bottom-nav-customers')),
+            label: 'Clientes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.assignment_outlined,
+              key: Key('bottom-nav-work-orders'),
+            ),
+            label: 'Ordens',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.checklist_outlined,
+              key: Key('bottom-nav-checklists'),
+            ),
+            label: 'Modelos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.calendar_month_outlined,
+              key: Key('bottom-nav-schedule'),
+            ),
+            label: 'Agenda',
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('home-new-work-order'),

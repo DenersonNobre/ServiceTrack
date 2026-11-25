@@ -33,6 +33,7 @@ final class HomeRoutes {
     required VoidCallback onNewWorkOrder,
     required VoidCallback onChecklists,
     required VoidCallback onSettings,
+    VoidCallback? onSchedule,
   }) {
     return appScopedRoute<HomeController, void>(
       create: (_) => HomeController(repository: workOrderRepository),
@@ -43,6 +44,7 @@ final class HomeRoutes {
         onNewWorkOrder: onNewWorkOrder,
         onChecklists: onChecklists,
         onSettings: onSettings,
+        onSchedule: onSchedule,
       ),
     );
   }
@@ -55,6 +57,7 @@ final class HomeRoutes {
     required VoidCallback onNewWorkOrder,
     required VoidCallback onChecklists,
     required VoidCallback onSettings,
+    VoidCallback? onSchedule,
   }) {
     return KortexScope(
       providers: [
@@ -70,6 +73,7 @@ final class HomeRoutes {
         onNewWorkOrder: onNewWorkOrder,
         onChecklists: onChecklists,
         onSettings: onSettings,
+        onSchedule: onSchedule,
       ),
     );
   }

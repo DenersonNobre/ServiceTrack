@@ -64,8 +64,12 @@ void main() {
     bool newWorkOrderTapped = false;
     bool checklistsTapped = false;
     bool settingsTapped = false;
+    bool scheduleTapped = false;
 
-    Widget buildTestHarness(HomeController ctrl) {
+    Widget buildTestHarness(
+      HomeController ctrl, {
+      VoidCallback? onSchedule,
+    }) {
       return MaterialApp(
         home: KortexScope(
           providers: [
@@ -78,6 +82,7 @@ void main() {
             onNewWorkOrder: () => newWorkOrderTapped = true,
             onChecklists: () => checklistsTapped = true,
             onSettings: () => settingsTapped = true,
+            onSchedule: onSchedule ?? () => scheduleTapped = true,
           ),
         ),
       );
@@ -90,6 +95,7 @@ void main() {
       newWorkOrderTapped = false;
       checklistsTapped = false;
       settingsTapped = false;
+      scheduleTapped = false;
     });
 
     testWidgets('exibe CircularProgressIndicator enquanto loading for true', (
@@ -248,5 +254,55 @@ void main() {
       await tester.tap(find.byKey(const Key('home-kpi-scheduled-today-tap')));
       expect(workOrdersTapped, isTrue);
     });
+
+    testWidgets(
+      'renderiza BottomNavigationBar com 4 itens e dispara callbacks correspondentes',
+      (tester) async {
+        final repo = _FakeWorkOrderRepository(initialData: []);
+        controller = HomeController(repository: repo);
+
+        await tester.pumpWidget(buildTestHarness(controller));
+        await tester.pumpAndSettle();
+
+        final navFinder = find.byType(BottomNavigationBar);
+        expect(navFinder, findsOneWidget);
+
+        final BottomNavigationBar nav = tester.widget(navFinder);
+        expect(nav.type, BottomNavigationBarType.fixed);
+        expect(nav.selectedFontSize, 10);
+        expect(nav.unselectedFontSize, 10);
+        expect(nav.selectedLabelStyle?.fontSize, 10);
+        expect(nav.unselectedLabelStyle?.fontSize, 10);
+        expect(nav.items.length, 4);
+
+        // Clientes
+        expect(find.byKey(const Key('bottom-nav-customers')), findsOneWidget);
+        expect(find.text('Clientes'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('bottom-nav-customers')));
+        await tester.pumpAndSettle();
+        expect(customersTapped, isTrue);
+
+        // Ordens de Serviço
+        expect(find.byKey(const Key('bottom-nav-work-orders')), findsOneWidget);
+        expect(find.text('Ordens'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('bottom-nav-work-orders')));
+        await tester.pumpAndSettle();
+        expect(workOrdersTapped, isTrue);
+
+        // Modelos de Checklist
+        expect(find.byKey(const Key('bottom-nav-checklists')), findsOneWidget);
+        expect(find.text('Modelos'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('bottom-nav-checklists')));
+        await tester.pumpAndSettle();
+        expect(checklistsTapped, isTrue);
+
+        // Agenda
+        expect(find.byKey(const Key('bottom-nav-schedule')), findsOneWidget);
+        expect(find.text('Agenda'), findsOneWidget);
+        await tester.tap(find.byKey(const Key('bottom-nav-schedule')));
+        await tester.pumpAndSettle();
+        expect(scheduleTapped, isTrue);
+      },
+    );
   });
 }

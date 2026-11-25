@@ -11,5 +11,6 @@ abstract final class AppRoutes {
   static const workOrders = '/work-orders';
   static const newWorkOrder = '/work-orders/new';
   static const checklists = '/checklists';
+  static const schedule = '/schedule';
   static const settings = '/settings';
 }
