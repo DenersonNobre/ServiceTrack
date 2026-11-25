@@ -108,6 +108,8 @@ void main() {
       expect(AppRoutes.newWorkOrder, '/work-orders/new');
       expect(AppRoutes.checklists, '/checklists');
       expect(AppRoutes.settings, '/settings');
+      expect(AppRoutes.reportPreview, '/report-preview');
+      expect(AppRoutes.reportHistory, '/report-history');
     });
   });
 

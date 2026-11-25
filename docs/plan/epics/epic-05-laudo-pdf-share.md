@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC04` |
 | **Prioridade** | Crítica (Core de Valor do Produto Standalone) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em andamento — integração app/preview/share/reabertura por OS concluída; histórico visual dedicado e validação de desempenho (<2s) em device pendentes` |
+| **Status Atual** | `Em andamento — integração app/preview/share/reabertura por OS concluída; histórico visual dedicado implementado; validação de desempenho (<2s) em device alvo pendente` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -34,7 +34,7 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 | **UC-05.01** | Motor de Compilação do PDF On-Device | Nenhuma | `Implementado; desempenho em aparelho alvo pendente` |
 | **UC-05.02** | Visualização & Preview do Laudo no App | UC-05.01 | `Implementado e integrado no app` |
 | **UC-05.03** | Compartilhamento Nativo com 1 Toque (WhatsApp) | UC-05.01, UC-05.02 | `Implementado e integrado no app` |
-| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Cache/reabertura por OS concluída; histórico visual dedicado pendente` |
+| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Implementado e integrado (cache/regeneração, reabertura por OS e histórico visual dedicado); desempenho em device alvo pendente` |
 
 ---
 
@@ -43,15 +43,15 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 - [ ] Desempenho abaixo de 2.0s confirmado em aparelho alvo e ausência de congelamento da UI (`INV-05`). Há teste com `Stopwatch` no host, que não substitui a medição no aparelho.
 - [ ] Teste automatizado valida cabeçalho `%PDF-` e conteúdo das seções obrigatórias. O cabeçalho já é verificado; as seções ainda não têm assertions explícitas.
 - [x] Adaptador de compartilhamento nativo isolado pela porta `IShareServicePort` e coberto por testes do módulo.
-- [x] `flutter analyze --fatal-infos` limpo e `flutter test` completo verde (302/302) após integração do fluxo de laudo no app (evidência local 2026-11-25).
+- [x] `flutter analyze --fatal-infos` limpo e `flutter test` completo **310/310 passed** (evidência local 2026-11-25, inclui slice UC-05.04-HISTORY).
 
 ### Estado conferido em 2026-11-25
 
 - Os commits `3127e03`, `b1afce6` e `e531b15` adicionaram o gerador PDF, preview/compartilhamento e armazenamento/cache local, respectivamente.
-- Integração no app concluída na fatia atual: `AppRoutes.reportPreview`, `AppPages` compõe `ReportsRoutes` com `PdfReportGeneratorAdapter`, `ShareServiceAdapter`, `ReportStorageAdapter` e `reportDataLoader` (repos SQLite/profile + `ReportDataAssembler`); `WorkOrdersRoutes.list(onReport: ...)` abre o preview por `workOrderId`.
+- Integração no app concluída: `AppRoutes.reportPreview`, `AppPages` compõe `ReportsRoutes` com `PdfReportGeneratorAdapter`, `ShareServiceAdapter`, `ReportStorageAdapter` e `reportDataLoader` (repos SQLite/profile + `ReportDataAssembler`); `WorkOrdersRoutes.list(onReport: ...)` abre o preview por `workOrderId`.
 - `ReportDataAssembler` puro mapeia OS/cliente/perfil/checklist/assinatura/GPS para `ReportData` (fotos `const []` por enquanto; logo lida na borda se existir).
-- UC-05.04: cache/reabertura por OS concluída; **tela de histórico visual dedicada permanece pendente**. Desempenho <2s em device alvo (INV-05) ainda não validado.
-- Validação local: `flutter analyze --fatal-infos` limpo; `flutter test` completo **302/302 passed**.
+- UC-05.04: cache/regeneração/reabertura por OS concluída e **tela de histórico visual dedicada implementada/integrada** (`AppRoutes.reportHistory`, `ReportsRoutes.history`, `ReportHistoryController/Page`, item no `HomeDrawer`, loader no `AppPages` com OS concluídas enriquecidas por cliente e ordenadas desc). Desempenho <2s em device alvo (INV-05) **ainda não validado**.
+- Validação local (fatia UC-05.04-HISTORY, 2026-11-25): `flutter analyze --fatal-infos` limpo; testes focados **39/39 passed**; `flutter test` completo **310/310 passed**.
 
 ---
 
@@ -168,7 +168,7 @@ Esquema do Cenário: Compartilhamento do arquivo PDF via Share nativo
 ### Caso de Uso UC-05.04 — Histórico e Reemissão de Laudos Salvos
 
 * **Identificador**: `UC-05.04`
-* **Status**: `Cache/regeneração e reabertura por OS concluída integrados; tela de histórico visual dedicada pendente`
+* **Status**: `Implementado e integrado (cache/regeneração, reabertura por OS e tela de histórico visual dedicada)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-05.04 -owner <agente> -paths lib/modules/reports/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-05.04`
 

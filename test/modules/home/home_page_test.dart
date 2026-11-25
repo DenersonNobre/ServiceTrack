@@ -64,6 +64,7 @@ void main() {
     bool newWorkOrderTapped = false;
     bool checklistsTapped = false;
     bool settingsTapped = false;
+    bool reportHistoryTapped = false;
     bool scheduleTapped = false;
 
     Widget buildTestHarness(
@@ -82,6 +83,7 @@ void main() {
             onNewWorkOrder: () => newWorkOrderTapped = true,
             onChecklists: () => checklistsTapped = true,
             onSettings: () => settingsTapped = true,
+            onReportHistory: () => reportHistoryTapped = true,
             onSchedule: onSchedule ?? () => scheduleTapped = true,
           ),
         ),
@@ -95,6 +97,7 @@ void main() {
       newWorkOrderTapped = false;
       checklistsTapped = false;
       settingsTapped = false;
+      reportHistoryTapped = false;
       scheduleTapped = false;
     });
 
@@ -224,6 +227,15 @@ void main() {
       await tester.tap(find.byKey(const Key('drawer-checklists')));
       await tester.pumpAndSettle();
       expect(checklistsTapped, isTrue);
+
+      // Reabrir Drawer
+      state.openDrawer();
+      await tester.pumpAndSettle();
+
+      // Tap Histórico de Laudos
+      await tester.tap(find.byKey(const Key('drawer-report-history')));
+      await tester.pumpAndSettle();
+      expect(reportHistoryTapped, isTrue);
 
       // Reabrir Drawer
       state.openDrawer();

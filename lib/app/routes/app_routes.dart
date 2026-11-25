@@ -14,4 +14,5 @@ abstract final class AppRoutes {
   static const schedule = '/schedule';
   static const settings = '/settings';
   static const reportPreview = '/report-preview';
+  static const reportHistory = '/report-history';
 }

@@ -9,6 +9,8 @@ import '../domain/models/report_data.dart';
 import '../domain/ports/pdf_report_generator_port.dart';
 import '../domain/ports/report_storage_port.dart';
 import '../domain/ports/share_service_port.dart';
+import 'history/report_history_controller.dart';
+import 'history/report_history_page.dart';
 import 'preview/report_preview_controller.dart';
 import 'preview/report_preview_page.dart';
 
@@ -29,6 +31,17 @@ final class ReportsRoutes {
   final ReportDataLoader? reportDataLoader;
   final TempPathResolver? tempPathResolver;
   final FileSaver? fileSaver;
+
+  /// Rota escopada para histórico visual de laudos concluídos (UC-05.04).
+  Route<void> history({
+    required ReportHistoryLoader loadHistory,
+    required void Function(String workOrderId) onOpenReport,
+  }) {
+    return appScopedRoute<ReportHistoryController, void>(
+      create: (_) => ReportHistoryController(loadHistory: loadHistory),
+      builder: (_, _) => ReportHistoryPage(onOpenReport: onOpenReport),
+    );
+  }
 
   /// Rota escopada para pré-visualização e envio do laudo PDF.
   ///

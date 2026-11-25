@@ -10,6 +10,7 @@ final class HomeDrawer extends StatelessWidget {
     required this.onWorkOrders,
     required this.onChecklists,
     required this.onSettings,
+    required this.onReportHistory,
   });
 
   final VoidCallback onProfile;
@@ -17,6 +18,7 @@ final class HomeDrawer extends StatelessWidget {
   final VoidCallback onWorkOrders;
   final VoidCallback onChecklists;
   final VoidCallback onSettings;
+  final VoidCallback onReportHistory;
 
   void _navigate(BuildContext context, VoidCallback action) {
     Navigator.of(context).pop();
@@ -83,6 +85,12 @@ final class HomeDrawer extends StatelessWidget {
               icon: Icons.checklist_outlined,
               label: 'Modelos de Checklist',
               onTap: () => _navigate(context, onChecklists),
+            ),
+            HomeDrawerItem(
+              key: const Key('drawer-report-history'),
+              icon: Icons.picture_as_pdf_outlined,
+              label: 'Histórico de Laudos',
+              onTap: () => _navigate(context, onReportHistory),
             ),
             const Divider(height: 1),
             HomeDrawerItem(

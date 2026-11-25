@@ -19,6 +19,7 @@ final class HomePage extends IKortexPage<HomeController> {
     required this.onNewWorkOrder,
     required this.onChecklists,
     required this.onSettings,
+    required this.onReportHistory,
     this.onSchedule,
   });
 
@@ -28,6 +29,7 @@ final class HomePage extends IKortexPage<HomeController> {
   final VoidCallback onNewWorkOrder;
   final VoidCallback onChecklists;
   final VoidCallback onSettings;
+  final VoidCallback onReportHistory;
   final VoidCallback? onSchedule;
 
   void _onBottomNavTapped(int index) {
@@ -54,6 +56,7 @@ final class HomePage extends IKortexPage<HomeController> {
         onWorkOrders: onWorkOrders,
         onChecklists: onChecklists,
         onSettings: onSettings,
+        onReportHistory: onReportHistory,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kortex_lib/kortex_lib.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -23,10 +24,12 @@ import '../../modules/reports/data/report_data_assembler.dart';
 import '../../modules/reports/data/report_storage_adapter.dart';
 import '../../modules/reports/data/share_service_adapter.dart';
 import '../../modules/reports/domain/models/report_data.dart';
+import '../../modules/reports/domain/models/report_history_item.dart';
 import '../../modules/reports/ui/reports_routes.dart';
 import '../../modules/schedule/ui/schedule_routes.dart';
 import '../../modules/settings/ui/settings_routes.dart';
 import '../../modules/work_orders/data/work_order_sqlite_repository.dart';
+import '../../modules/work_orders/domain/value_objects/work_order_status.dart';
 import '../../modules/work_orders/ui/work_orders_routes.dart';
 import '../app_gate.dart';
 import '../app_services.dart';
@@ -209,6 +212,76 @@ class AppPages {
     }
   }
 
+  Future<IResult<List<ReportHistoryItem>, ValidationError>>
+      _loadReportHistory() async {
+    final db = services.database;
+    if (db == null) {
+      return const Failure(
+        ValidationError(
+          code: 'REPORT_HISTORY_LOAD_FAILED',
+          message: 'Banco de dados indisponível para carregar o histórico.',
+        ),
+      );
+    }
+
+    try {
+      final workOrderRepository = WorkOrderSqliteRepository(provider: db);
+      final customerRepository = CustomerSqliteRepository(provider: db);
+      final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+
+      final workOrdersResult = await workOrderRepository.findAll();
+      if (workOrdersResult.isFailure) {
+        final err = workOrdersResult.getOrNullFailure()!;
+        return Failure(
+          ValidationError(
+            code: err.code,
+            message: 'Não foi possível carregar o histórico de laudos.',
+          ),
+        );
+      }
+
+      final customersResult = await customerRepository.findAll();
+      final customersById = <String, String>{};
+      if (customersResult.isSuccess) {
+        for (final customer in customersResult.getOrNull()!) {
+          customersById[customer.id] = customer.name.value;
+        }
+      }
+
+      final completed = workOrdersResult
+          .getOrNull()!
+          .where((wo) => wo.status == WorkOrderStatus.completed)
+          .toList()
+        ..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
+
+      final items = completed
+          .map(
+            (wo) => ReportHistoryItem(
+              workOrderId: wo.id,
+              serviceDescription: wo.serviceDescription,
+              scheduledDateFormatted: dateFormat.format(
+                wo.scheduledAt.toLocal(),
+              ),
+              completedDateFormatted: wo.checkOut == null
+                  ? null
+                  : dateFormat.format(wo.checkOut!.timestampUtc.toLocal()),
+              customerName: customersById[wo.customerId],
+              status: wo.status.code,
+            ),
+          )
+          .toList(growable: false);
+
+      return Success(items);
+    } catch (_) {
+      return const Failure(
+        ValidationError(
+          code: 'REPORT_HISTORY_LOAD_FAILED',
+          message: 'Não foi possível carregar o histórico de laudos.',
+        ),
+      );
+    }
+  }
+
   /// Método gerador de rotas para plug-in em [MaterialApp.onGenerateRoute].
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     return switch (settings.name) {
@@ -233,6 +306,7 @@ class AppPages {
           onNewWorkOrder: () => _pushNamed(AppRoutes.newWorkOrder),
           onChecklists: () => _pushNamed(AppRoutes.checklists),
           onSettings: () => _pushNamed(AppRoutes.settings),
+          onReportHistory: () => _pushNamed(AppRoutes.reportHistory),
           onSchedule: () => _pushNamed(AppRoutes.schedule),
         ),
       AppRoutes.profile => _profileRoutes?.edit(),
@@ -254,6 +328,11 @@ class AppPages {
       AppRoutes.settings => _settingsRoutes?.edit(),
       AppRoutes.reportPreview =>
         _reportsRoutes?.preview(settings.arguments),
+      AppRoutes.reportHistory => _reportsRoutes?.history(
+          loadHistory: _loadReportHistory,
+          onOpenReport: (id) =>
+              _pushNamedWithArgs(AppRoutes.reportPreview, arguments: id),
+        ),
       _ => null,
     };
   }

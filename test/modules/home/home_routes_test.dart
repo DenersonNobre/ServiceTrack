@@ -35,6 +35,7 @@ void main() {
         onNewWorkOrder: () {},
         onChecklists: () {},
         onSettings: () {},
+        onReportHistory: () {},
       );
 
       await tester.pumpWidget(
@@ -66,6 +67,7 @@ void main() {
             onNewWorkOrder: () {},
             onChecklists: () {},
             onSettings: () {},
+            onReportHistory: () {},
           ),
         ),
       );
