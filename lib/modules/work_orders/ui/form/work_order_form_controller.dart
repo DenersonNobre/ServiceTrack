@@ -33,11 +33,77 @@ final class WorkOrderFormController extends IKortexController {
   final KortexSignal<String?> customerId = KortexSignal<String?>(null);
   final KortexSignal<String?> checklistTemplateId = KortexSignal<String?>(null);
   final KortexSignal<String> description = KortexSignal<String>('');
-  final KortexSignal<DateTime> scheduledAt = KortexSignal<DateTime>(DateTime.now());
+  final KortexSignal<DateTime> scheduledAt = KortexSignal<DateTime>(DateTime.now().toUtc());
+  final KortexSignal<String> scheduledDate = KortexSignal<String>(
+    _formatDate(DateTime.now()),
+  );
+  final KortexSignal<String> scheduledTime = KortexSignal<String>('08:00');
   final KortexSignal<String> estimatedValue = KortexSignal<String>('');
   final KortexSignal<String?> error = KortexSignal<String?>(null);
   final KortexSignal<bool> saved = KortexSignal<bool>(false);
   bool _loaded = false;
+
+  static String _formatDate(DateTime dt) {
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final y = dt.year.toString().padLeft(4, '0');
+    return '$d/$m/$y';
+  }
+
+  /// Lista de horários permitidos de 30 em 30 min das 08:00 às 18:00.
+  static const List<String> availableTimeSlots = [
+    '08:00',
+    '08:30',
+    '09:00',
+    '09:30',
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '12:00',
+    '12:30',
+    '13:00',
+    '13:30',
+    '14:00',
+    '14:30',
+    '15:00',
+    '15:30',
+    '16:00',
+    '16:30',
+    '17:00',
+    '17:30',
+    '18:00',
+  ];
+
+  /// Atualiza a data agendada (formato DD/MM/AAAA) e recalcula [scheduledAt].
+  void updateScheduledDate(String dateText) {
+    scheduledDate.value = dateText;
+    _recalculateScheduledAt();
+  }
+
+  /// Atualiza o horário agendado (formato HH:mm) e recalcula [scheduledAt].
+  void updateScheduledTime(String timeText) {
+    scheduledTime.value = timeText;
+    _recalculateScheduledAt();
+  }
+
+  void _recalculateScheduledAt() {
+    final parts = scheduledDate.value.split('/');
+    if (parts.length == 3) {
+      final day = int.tryParse(parts[0]);
+      final month = int.tryParse(parts[1]);
+      final year = int.tryParse(parts[2]);
+      final timeParts = scheduledTime.value.split(':');
+      final hour = timeParts.isNotEmpty ? int.tryParse(timeParts[0]) ?? 8 : 8;
+      final minute = timeParts.length > 1 ? int.tryParse(timeParts[1]) ?? 0 : 0;
+
+      if (day != null && month != null && year != null) {
+        try {
+          scheduledAt.value = DateTime.utc(year, month, day, hour, minute);
+        } catch (_) {}
+      }
+    }
+  }
 
   Future<void> ensureLoaded() async {
     if (_loaded) return;
@@ -116,6 +182,8 @@ final class WorkOrderFormController extends IKortexController {
     checklistTemplateId.dispose();
     description.dispose();
     scheduledAt.dispose();
+    scheduledDate.dispose();
+    scheduledTime.dispose();
     estimatedValue.dispose();
     error.dispose();
     saved.dispose();

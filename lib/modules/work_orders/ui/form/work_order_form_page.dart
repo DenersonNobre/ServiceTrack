@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:kortex_lib/brlib/brlib.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import 'work_order_form_controller.dart';
@@ -36,9 +37,16 @@ class _WorkOrderFormPageState extends State<WorkOrderFormPage> {
               _savedHandled = true;
               WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) widget.onSaved?.call(); });
             }
-            controller.error.value; controller.saving.value; controller.customerId.value;
-            controller.description.value; controller.estimatedValue.value; controller.scheduledAt.value;
-            controller.templates.value; controller.checklistTemplateId.value;
+            controller.error.value;
+            controller.saving.value;
+            controller.customerId.value;
+            controller.description.value;
+            controller.estimatedValue.value;
+            controller.scheduledAt.value;
+            controller.scheduledDate.value;
+            controller.scheduledTime.value;
+            controller.templates.value;
+            controller.checklistTemplateId.value;
             return _Form(controller: controller);
           },
         ),
@@ -57,6 +65,7 @@ class _Form extends StatefulWidget {
 class _FormState extends State<_Form> {
   late final TextEditingController description;
   late final TextEditingController value;
+  late final TextEditingController date;
   bool _synced = false;
 
   @override
@@ -64,16 +73,25 @@ class _FormState extends State<_Form> {
     super.initState();
     description = TextEditingController(text: widget.controller.description.value);
     value = TextEditingController(text: widget.controller.estimatedValue.value);
+    date = TextEditingController(text: widget.controller.scheduledDate.value);
   }
 
   @override
-  void dispose() { description.dispose(); value.dispose(); super.dispose(); }
+  void dispose() {
+    description.dispose();
+    value.dispose();
+    date.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = widget.controller;
     if (!_synced && c.description.value.isNotEmpty) {
-      description.text = c.description.value; value.text = c.estimatedValue.value; _synced = true;
+      description.text = c.description.value;
+      value.text = c.estimatedValue.value;
+      date.text = c.scheduledDate.value;
+      _synced = true;
     }
     InputDecoration dec(String label, {String? hint}) => InputDecoration(
       labelText: label, hintText: hint, filled: true, fillColor: AppColors.surfaceCard,
@@ -106,22 +124,59 @@ class _FormState extends State<_Form> {
           onChanged: (v) => c.checklistTemplateId.value = v,
         ),
         const SizedBox(height: 12),
-        TextField(key: const Key('wo-description'), controller: description, onChanged: (v) => c.description.value = v, decoration: dec('Descrição do serviço'), maxLines: 3),
+        TextField(
+          key: const Key('wo-description'),
+          controller: description,
+          onChanged: (v) => c.description.value = v,
+          decoration: dec('Descrição do serviço'),
+          maxLines: 3,
+        ),
         const SizedBox(height: 12),
-        TextField(key: const Key('wo-value'), controller: value, onChanged: (v) => c.estimatedValue.value = v, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: dec('Valor estimado (R\$)', hint: '150,00')),
+        TextField(
+          key: const Key('wo-value'),
+          controller: value,
+          onChanged: (v) => c.estimatedValue.value = v,
+          inputFormatters: [CurrencyInputFormatter()],
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: dec('Valor estimado (R\$)', hint: '150,00'),
+        ),
         const SizedBox(height: 12),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Data/Hora agendada'),
-          subtitle: Text(c.scheduledAt.value.toLocal().toString().substring(0, 16)),
-          trailing: const Icon(Icons.calendar_today),
-          onTap: () async {
-            final d = await showDatePicker(context: context, initialDate: c.scheduledAt.value, firstDate: DateTime(2020), lastDate: DateTime(2035));
-            if (d == null || !context.mounted) return;
-            final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(c.scheduledAt.value));
-            if (t == null) return;
-            c.scheduledAt.value = DateTime(d.year, d.month, d.day, t.hour, t.minute).toUtc();
-          },
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: TextField(
+                key: const Key('wo-date'),
+                controller: date,
+                onChanged: (v) => c.updateScheduledDate(v),
+                inputFormatters: [DateInputFormatter(format: 'dd/MM/yyyy')],
+                keyboardType: TextInputType.datetime,
+                decoration: dec('Data', hint: 'DD/MM/AAAA'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: DropdownButtonFormField<String>(
+                key: const Key('wo-time'),
+                // ignore: deprecated_member_use
+                value: c.scheduledTime.value,
+                decoration: dec('Horário'),
+                items: WorkOrderFormController.availableTimeSlots
+                    .map(
+                      (t) => DropdownMenuItem<String>(
+                        value: t,
+                        child: Text(t),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) {
+                  if (v != null) c.updateScheduledTime(v);
+                },
+              ),
+            ),
+          ],
         ),
         if (c.error.value != null) ...[const SizedBox(height: 12), Text(c.error.value!, style: const TextStyle(color: AppColors.error))],
         const SizedBox(height: 20),

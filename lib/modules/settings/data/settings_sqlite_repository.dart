@@ -1,6 +1,9 @@
+import 'dart:developer' as developer;
+
 import 'package:kortex_lib/core/patterns/result.dart';
 import 'package:kortex_lib/core/patterns/validation_error.dart';
 import 'package:kortex_lib/sqlite/sqlite.dart';
+import 'package:sqflite/sqflite.dart' show ConflictAlgorithm;
 
 import '../domain/.index.dart';
 import 'settings_migration.dart';
@@ -45,7 +48,13 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
       }
 
       return Success(SettingsSnapshot(values));
-    } on Exception {
+    } on Exception catch (e, s) {
+      developer.log(
+        'Falha ao carregar configurações do SQLite',
+        name: 'SettingsSqliteRepository',
+        error: e,
+        stackTrace: s,
+      );
       return const Failure(
         ValidationError(
           code: SettingsFailureCodes.persistence,
@@ -62,22 +71,23 @@ final class SettingsSqliteRepository implements ISettingsRepositoryPort {
   ) async {
     try {
       final db = await provider.db;
-      await db.execute(
-        '''
-        INSERT INTO ${SettingsMigration.table} (key, value, updated_at_utc)
-        VALUES (?, ?, ?)
-        ON CONFLICT(key) DO UPDATE SET
-          value = excluded.value,
-          updated_at_utc = excluded.updated_at_utc
-        ''',
-        [
-          key.storageKey,
-          value.toString(),
-          DateTime.now().toUtc().toIso8601String(),
-        ],
+      await db.insert(
+        SettingsMigration.table,
+        {
+          'key': key.storageKey,
+          'value': value.toString(),
+          'updated_at_utc': DateTime.now().toUtc().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
       return await load();
-    } on Exception {
+    } on Exception catch (e, s) {
+      developer.log(
+        'Falha ao salvar configuração ${key.storageKey} no SQLite',
+        name: 'SettingsSqliteRepository',
+        error: e,
+        stackTrace: s,
+      );
       return const Failure(
         ValidationError(
           code: SettingsFailureCodes.persistence,

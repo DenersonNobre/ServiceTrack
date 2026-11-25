@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:kortex_lib/brlib/brlib.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/ui/app_touch_target.dart';
@@ -113,7 +114,14 @@ class _FormState extends State<_Form> {
         const SizedBox(height: 12),
         TextField(key: const Key('location-state'), controller: state, onChanged: (v) => c.state.value = v, decoration: dec('UF')),
         const SizedBox(height: 12),
-        TextField(key: const Key('location-cep'), controller: cep, onChanged: (v) => c.cep.value = v, keyboardType: TextInputType.number, decoration: dec('CEP', hint: '00000-000')),
+        TextField(
+          key: const Key('location-cep'),
+          controller: cep,
+          onChanged: (v) => c.cep.value = v,
+          inputFormatters: [CepInputFormatter()],
+          keyboardType: TextInputType.number,
+          decoration: dec('CEP', hint: '00000-000'),
+        ),
         const SizedBox(height: 12),
         TextField(key: const Key('location-reference'), controller: reference, onChanged: (v) => c.reference.value = v, decoration: dec('Ponto de referência (opcional)')),
         if (c.error.value != null) ...[const SizedBox(height: 12), Text(c.error.value!, style: const TextStyle(color: AppColors.error))],

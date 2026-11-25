@@ -4,9 +4,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:kortex/kortex.dart';
+import 'package:kortex_lib/brlib/brlib.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/ui/app_touch_target.dart';
+import '../../../../core/ui/document_input_formatter.dart';
 import 'customer_form_controller.dart';
 
 final class CustomerFormPage extends StatefulWidget {
@@ -106,9 +108,23 @@ class _FormState extends State<_Form> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         TextField(key: const Key('customer-name'), controller: name, onChanged: (v) => c.name.value = v, decoration: dec('Nome / Razão Social')),
         const SizedBox(height: 12),
-        TextField(key: const Key('customer-document'), controller: document, onChanged: (v) => c.document.value = v, decoration: dec('CPF/CNPJ (opcional)')),
+        TextField(
+          key: const Key('customer-document'),
+          controller: document,
+          onChanged: (v) => c.document.value = v,
+          inputFormatters: [DocumentInputFormatter()],
+          keyboardType: TextInputType.text,
+          decoration: dec('CPF/CNPJ (opcional)'),
+        ),
         const SizedBox(height: 12),
-        TextField(key: const Key('customer-whatsapp'), controller: whatsapp, onChanged: (v) => c.whatsapp.value = v, keyboardType: TextInputType.phone, decoration: dec('WhatsApp', hint: '(11) 99999-8888')),
+        TextField(
+          key: const Key('customer-whatsapp'),
+          controller: whatsapp,
+          onChanged: (v) => c.whatsapp.value = v,
+          inputFormatters: [PhoneBrInputFormatter()],
+          keyboardType: TextInputType.phone,
+          decoration: dec('WhatsApp', hint: '(11) 99999-8888'),
+        ),
         const SizedBox(height: 12),
         TextField(key: const Key('customer-email'), controller: email, onChanged: (v) => c.email.value = v, keyboardType: TextInputType.emailAddress, decoration: dec('E-mail (opcional)')),
         const SizedBox(height: 12),
