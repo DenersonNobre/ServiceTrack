@@ -54,6 +54,15 @@ final class CustomerListController extends IKortexController {
     }
   }
 
+  Future<void> remove(String id) async {
+    final result = await repository.delete(id);
+    if (result case Failure<bool, ValidationError>(:final value)) {
+      error.value = value.message;
+      return;
+    }
+    await load();
+  }
+
   @override
   void onDispose() {
     loading.dispose();

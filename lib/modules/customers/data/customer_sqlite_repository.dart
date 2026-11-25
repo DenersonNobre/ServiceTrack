@@ -12,6 +12,7 @@ import '../domain/ports/customer_failure_codes.dart';
 import '../domain/ports/customer_repository_port.dart';
 import '../domain/value_objects/customer.dart';
 import 'customer_migration.dart';
+import 'service_location_migration.dart';
 
 /// Repositório SQLite de clientes.
 final class CustomerSqliteRepository implements ICustomerRepositoryPort {
@@ -81,6 +82,38 @@ final class CustomerSqliteRepository implements ICustomerRepositoryPort {
     } catch (_) {
       return const Failure(
         ValidationError(code: CustomerFailureCodes.customerPersistence, message: 'Não foi possível carregar clientes.'),
+      );
+    }
+  }
+
+  @override
+  Future<IResult<bool, ValidationError>> delete(String id) async {
+    try {
+      final db = await provider.db;
+      await db.transaction((txn) async {
+        // Remove locais vinculados caso a tabela exista
+        final tables = await txn.query(
+          'sqlite_master',
+          where: 'type = ? AND name = ?',
+          whereArgs: ['table', ServiceLocationMigration.table],
+        );
+        if (tables.isNotEmpty) {
+          await txn.delete(
+            ServiceLocationMigration.table,
+            where: 'customer_id = ?',
+            whereArgs: [id],
+          );
+        }
+        await txn.delete(
+          CustomerMigration.table,
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      });
+      return const Success(true);
+    } catch (_) {
+      return const Failure(
+        ValidationError(code: CustomerFailureCodes.customerPersistence, message: 'Não foi possível excluir o cliente.'),
       );
     }
   }

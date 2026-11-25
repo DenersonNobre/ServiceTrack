@@ -56,5 +56,26 @@ void main() {
       final all = await repo.findAll();
       expect(all.getOrNull()!.map((c) => c.name.value).toList(), ['Ana', 'Zeca']);
     });
+
+    test('delete remove cliente e locais vinculados', () async {
+      final customer = Customer.tryCreate(
+        id: 'c1',
+        name: 'Maria Silva',
+        document: '52998224725',
+        whatsapp: '11999998888',
+        email: 'maria@exemplo.com',
+        notes: 'Obs',
+      ).getOrNull()!;
+
+      await repo.save(customer);
+      final foundBefore = await repo.findById('c1');
+      expect(foundBefore.getOrNull(), isNotNull);
+
+      final deleteResult = await repo.delete('c1');
+      expect(deleteResult.isSuccess, isTrue);
+
+      final foundAfter = await repo.findById('c1');
+      expect(foundAfter.getOrNull(), isNull);
+    });
   });
 }

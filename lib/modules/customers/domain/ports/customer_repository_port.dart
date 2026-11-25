@@ -12,4 +12,5 @@ abstract interface class ICustomerRepositoryPort {
   Future<IResult<Customer, ValidationError>> save(Customer customer);
   Future<IResult<Customer?, ValidationError>> findById(String id);
   Future<IResult<List<Customer>, ValidationError>> findAll();
+  Future<IResult<bool, ValidationError>> delete(String id);
 }

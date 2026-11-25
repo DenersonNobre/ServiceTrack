@@ -25,4 +25,10 @@ final class MemoryCustomerRepository implements ICustomerRepositoryPort {
       ..sort((a, b) => a.name.value.toLowerCase().compareTo(b.name.value.toLowerCase()));
     return Success(list);
   }
+
+  @override
+  Future<IResult<bool, ValidationError>> delete(String id) async {
+    _store.remove(id);
+    return const Success(true);
+  }
 }

@@ -7,6 +7,7 @@ import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/.index.dart';
+import '../../../../core/ui/.index.dart';
 import '../../domain/value_objects/service_location.dart';
 import 'service_location_list_controller.dart';
 
@@ -53,18 +54,20 @@ final class ServiceLocationListPage extends IKortexPage<ServiceLocationListContr
               itemBuilder: (context, i) {
                 final l = items[i];
                 final subtitle = [l.street, l.number, l.neighborhood, l.city].where((e) => e.isNotEmpty).join(', ');
-                return ListTile(
-                  key: Key('location-${l.id}'),
-                  title: Text(l.label.value),
-                  subtitle: Text(subtitle),
-                  onTap: () => onEdit?.call(l),
-                  minTileHeight: 56,
-                  trailing: IconButton(
-                    key: Key('location-delete-${l.id}'),
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Remover',
-                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                    onPressed: () => controller.remove(l.id),
+                return DismissibleTile(
+                  itemKey: ValueKey<String>(l.id),
+                  confirmTitle: 'Excluir local de atendimento?',
+                  confirmMessage: 'Deseja realmente remover o local "${l.label.value}"?',
+                  onDismissed: () {
+                    controller.remove(l.id);
+                    AppFeedback.showSuccess(context, 'Local de atendimento removido com sucesso');
+                  },
+                  child: ListTile(
+                    key: Key('location-${l.id}'),
+                    title: Text(l.label.value),
+                    subtitle: Text(subtitle),
+                    onTap: () => onEdit?.call(l),
+                    minTileHeight: 56,
                   ),
                 );
               },

@@ -7,6 +7,7 @@ import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/.index.dart';
+import '../../../../core/ui/.index.dart';
 import '../../domain/value_objects/customer.dart';
 import 'customer_list_controller.dart';
 
@@ -74,18 +75,28 @@ final class CustomerListPage extends IKortexPage<CustomerListController> {
                     separatorBuilder: (_, _) => const Divider(height: 1),
                     itemBuilder: (context, i) {
                       final c = items[i];
-                      return ListTile(
-                        key: Key('customer-${c.id}'),
-                        title: Text(c.name.value),
-                        subtitle: Text(c.whatsapp.digits),
-                        onTap: () => (onDetail ?? onEdit)?.call(c),
-                        minTileHeight: 56,
-                        trailing: IconButton(
-                          key: Key('customer-locations-${c.id}'),
-                          icon: const Icon(Icons.place_outlined),
-                          tooltip: 'Locais',
-                          onPressed: () => onLocations?.call(c),
-                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                      return DismissibleTile(
+                        itemKey: ValueKey<String>(c.id),
+                        confirmTitle: 'Excluir cliente?',
+                        confirmMessage:
+                            'Deseja realmente excluir o cliente "${c.name.value}"? Esta ação removerá o cadastro e seus dados.',
+                        onDismissed: () {
+                          controller.remove(c.id);
+                          AppFeedback.showSuccess(context, 'Cliente excluído com sucesso');
+                        },
+                        child: ListTile(
+                          key: Key('customer-${c.id}'),
+                          title: Text(c.name.value),
+                          subtitle: Text(c.whatsapp.digits),
+                          onTap: () => (onDetail ?? onEdit)?.call(c),
+                          minTileHeight: 56,
+                          trailing: IconButton(
+                            key: Key('customer-locations-${c.id}'),
+                            icon: const Icon(Icons.place_outlined),
+                            tooltip: 'Locais',
+                            onPressed: () => onLocations?.call(c),
+                            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                          ),
                         ),
                       );
                     },
