@@ -13,11 +13,11 @@ App Flutter 100% standalone para técnicos autônomos com kortex, kortex_lib (pu
   - `Settings`: persistência SQLite com `ConflictAlgorithm.replace`; jornada (`schedule_day_start/end/slot_interval`).
   - `Formulários & Máscaras`: `kortex_lib/brlib` em clientes (CPF/CNPJ, WhatsApp), locais (CEP) e OS (moeda R$, data dd/MM/yyyy, horários 30 min).
   - `Agenda (Schedule)`: calendário mensal 2D + agenda diária com timeline/ocupação e navegação para detalhe/novo agendamento.
-- **EPIC-04 E2E (device M2010J19CG, Android 10)**: nav destravada; checklist wall-clock (`esperarConforme`); fix SQLite 3.22 (`INSERT OR REPLACE`); fix layout `AlertDialog` conclusão (`SizedBox(width: double.maxFinite)` para Signature/LayoutBuilder). `flutter analyze`/296 verdes; revalidação E2E device pendente.
+- **EPIC-04 E2E (device M2010J19CG, Android 10, 2026-11-25)**: **verde** (`01:52 +1: All tests passed`) — onboarding→cliente→OS→check-in IN_PROGRESS→checklist 3/3 conforme→conclusão COMPLETED. Fixes: nav drawer keys, `esperarConforme` wall-clock, `INSERT OR REPLACE` (SQLite 3.22/Android 10), `AlertDialog` content com `SizedBox(width: double.maxFinite)`.
 - **Laudos (EPIC-05)**: gerador PDF/isolate, preview, share adapter e cache local por OS existem com testes; falta integrar `ReportsRoutes`/`onReport`, mapear `ReportData` real e histórico visual. Ver [status](docs/plan/epics/epic-05-laudo-pdf-share.md).
 - **Suíte & Qualidade**: `flutter analyze --fatal-infos` limpo; `flutter test` headless 296/296 verdes (2026-11-25).
 - **Travas Vivas & Governança**: claims obrigatórios; Coder TDD; Reviewer Gate 3; Gate 4 antes de commit; push só com autorização expressa.
 
 ## Próximo Passo Acionável
-1. Investigar/fixar falha E2E EPIC-04 no checklist: item "Conferir local e infraestrutura elétrica" não persiste como `conforme` no device (fatia separada, TDD).
+1. Push dos commits locais novos (pós-CI anterior) com autorização explícita + CI verde.
 2. Integrar módulo de laudos ao fluxo de OS, montar `ReportData` real e histórico visual (EPIC-05).
