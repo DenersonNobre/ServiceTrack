@@ -1,7 +1,7 @@
 # Plano Mestre de Implementação — ServiceTrack (Mobile Standalone)
 
 > **Responsável do Plano (DevOps / Arch)**: Denerson Nobre  
-> **Status Geral**: `Em execução — EPIC-00/01/02/03/06/07 concluídos; EPIC-04 implementado com E2E em device pendente; EPIC-05 parcialmente implementado, com integração no app pendente.`
+> **Status Geral**: `Em execução — EPIC-00/01/02/03/05/06/07 concluídos; EPIC-04 implementado com E2E device verde (M2010J19CG, Android 10, 2026-11-25) e D-01/C-01 bloqueado por design.`
 >
 > **Arquitetura**: Flutter 100% Autocontido (Zero Backend / Zero Infraestrutura de Nuvem)  
 > **Referências**: [PRD](../product/PRD.md) \| [SPEC](../architecture/SPEC.md) \| [DESIGN](../architecture/DESIGN.md)
@@ -16,8 +16,8 @@
 | **01 — Onboarding, Auth Local & Perfil** | [epic-01-auth-perfil.md](epics/epic-01-auth-perfil.md) | EPIC00 | Alta | `Concluído` |
 | **02 — Gestão Local de Clientes** | [epic-02-clientes.md](epics/epic-02-clientes.md) | EPIC00, EPIC01 | Alta | `Concluído` |
 | **03 — Ordens de Serviço & Ciclo de Vida** | [epic-03-ordens-servico.md](epics/epic-03-ordens-servico.md) | EPIC00, EPIC02 | Alta | `Concluído` |
-| **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política/defaults) | Alta | `Implementado (UC-04.01–04.09; E2E device bloqueado pelo ambiente)` |
-| **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Em andamento: gerador, preview, share adapter e cache local implementados; wiring em AppPages, mapeamento de dados reais e histórico visual pendentes` |
+| **04 — Checklists, Câmera & Evidências GPS** | [epic-04-checklists-evidencias.md](epics/epic-04-checklists-evidencias.md) | EPIC00, EPIC03, EPIC07 (D2/política/defaults) | Alta | `Implementado (UC-04.01–04.09); E2E device verde (2026-11-25); D-01/C-01 bloqueado por design` |
+| **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Concluído (evidência local/device 2026-11-25; INV-05 validado on-device)` |
 | **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Concluído` |
 | **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Concluído (G4 c/ ressalvas)` |
 
@@ -61,6 +61,6 @@ graph TD
 3. **EPIC02 (Clientes)**: Estrutura cadastral local com SQLite via `kortex_lib/sqlite` e validações `brlib`.
 4. **EPIC03 (Ordens de Serviço)**: Motor da máquina de estados (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`).
 5. **EPIC07 (Configurações & Políticas Locais)**: Concluído (`UC-07.01`: catálogo + SQLite v11 + use cases; `UC-07.02`: UI; `UC-07.03`: integração com fail-closed D-01/C-01). G3/G4 aprovados com ressalvas (`qa-review-v0.21.0.md`).
-6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.09, D-05 mitigado, assinatura canônica). Pendência: validação E2E em device/emulador.
+6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.09, D-05 mitigado, assinatura canônica). E2E device verde (M2010J19CG, Android 10, 2026-11-25). **Pendência bloqueada por design:** D-01/C-01 (persistência de documento do recebedor, fail-closed).
 7. **EPIC06 (Hardening Técnico & Qualidade)**: Concluído — UC-06.01..06.05 (catálogos de falha + gate com prova negativa; tokens 48dp; `SignaturePadWidget` em Kortex com `setState` zero; `AppDependencies` + `*Routes`; `qa-review-v0.20.0.md`). A suíte tinha **210 testes verdes** no Gate 4 original; o checkpoint posterior registra 296.
-8. **EPIC05 (Laudo PDF & WhatsApp)**: Em andamento. Gerador PDF, preview, compartilhamento via adapter e cache local estão implementados; falta integrar o fluxo à lista de OS/`AppPages`, fornecer dados reais para `ReportData` e criar a tela de histórico/reemissão. Detalhes e pendências estão no [épico 05](epics/epic-05-laudo-pdf-share.md).
+8. **EPIC05 (Laudo PDF & WhatsApp)**: Concluído (evidência local/device 2026-11-25). Gerador PDF, preview, share adapter, cache local, wiring em `AppPages`, `ReportDataAssembler`, histórico visual dedicado e asserções de conteúdo do PDF implementados; INV-05 validado on-device (M2010J19CG, Android 10). Ausência de congelamento de UI permanece observação qualitativa. Detalhes no [épico 05](epics/epic-05-laudo-pdf-share.md).

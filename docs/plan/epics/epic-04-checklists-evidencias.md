@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC07` (política D2) |
 | **Prioridade** | Alta (Comprovação Técnica & Auditabilidade) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device pendente de instalação bem-sucedida` |
+| **Status Atual** | `Implementado em código (UC-04.01–04.09); E2E device verde (M2010J19CG, Android 10, 2026-11-25); D-01/C-01 bloqueado por design (fail-closed)` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -44,7 +44,7 @@ Permitir o preenchimento de itens de checklist de forma ágil em campo com o pol
 - [x] Invariantes `INV-03` (completude obrigatória) e `INV-04` (cota de 6 fotos) cobertos por testes unitários.
 - [x] Compressão de imagem executando em `Isolate.run(...)` sem travar a UI.
 - [x] Coleta de assinatura rasterizada e vinculada à OS.
-- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0 (E2E device pendente).
+- [x] `flutter analyze --fatal-infos` e `flutter test` com exit code 0; E2E device verde (M2010J19CG, Android 10, 2026-11-25).
 
 ---
 
@@ -55,7 +55,7 @@ Permitir o preenchimento de itens de checklist de forma ágil em campo com o pol
 ### Caso de Uso UC-04.01 — Modelos de Checklists Rápidos
 
 * **Identificador**: `UC-04.01`
-* **Status**: `Concluído (código+testes; TASK-02 fechado em UC-04.09; E2E device pendente)`
+* **Status**: `Concluído (código+testes; TASK-02 fechado em UC-04.09; E2E device verde 2026-11-25)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.01 -owner <agente> -paths lib/modules/checklists/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.01`
 
@@ -93,7 +93,7 @@ Esquema do Cenário: Criação e validação de modelo de checklist
 ### Caso de Uso UC-04.02 — Preenchimento Tátil do Checklist na OS
 
 * **Identificador**: `UC-04.02`
-* **Status**: `Concluído (código+testes; E2E device pendente)`
+* **Status**: `Concluído (código+testes; E2E device verde 2026-11-25)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.02 -owner <agente> -paths lib/modules/checklists/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.02`
 
@@ -131,7 +131,7 @@ Esquema do Cenário: Resposta de item de checklist na OS
 ### Caso de Uso UC-04.03 — Captura & Compressão de Fotos com Metadados
 
 * **Identificador**: `UC-04.03`
-* **Status**: `Concluído (código+testes; E2E device pendente)`
+* **Status**: `Concluído (código+testes; E2E device verde 2026-11-25)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.03 -owner <agente> -paths lib/modules/evidences/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.03`
 
@@ -169,7 +169,7 @@ Esquema do Cenário: Anexo e limite de evidências fotográficas (INV-04)
 ### Caso de Uso UC-04.04 — Assinatura Digital na Tela do Smartphone
 
 * **Identificador**: `UC-04.04`
-* **Status**: `Concluído (código+testes; C-03/D2 policy-driven doc; E2E device pendente)`
+* **Status**: `Concluído (código+testes; C-03/D2 policy-driven doc; E2E device verde 2026-11-25)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-04.04 -owner <agente> -paths lib/modules/evidences/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-04.04`
 
@@ -229,7 +229,7 @@ Esquema do Cenário: Validação de assinatura digital (INV-03)
 
 ### 6.2 Lacunas bloqueantes
 1. **D-05**: mitigado em UC-04.07 — prova real via porta/adapter, binding template↔OS, execução/persistência de respostas, guard INV-06, política C (`requireChecklistTemplate` default true, decisão PO 2026-11-22). G2.5 INVOKED, G3 APROVADO (Alta), G4 APROVADO (Alta, `qa-review-v0.18.0.md`). Validação E2E device permanece pendente.
-2. **Persistência de respostas por OS**: `ChecklistAnswerSqliteRepository` + migration v8 criados; binding template↔OS e integração no fluxo de execução/conclusão entregues no UC-04.07. E2E device pendente.
+2. **Persistência de respostas por OS**: `ChecklistAnswerSqliteRepository` + migration v8 criados; binding template↔OS e integração no fluxo de execução/conclusão entregues no UC-04.07. E2E device verde 2026-11-25.
 3. **Contrato de assinatura duplicado (M-03/M-05)**: resolvido em UC-04.08 — VO canônico em `evidences.domain.entities.DigitalSignature`, `work_orders` re-exporta, migration v10 aditiva.
 4. **Governança**: matriz UC-04.01–04.08 atualizada; laudos `qa-review-v0.18.0.md` e `qa-review-v0.19.0.md` emitidos. Pendências: E2E device e atualização do `docs/plan/README.md` conforme consolidação final.
 
