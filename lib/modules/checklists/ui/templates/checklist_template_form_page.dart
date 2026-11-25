@@ -64,29 +64,27 @@ final class ChecklistTemplateFormPage
                     Padding(
                       key: ValueKey<String>(drafts[index].id),
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              key: Key('checklist-template-item-$index'),
-                              initialValue: drafts[index].title,
-                              onChanged: (value) =>
-                                  controller.updateItem(index, value),
-                              decoration: _decoration(
-                                label: 'Item ${index + 1}',
-                              ),
-                            ),
-                          ),
-                          IconButton(
+                      child: TextFormField(
+                        key: Key('checklist-template-item-$index'),
+                        initialValue: drafts[index].title,
+                        onChanged: (value) =>
+                            controller.updateItem(index, value),
+                        decoration: _decoration(
+                          label: 'Item ${index + 1}',
+                        ).copyWith(
+                          suffixIcon: IconButton(
                             key: Key('checklist-template-item-remove-$index'),
                             tooltip: 'Remover item',
                             constraints: kMinTouchTargetConstraints,
-                            icon: const Icon(Icons.delete_outline),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppColors.error,
+                            ),
                             onPressed: saving
                                 ? null
                                 : () => controller.removeItem(index),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   OutlinedButton.icon(

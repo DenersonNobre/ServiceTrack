@@ -114,4 +114,26 @@ void main() {
       reason: 'identidade por rascunho evita herdar texto do vizinho removido',
     );
   });
+
+  testWidgets('UC-04.09 - botão de remover item está configurado como suffixIcon', (
+    tester,
+  ) async {
+    final repo = MemoryChecklistTemplateRepository();
+    final controller = ChecklistTemplateFormController(repository: repo);
+
+    await tester.pumpWidget(_host(controller: controller));
+    await tester.tap(find.byKey(const Key('checklist-template-add-item')));
+    await tester.pump();
+
+    final removeFinder = find.byKey(
+      const Key('checklist-template-item-remove-0'),
+    );
+    expect(removeFinder, findsOneWidget);
+
+    final icon = tester.widget<Icon>(
+      find.descendant(of: removeFinder, matching: find.byType(Icon)),
+    );
+    expect(icon.icon, Icons.delete_outline);
+    expect(icon.color, const Color(0xFF991B1B)); // AppColors.error
+  });
 }

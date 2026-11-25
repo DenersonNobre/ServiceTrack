@@ -81,27 +81,43 @@ final class ChecklistTemplateListPage
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final template = list[index];
-              return Card(
-                color: AppColors.surfaceCard,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: AppColors.border),
-                ),
-                child: ListTile(
-                  minVerticalPadding: 12,
-                  title: Text(
-                    template.title,
-                    style: const TextStyle(
-                      color: AppColors.gray900,
-                      fontWeight: FontWeight.w600,
+              return DismissibleTile(
+                itemKey: ValueKey<String>(template.id),
+                confirmTitle: 'Excluir modelo?',
+                confirmMessage:
+                    'Deseja realmente excluir o modelo "${template.title}"?',
+                onDismissed: () async {
+                  await controller.remove(template.id);
+                  if (context.mounted) {
+                    AppFeedback.showSuccess(
+                      context,
+                      'Modelo excluído com sucesso',
+                    );
+                  }
+                },
+                child: Card(
+                  margin: EdgeInsets.zero,
+                  color: AppColors.surfaceCard,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: AppColors.border),
+                  ),
+                  child: ListTile(
+                    minVerticalPadding: 12,
+                    title: Text(
+                      template.title,
+                      style: const TextStyle(
+                        color: AppColors.gray900,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                    subtitle: Text(
+                      '${template.items.length} item(ns)',
+                      style: const TextStyle(color: AppColors.gray500),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: onSelect == null ? null : () => onSelect!(template),
                   ),
-                  subtitle: Text(
-                    '${template.items.length} item(ns)',
-                    style: const TextStyle(color: AppColors.gray500),
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: onSelect == null ? null : () => onSelect!(template),
                 ),
               );
             },
