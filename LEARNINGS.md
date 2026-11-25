@@ -259,6 +259,18 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 - **Bloqueio do restante (Fase B/C)**: sem `kortex_lib` publicado, não há substituto para os ~150 imports de `Result`/`ValidationError`, `Money`, `brlib` e `sqlite` (192 imports de `dnolib` no total). Fase B fica para outra sessão, após publicação.
 - **`flutter analyze` CLI e o LSP da IDE divergiram — e só o LSP viu 6 vazamentos reais.** [FATO] `flutter analyze --fatal-infos` reportou `No issues found!` (duas vezes, 241 s e 70,8 s), enquanto o `dartAnalysisLSP` do VS Code reportou 6 × `avoid_undisposed_kortex_signal` em `pin_recovery_controller.dart`. [FATO] O controller era o **único dos 16** sem `onDispose()`/`autoDispose()` — os 6 sinais (`step`, `masterPassword`, `newPin`, `passwordError`, `pinError`, `loading`) nunca eram disposed. Vazamento real, não falso positivo. **Erro de método meu**: afirmei "nada a limpar" com base só no CLI, generalizando a partir de uma fonte — exatamente o que o mandato cognitivo proíbe. **Regra**: quando CLI e LSP divergem, investigue a divergência e trate o diagnosticamente mais rico como sinal, nunca assuma que o CLI limpo prova ausência de problema; e ao auditar "todos os controllers fazem dispose", varredura sistemática por arquivo (deck `decl` vs `dispose`) — não basta ver que `onDispose()` existe em alguns. **Fix**: `onDispose()` com os 6 `.dispose()` no padrão dos outros controllers; varredura confirmou 0 sinais órfãos em 16 controllers.
 
+## 2026-11-25 — D-01/C-01: cifragem de campo PII em repouso (SQLite) + gates
+
+- **Padrão adotado (mitigação parcial, técnica)**: `IDocumentAtRestCipher` (`lib/core/security/document_at_rest_cipher_port.dart`) + `AesGcmDocumentAtRestCipher` (AES-GCM 256, chave 32 bytes em `flutter_secure_storage` com `KeychainAccessibility.first_unlock_this_device` / `encryptedSharedPreferences: true`, prefixo `enc:v1:`). `WorkOrderSqliteRepository` cifra em save e decifra em read de `signature_document_number`; sem cifrador ou payload inválido => fail-closed `ERR_ASSINATURA_DOCUMENTO_PROTECAO_INDISPONIVEL` / `ERR_DOCUMENTO_PROTECAO_INDISPONIVEL`. `MemoryWorkOrderRepository` espelha a invariante.
+- **Wiring**: cifrador nasce no composition root `AppServices.fromDatabase()` e é injetado por `AppPages`/`*Routes.fromDatabase` até os repos. Evita cifrador ad hoc por módulo.
+- **Gate M-08 (failure codes)**: literal `ERR_*` em `lib/` fora de `*_failure_codes.dart` reprova o teste de arquitetura. Novo módulo de segurança exigiu `lib/core/security/document_at_rest_failure_codes.dart`.
+- **Flip de capacidade quebra testes por desenho**: ao tornar `kDocumentAtRestProtectionAvailable=true`, teste que provava "não coleta quando proteção indisponível" passou a coletar. Fix correto: tornar a dependência explícita no teste (`documentAtRestProtectionAvailable: false`) em vez de enfraquecer a asserção.
+- **Residual honesto**: não é full-db encryption; residual LGPD (base legal/finalidade/retenção/minimização), iOS/Keystore por fabricante e backup cifrado controlado permanecem abertos/parciais (ver D-01, ADR-001 C-01/C-02, EPIC-08 proposto).
+
+## 2026-11-25 — PDF: asserção de conteúdo real (não só bytes)
+
+- **`%PDF-` não prova conteúdo**. Para validar seções/texto do relatório gerado pelo `pdf` package, extrair texto dos streams: decodificar bytes como `latin1`, descomprimir streams `FlateDecode` (`zlib`), e varrer literais `(...) Tj/TJ`/arrays. Útil para testes que precisam confirmar que dados do domínio chegaram ao PDF sem acoplar a layout exato. [FATO, usado no commit M2 de EPIC-05]
+
 ## 2026-11-23 — E2E de device EPIC-04: link perdido, dump enganoso e tap fantasma
 
 ### 1. `did not complete` + `No tests were found` após silêncio = host perdeu o device, não teste travado
