@@ -138,7 +138,7 @@ void main() {
           matching: _chave('checklist-btn-conforme'),
         ),
       );
-      await tester.pump(const Duration(milliseconds: 800));
+      await esperarConforme(tester, i);
     }
 
     final respondidos = tester
@@ -201,6 +201,58 @@ Future<void> esperarPor(
   debugPrint('[E2E] TIMEOUT $alvo. tela: ${tela(tester)}');
   fail(
     'timeout de ${limite.inSeconds}s esperando $alvo. tela: ${tela(tester)}',
+  );
+}
+
+/// Aguarda o item de checklist no índice [index] persistir como [conforme].
+///
+/// Polling por tempo real (wall-clock + pump 100ms), como [esperarPor]:
+/// o save é I/O real no SQLite e um único pump fixo não garante conclusão.
+Future<void> esperarConforme(
+  WidgetTester tester,
+  int index, {
+  Duration limite = const Duration(seconds: 30),
+}) async {
+  debugPrint(
+    '[E2E] esperarConforme index=$index (limite ${limite.inSeconds}s)',
+  );
+  final fim = DateTime.now().add(limite);
+  var ultimoBeat = DateTime.now();
+  while (DateTime.now().isBefore(fim)) {
+    final widgets = tester
+        .widgetList<ChecklistItemWidget>(find.byType(ChecklistItemWidget))
+        .toList();
+    if (index < widgets.length &&
+        widgets[index].selectedStatus == ChecklistAnswerStatus.conforme) {
+      debugPrint(
+        '[E2E] OK conforme index=$index "${widgets[index].title}"',
+      );
+      return;
+    }
+    if (DateTime.now().difference(ultimoBeat).inSeconds >= 10) {
+      ultimoBeat = DateTime.now();
+      final atual = index < widgets.length
+          ? '${widgets[index].selectedStatus} "${widgets[index].title}"'
+          : 'index fora de alcance (${widgets.length} widgets)';
+      debugPrint(
+        '[E2E] ... aguardando conforme index=$index ($atual). '
+        'tela: ${tela(tester)}',
+      );
+    }
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  final widgets = tester
+      .widgetList<ChecklistItemWidget>(find.byType(ChecklistItemWidget))
+      .toList();
+  final atual = index < widgets.length
+      ? '${widgets[index].selectedStatus} "${widgets[index].title}"'
+      : 'index fora de alcance (${widgets.length} widgets)';
+  debugPrint(
+    '[E2E] TIMEOUT conforme index=$index ($atual). tela: ${tela(tester)}',
+  );
+  fail(
+    'timeout de ${limite.inSeconds}s esperando item $index conforme '
+    '(atual: $atual). tela: ${tela(tester)}',
   );
 }
 
