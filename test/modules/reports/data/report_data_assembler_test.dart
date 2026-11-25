@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:kortex_lib/core/models/money.dart';
 import 'package:service_track/modules/checklists/domain/entities/checklist_answer.dart';
 import 'package:service_track/modules/checklists/domain/entities/checklist_template.dart';
@@ -116,11 +117,19 @@ void main() {
         technicianLogoBytes: Uint8List.fromList(const [1, 2, 3]),
       );
 
+      final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+      final expectedScheduled = dateFormat.format(
+        DateTime.utc(2026, 11, 24, 12, 0).toLocal(),
+      );
+      final expectedCompleted = dateFormat.format(
+        DateTime.utc(2026, 11, 24, 14, 30).toLocal(),
+      );
+
       expect(data.workOrderId, 'wo-1');
       expect(data.status, 'COMPLETED');
       expect(data.serviceDescription, 'Instalação de ar-condicionado');
-      expect(data.scheduledDateFormatted, '24/11/2026 09:00');
-      expect(data.completedDateFormatted, '24/11/2026 11:30');
+      expect(data.scheduledDateFormatted, expectedScheduled);
+      expect(data.completedDateFormatted, expectedCompleted);
       expect(data.customerName, 'Padaria Estrela');
       expect(data.customerDocument, '52998224725');
       expect(data.customerPhone, '11987654321');
