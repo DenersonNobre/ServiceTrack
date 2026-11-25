@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC04` |
 | **Prioridade** | Crítica (Core de Valor do Produto Standalone) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Não Iniciado` |
+| **Status Atual** | `Em andamento — núcleo dos UCs implementado; integração do fluxo no app e histórico visual pendentes` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -31,19 +31,27 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Status |
 | :--- | :--- | :--- | :---: |
-| **UC-05.01** | Motor de Compilação do PDF On-Device | Nenhuma | `Pendente` |
-| **UC-05.02** | Visualização & Preview do Laudo no App | UC-05.01 | `Pendente` |
-| **UC-05.03** | Compartilhamento Nativo com 1 Toque (WhatsApp) | UC-05.01, UC-05.02 | `Pendente` |
-| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Pendente` |
+| **UC-05.01** | Motor de Compilação do PDF On-Device | Nenhuma | `Implementado; desempenho em aparelho alvo pendente` |
+| **UC-05.02** | Visualização & Preview do Laudo no App | UC-05.01 | `Preview implementado; integração em AppPages pendente` |
+| **UC-05.03** | Compartilhamento Nativo com 1 Toque (WhatsApp) | UC-05.01, UC-05.02 | `Adaptador e CTA implementados; fluxo integrado no app pendente` |
+| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Cache local implementado; tela de histórico pendente` |
 
 ---
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] PDF gerado em menos de 2.0s em `Isolate.run(...)` sem congelar a UI (`INV-05`).
-- [ ] Teste automatizado validando cabeçalho binário `%PDF-` e presença de seções obrigatórias.
-- [ ] Integração com `share_plus` testada via porta `IShareServicePort`.
-- [ ] `flutter analyze --fatal-infos` e `flutter test` com exit code 0.
+- [ ] Desempenho abaixo de 2.0s confirmado em aparelho alvo e ausência de congelamento da UI (`INV-05`). Há teste com `Stopwatch` no host, que não substitui a medição no aparelho.
+- [ ] Teste automatizado valida cabeçalho `%PDF-` e conteúdo das seções obrigatórias. O cabeçalho já é verificado; as seções ainda não têm assertions explícitas.
+- [x] Adaptador de compartilhamento nativo isolado pela porta `IShareServicePort` e coberto por testes do módulo.
+- [ ] `flutter analyze --fatal-infos` e `flutter test` executados após a integração final do fluxo; o checkpoint registra uma execução anterior com 296 testes verdes.
+
+### Estado conferido em 2026-11-25
+
+- Os commits `3127e03`, `b1afce6` e `e531b15` adicionaram o gerador PDF, preview/compartilhamento e armazenamento/cache local, respectivamente.
+- `AppPages` não instancia `ReportsRoutes`, não define rota de relatório e chama `WorkOrdersRoutes.list()` sem `onReport`; o módulo de relatórios não está acessível pelo fluxo normal do app.
+- Não foi encontrado mapeador da OS real para `ReportData`; os usos encontrados do modelo estão no próprio módulo e em testes.
+- UC-05.04 salva e recupera um PDF por ID de OS e o controller consegue reutilizar o cache. Não existe tela de histórico de laudos.
+- Próxima fatia: compor o módulo no fluxo de OS, montar `ReportData` com os dados reais e adicionar o histórico visual. Depois, validar o percurso em aparelho e repetir analyze/test.
 
 ---
 
@@ -54,7 +62,7 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 ### Caso de Uso UC-05.01 — Motor de Compilação do PDF On-Device
 
 * **Identificador**: `UC-05.01`
-* **Status**: `Pendente`
+* **Status**: `Implementado (código e testes; validação de desempenho em aparelho pendente)`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-05.01 -owner <agente> -paths lib/modules/reports/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-05.01`
 
@@ -92,7 +100,7 @@ Esquema do Cenário: Compilação on-device do Laudo Técnico em PDF (INV-05)
 ### Caso de Uso UC-05.02 — Visualização & Preview do Laudo no App
 
 * **Identificador**: `UC-05.02`
-* **Status**: `Pendente`
+* **Status**: `Preview e rota do módulo implementados; integração no roteador principal pendente`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-05.02 -owner <agente> -paths lib/modules/reports/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-05.02`
 
@@ -126,7 +134,7 @@ Esquema do Cenário: Carregamento do preview do laudo gerado
 ### Caso de Uso UC-05.03 — Compartilhamento Nativo com 1 Toque (WhatsApp)
 
 * **Identificador**: `UC-05.03`
-* **Status**: `Pendente`
+* **Status**: `Adaptador e ação de compartilhar implementados; fluxo do app pendente`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-05.03 -owner <agente> -paths lib/modules/reports/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-05.03`
 
@@ -160,7 +168,7 @@ Esquema do Cenário: Compartilhamento do arquivo PDF via Share nativo
 ### Caso de Uso UC-05.04 — Histórico e Reemissão de Laudos Salvos
 
 * **Identificador**: `UC-05.04`
-* **Status**: `Pendente`
+* **Status**: `Armazenamento e reuso em cache implementados; tela de histórico e acesso integrado pendentes`
 * **Gate DoR**: `tools/bin/claims claim -path . -slice UC-05.04 -owner <agente> -paths lib/modules/reports/`
 * **Gate DoD**: `tools/bin/claims release -path . -slice UC-05.04`
 
