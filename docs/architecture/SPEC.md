@@ -171,3 +171,5 @@ Decisão completa: [ADR-003](adr-003-settings-locais-tipadas.md).
 | `ERR_SENHA_INCORRETA` | Esperada | Senha mestre incorreta na verificação/recuperação. | Retornar `Result.Fail(ERR_SENHA_INCORRETA)` |
 | `ERR_CREDENCIAIS_NAO_CADASTRADAS` | Esperada | Verificação sem onboarding concluído. | Retornar `Result.Fail(ERR_CREDENCIAIS_NAO_CADASTRADAS)` |
 | `ERR_COFRE_INDISPONIVEL` | Esperada | I/O do Keychain/Keystore falhou. | Retornar `Result.Fail(ERR_COFRE_INDISPONIVEL)` (exceção só neste ponto de fronteira) |
+| `ERR_LAUDO_DADOS_CARREGAMENTO_FALHOU` | Esperada | Falha ao carregar dados necessários para montar o laudo (banco indisponível, OS/dados inconsistentes ou erro de leitura). | Retornar `Result.Fail(ERR_LAUDO_DADOS_CARREGAMENTO_FALHOU)` |
+| `ERR_LAUDO_HISTORICO_CARREGAMENTO_FALHOU` | Esperada | Falha ao carregar histórico de laudos concluídos. | Retornar `Result.Fail(ERR_LAUDO_HISTORICO_CARREGAMENTO_FALHOU)` |

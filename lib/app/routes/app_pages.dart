@@ -25,6 +25,7 @@ import '../../modules/reports/data/report_storage_adapter.dart';
 import '../../modules/reports/data/share_service_adapter.dart';
 import '../../modules/reports/domain/models/report_data.dart';
 import '../../modules/reports/domain/models/report_history_item.dart';
+import '../../modules/reports/domain/ports/report_failure_codes.dart';
 import '../../modules/reports/ui/reports_routes.dart';
 import '../../modules/schedule/ui/schedule_routes.dart';
 import '../../modules/settings/ui/settings_routes.dart';
@@ -120,7 +121,7 @@ class AppPages {
     if (db == null) {
       return const Failure(
         ValidationError(
-          code: 'REPORT_DATA_LOAD_FAILED',
+          code: ReportFailureCodes.reportDataLoadFailed,
           message: 'Banco de dados indisponível para carregar o laudo.',
         ),
       );
@@ -153,7 +154,7 @@ class AppPages {
       if (workOrder == null) {
         return const Failure(
           ValidationError(
-            code: 'REPORT_DATA_NOT_FOUND',
+            code: ReportFailureCodes.workOrderNotFound,
             message: 'Ordem de Serviço não encontrada para gerar o laudo.',
           ),
         );
@@ -205,7 +206,7 @@ class AppPages {
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'REPORT_DATA_LOAD_FAILED',
+          code: ReportFailureCodes.reportDataLoadFailed,
           message: 'Não foi possível carregar os dados do laudo.',
         ),
       );
@@ -218,7 +219,7 @@ class AppPages {
     if (db == null) {
       return const Failure(
         ValidationError(
-          code: 'REPORT_HISTORY_LOAD_FAILED',
+          code: ReportFailureCodes.reportHistoryLoadFailed,
           message: 'Banco de dados indisponível para carregar o histórico.',
         ),
       );
@@ -275,7 +276,7 @@ class AppPages {
     } catch (_) {
       return const Failure(
         ValidationError(
-          code: 'REPORT_HISTORY_LOAD_FAILED',
+          code: ReportFailureCodes.reportHistoryLoadFailed,
           message: 'Não foi possível carregar o histórico de laudos.',
         ),
       );

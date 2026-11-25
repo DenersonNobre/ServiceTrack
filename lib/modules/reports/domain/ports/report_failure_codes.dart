@@ -26,4 +26,11 @@ abstract final class ReportFailureCodes {
 
   /// Laudo salvo não encontrado para a OS.
   static const reportNotFound = 'ERR_LAUDO_NAO_ENCONTRADO';
+
+  /// Falha ao carregar dados necessários para montagem do laudo.
+  static const reportDataLoadFailed = 'ERR_LAUDO_DADOS_CARREGAMENTO_FALHOU';
+
+  /// Falha ao carregar histórico de laudos.
+  static const reportHistoryLoadFailed =
+      'ERR_LAUDO_HISTORICO_CARREGAMENTO_FALHOU';
 }
