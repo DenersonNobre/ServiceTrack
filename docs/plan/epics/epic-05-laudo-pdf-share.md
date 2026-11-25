@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC03`, `EPIC04` |
 | **Prioridade** | Crítica (Core de Valor do Produto Standalone) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em andamento — integração app/preview/share/reabertura por OS concluída; histórico visual dedicado implementado; validação de desempenho (<2s) em device alvo pendente` |
+| **Status Atual** | `Concluído (evidência local/device 2026-11-25) — integração app/preview/share/reabertura/histórico dedicado implementados; INV-05 validado no M2010J19CG (Android 10); ausência de congelamento de UI segue como observação qualitativa` |
 | **Referências da SPEC** | [docs/architecture/SPEC.md](../../architecture/SPEC.md) \| [docs/architecture/DESIGN.md](../../architecture/DESIGN.md) |
 
 ---
@@ -34,13 +34,13 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 | **UC-05.01** | Motor de Compilação do PDF On-Device | Nenhuma | `Implementado; desempenho em aparelho alvo pendente` |
 | **UC-05.02** | Visualização & Preview do Laudo no App | UC-05.01 | `Implementado e integrado no app` |
 | **UC-05.03** | Compartilhamento Nativo com 1 Toque (WhatsApp) | UC-05.01, UC-05.02 | `Implementado e integrado no app` |
-| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Implementado e integrado (cache/regeneração, reabertura por OS e histórico visual dedicado); desempenho em device alvo pendente` |
+| **UC-05.04** | Histórico e Reemissão de Laudos Salvos | UC-05.01 | `Implementado e integrado (cache/regeneração, reabertura por OS e histórico visual dedicado); INV-05 validado em device alvo` |
 
 ---
 
 ## 3. Definição de Pronto (DoD) do Épico
 
-- [ ] Desempenho abaixo de 2.0s confirmado em aparelho alvo e ausência de congelamento da UI (`INV-05`). Há teste com `Stopwatch` no host, que não substitui a medição no aparelho.
+- [x] Desempenho abaixo de 2.0s confirmado em aparelho alvo (`INV-05`) — `flutter test -d 192.168.67.65:5555 test/modules/reports/data/pdf_report_generator_adapter_test.dart` (M2010J19CG, Android 10 / API 29, 2026-11-25): **3/3 passed**, incluindo caso com 6 fotos e asserção `elapsedMilliseconds < 2000`. Ausência de congelamento de UI permanece observação qualitativa em uso real.
 - [x] Teste automatizado valida cabeçalho `%PDF-` e conteúdo das seções obrigatórias (helper de extração de texto por streams zlib/latin1 + asserts de seções/conteúdo-chave em OS sem fotos e com fotos).
 - [x] Adaptador de compartilhamento nativo isolado pela porta `IShareServicePort` e coberto por testes do módulo.
 - [x] `flutter analyze --fatal-infos` limpo e `flutter test` completo **310/310 passed** (evidência local 2026-11-25, inclui slice UC-05.04-HISTORY).
@@ -50,7 +50,7 @@ Compilar o Laudo Técnico em PDF no próprio smartphone em menos de 2 segundos u
 - Os commits `3127e03`, `b1afce6` e `e531b15` adicionaram o gerador PDF, preview/compartilhamento e armazenamento/cache local, respectivamente.
 - Integração no app concluída: `AppRoutes.reportPreview`, `AppPages` compõe `ReportsRoutes` com `PdfReportGeneratorAdapter`, `ShareServiceAdapter`, `ReportStorageAdapter` e `reportDataLoader` (repos SQLite/profile + `ReportDataAssembler`); `WorkOrdersRoutes.list(onReport: ...)` abre o preview por `workOrderId`.
 - `ReportDataAssembler` puro mapeia OS/cliente/perfil/checklist/assinatura/GPS para `ReportData` (fotos `const []` por enquanto; logo lida na borda se existir).
-- UC-05.04: cache/regeneração/reabertura por OS concluída e **tela de histórico visual dedicada implementada/integrada** (`AppRoutes.reportHistory`, `ReportsRoutes.history`, `ReportHistoryController/Page`, item no `HomeDrawer`, loader no `AppPages` com OS concluídas enriquecidas por cliente e ordenadas desc). Desempenho <2s em device alvo (INV-05) **ainda não validado**.
+- UC-05.04: cache/regeneração/reabertura por OS concluída e **tela de histórico visual dedicada implementada/integrada** (`AppRoutes.reportHistory`, `ReportsRoutes.history`, `ReportHistoryController/Page`, item no `HomeDrawer`, loader no `AppPages` com OS concluídas enriquecidas por cliente e ordenadas desc). Desempenho <2s em device alvo (INV-05) validado por teste automatizado on-device (M2010J19CG, Android 10, 2026-11-25); ausência de congelamento de UI permanece observação qualitativa.
 - Validação local (fatia UC-05.04-HISTORY, 2026-11-25): `flutter analyze --fatal-infos` limpo; testes focados **39/39 passed**; `flutter test` completo **310/310 passed**.
 
 ---
