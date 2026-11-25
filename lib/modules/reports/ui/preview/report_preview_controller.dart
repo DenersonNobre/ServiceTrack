@@ -20,24 +20,50 @@ typedef TempPathResolver = Future<String> Function();
 /// Assinatura da função de escrita de bytes em arquivo (injetável para testes).
 typedef FileSaver = Future<void> Function(String path, Uint8List bytes);
 
+/// Carrega dados do laudo por identificador de OS.
+typedef ReportDataLoader = Future<IResult<ReportData, ValidationError>> Function(
+  String workOrderId,
+);
+
 /// Controller Kortex para visualização e compartilhamento do Laudo Técnico.
 final class ReportPreviewController extends IKortexController {
   ReportPreviewController({
-    required this.reportData,
+    ReportData? reportData,
+    this.workOrderId,
+    this.reportDataLoader,
     required this.pdfGenerator,
     required this.shareService,
     this.reportStorage,
-    TempPathResolver? tempPathResolver,
+    this._tempPathResolver,
     FileSaver? fileSaver,
-  })  : _tempPathResolver = tempPathResolver ?? _defaultTempPathResolver(reportData.workOrderId),
-        _fileSaver = fileSaver ?? _defaultFileSaver;
+  })  : _reportData = reportData,
+        _fileSaver = fileSaver ?? _defaultFileSaver {
+    final hasData = reportData != null;
+    final hasLoader = workOrderId != null && reportDataLoader != null;
+    if (!hasData && !hasLoader) {
+      throw ArgumentError(
+        'Informe reportData ou workOrderId + reportDataLoader.',
+      );
+    }
+  }
 
-  final ReportData reportData;
+  ReportData? _reportData;
+  final String? workOrderId;
+  final ReportDataLoader? reportDataLoader;
   final IPdfReportGeneratorPort pdfGenerator;
   final IShareServicePort shareService;
   final IReportStoragePort? reportStorage;
-  final TempPathResolver _tempPathResolver;
+  final TempPathResolver? _tempPathResolver;
   final FileSaver _fileSaver;
+
+  /// Dados do laudo. Disponível após carregamento/geração bem-sucedida.
+  ReportData get reportData {
+    final data = _reportData;
+    if (data == null) {
+      throw StateError('ReportData não carregado.');
+    }
+    return data;
+  }
 
   /// Sinais reativos Kortex
   final KortexSignal<bool> loading = KortexSignal<bool>(true);
@@ -60,25 +86,21 @@ final class ReportPreviewController extends IKortexController {
     loading.value = true;
     errorMessage.value = null;
 
+    final data = await _ensureReportData();
+    if (data == null) return;
+
     final storage = reportStorage;
     if (storage != null) {
-      final exists = await storage.hasSavedReport(reportData.workOrderId);
+      final exists = await storage.hasSavedReport(data.workOrderId);
       if (exists) {
-        final savedResult = await storage.getSavedReport(reportData.workOrderId);
+        final savedResult = await storage.getSavedReport(data.workOrderId);
         switch (savedResult) {
           case Success<Uint8List, ValidationError>(:final value):
             generatedBytes.value = value;
-            try {
-              final path = await _tempPathResolver();
-              await _fileSaver(path, value);
-              filePath.value = path;
-              loading.value = false;
-              return;
-            } catch (e) {
-              loading.value = false;
-              errorMessage.value = 'Falha ao salvar arquivo temporário do laudo: $e';
-              return;
-            }
+            final saved = await _persistTempFile(data.workOrderId, value);
+            if (!saved) return;
+            loading.value = false;
+            return;
           case Failure<Uint8List, ValidationError>():
             // Se falhou ao ler do storage, continua para gerar normalmente com o generator
             break;
@@ -86,31 +108,64 @@ final class ReportPreviewController extends IKortexController {
       }
     }
 
-    final result = await pdfGenerator.generatePdf(reportData);
+    final result = await pdfGenerator.generatePdf(data);
 
     switch (result) {
       case Success<Uint8List, ValidationError>(:final value):
         generatedBytes.value = value;
         if (storage != null) {
           await storage.saveReport(
-            workOrderId: reportData.workOrderId,
+            workOrderId: data.workOrderId,
             bytes: value,
           );
         }
-        try {
-          final path = await _tempPathResolver();
-          await _fileSaver(path, value);
-          filePath.value = path;
-          loading.value = false;
-        } catch (e) {
-          loading.value = false;
-          errorMessage.value = 'Falha ao salvar arquivo temporário do laudo: $e';
-        }
+        final saved = await _persistTempFile(data.workOrderId, value);
+        if (!saved) return;
+        loading.value = false;
       case Failure<Uint8List, ValidationError>(:final value):
         loading.value = false;
         generatedBytes.value = null;
         filePath.value = null;
         errorMessage.value = value.message;
+    }
+  }
+
+  Future<ReportData?> _ensureReportData() async {
+    final current = _reportData;
+    if (current != null) return current;
+
+    final id = workOrderId;
+    final loader = reportDataLoader;
+    if (id == null || loader == null) {
+      loading.value = false;
+      errorMessage.value = 'Dados do laudo indisponíveis.';
+      return null;
+    }
+
+    final result = await loader(id);
+    switch (result) {
+      case Success<ReportData, ValidationError>(:final value):
+        _reportData = value;
+        return value;
+      case Failure<ReportData, ValidationError>(:final value):
+        loading.value = false;
+        generatedBytes.value = null;
+        filePath.value = null;
+        errorMessage.value = value.message;
+        return null;
+    }
+  }
+
+  Future<bool> _persistTempFile(String id, Uint8List bytes) async {
+    try {
+      final path = await (_tempPathResolver ?? _defaultTempPathResolver(id))();
+      await _fileSaver(path, bytes);
+      filePath.value = path;
+      return true;
+    } catch (_) {
+      loading.value = false;
+      errorMessage.value = 'Não foi possível salvar o arquivo temporário do laudo.';
+      return false;
     }
   }
 
@@ -132,9 +187,9 @@ final class ReportPreviewController extends IKortexController {
       );
       sharing.value = false;
       return result.isSuccess;
-    } catch (e) {
+    } catch (_) {
       sharing.value = false;
-      errorMessage.value = 'Falha ao acionar folha de compartilhamento: $e';
+      errorMessage.value = 'Não foi possível acionar o compartilhamento do laudo.';
       return false;
     }
   }

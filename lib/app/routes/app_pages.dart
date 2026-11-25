@@ -1,14 +1,32 @@
 // Gerador e roteador declarativo de páginas da aplicação ServiceTrack.
 
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:kortex_lib/kortex_lib.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../modules/auth/ui/auth_routes.dart';
+import '../../modules/checklists/data/checklist_answer_sqlite_repository.dart';
+import '../../modules/checklists/data/checklist_template_sqlite_repository.dart';
+import '../../modules/checklists/domain/entities/checklist_answer.dart';
+import '../../modules/checklists/domain/entities/checklist_template.dart';
 import '../../modules/checklists/ui/checklists_routes.dart';
+import '../../modules/customers/data/customer_sqlite_repository.dart';
 import '../../modules/customers/ui/customers_routes.dart';
 import '../../modules/home/ui/home_routes.dart';
+import '../../modules/profile/data/file_technician_profile_repository.dart';
 import '../../modules/profile/ui/profile_routes.dart';
+import '../../modules/reports/data/pdf_report_generator_adapter.dart';
+import '../../modules/reports/data/report_data_assembler.dart';
+import '../../modules/reports/data/report_storage_adapter.dart';
+import '../../modules/reports/data/share_service_adapter.dart';
+import '../../modules/reports/domain/models/report_data.dart';
+import '../../modules/reports/ui/reports_routes.dart';
 import '../../modules/schedule/ui/schedule_routes.dart';
 import '../../modules/settings/ui/settings_routes.dart';
+import '../../modules/work_orders/data/work_order_sqlite_repository.dart';
 import '../../modules/work_orders/ui/work_orders_routes.dart';
 import '../app_gate.dart';
 import '../app_services.dart';
@@ -27,6 +45,7 @@ class AppPages {
     ChecklistsRoutes? checklistsRoutes,
     SettingsRoutes? settingsRoutes,
     ScheduleRoutes? scheduleRoutes,
+    ReportsRoutes? reportsRoutes,
   })  : _authRoutes = authRoutes ?? AuthRoutes.fromServices(services),
         _initialHomeRoutes = homeRoutes,
         _initialCustomersRoutes = customersRoutes,
@@ -34,7 +53,8 @@ class AppPages {
         _initialProfileRoutes = profileRoutes,
         _initialChecklistsRoutes = checklistsRoutes,
         _initialSettingsRoutes = settingsRoutes,
-        _initialScheduleRoutes = scheduleRoutes {
+        _initialScheduleRoutes = scheduleRoutes,
+        _initialReportsRoutes = reportsRoutes {
     _initSubRoutes();
   }
 
@@ -48,6 +68,7 @@ class AppPages {
   final ChecklistsRoutes? _initialChecklistsRoutes;
   final SettingsRoutes? _initialSettingsRoutes;
   final ScheduleRoutes? _initialScheduleRoutes;
+  final ReportsRoutes? _initialReportsRoutes;
 
   HomeRoutes? _homeRoutes;
   CustomersRoutes? _customersRoutes;
@@ -56,6 +77,7 @@ class AppPages {
   ChecklistsRoutes? _checklistsRoutes;
   SettingsRoutes? _settingsRoutes;
   ScheduleRoutes? _scheduleRoutes;
+  ReportsRoutes? _reportsRoutes;
 
   void _initSubRoutes() {
     _homeRoutes = _initialHomeRoutes;
@@ -65,6 +87,7 @@ class AppPages {
     _checklistsRoutes = _initialChecklistsRoutes;
     _settingsRoutes = _initialSettingsRoutes;
     _scheduleRoutes = _initialScheduleRoutes;
+    _reportsRoutes = _initialReportsRoutes;
 
     final db = services.database;
     if (db != null) {
@@ -78,6 +101,111 @@ class AppPages {
       _checklistsRoutes ??= ChecklistsRoutes.fromDatabase(db);
       _settingsRoutes ??= SettingsRoutes.fromDatabase(db);
       _scheduleRoutes ??= ScheduleRoutes.fromDatabase(db);
+      _reportsRoutes ??= ReportsRoutes(
+        pdfGenerator: const PdfReportGeneratorAdapter(),
+        shareService: const ShareServiceAdapter(),
+        reportStorage: ReportStorageAdapter(),
+        reportDataLoader: _loadReportData,
+      );
+    }
+  }
+
+  Future<IResult<ReportData, ValidationError>> _loadReportData(
+    String workOrderId,
+  ) async {
+    final db = services.database;
+    if (db == null) {
+      return const Failure(
+        ValidationError(
+          code: 'REPORT_DATA_LOAD_FAILED',
+          message: 'Banco de dados indisponível para carregar o laudo.',
+        ),
+      );
+    }
+
+    try {
+      final workOrderRepository = WorkOrderSqliteRepository(provider: db);
+      final customerRepository = CustomerSqliteRepository(provider: db);
+      final templateRepository = ChecklistTemplateSqliteRepository(provider: db);
+      final answerRepository = ChecklistAnswerSqliteRepository(provider: db);
+      final profileRepository = FileTechnicianProfileRepository(
+        baseDir: getApplicationSupportDirectory,
+      );
+
+      final workOrdersResult = await workOrderRepository.findAll();
+      if (workOrdersResult.isFailure) {
+        final err = workOrdersResult.getOrNullFailure()!;
+        return Failure(
+          ValidationError(
+            code: err.code,
+            message: 'Não foi possível carregar a Ordem de Serviço.',
+          ),
+        );
+      }
+
+      final workOrder = workOrdersResult
+          .getOrNull()!
+          .where((wo) => wo.id == workOrderId)
+          .firstOrNull;
+      if (workOrder == null) {
+        return const Failure(
+          ValidationError(
+            code: 'REPORT_DATA_NOT_FOUND',
+            message: 'Ordem de Serviço não encontrada para gerar o laudo.',
+          ),
+        );
+      }
+
+      final customerResult = await customerRepository.findById(
+        workOrder.customerId,
+      );
+      final customer = customerResult.isSuccess
+          ? customerResult.getOrNull()
+          : null;
+
+      final profileResult = await profileRepository.load();
+      final profile = profileResult.isSuccess ? profileResult.getOrNull() : null;
+
+      Uint8List? technicianLogoBytes;
+      final logoPath = profile?.logoPath;
+      if (logoPath != null && logoPath.isNotEmpty) {
+        final logoFile = File(logoPath);
+        if (await logoFile.exists()) {
+          technicianLogoBytes = await logoFile.readAsBytes();
+        }
+      }
+
+      ChecklistTemplate? template;
+      final templateId = workOrder.checklistTemplateId;
+      if (templateId != null && templateId.isNotEmpty) {
+        final templateResult = await templateRepository.findById(templateId);
+        if (templateResult.isSuccess) {
+          template = templateResult.getOrNull();
+        }
+      }
+
+      var answers = const <ChecklistAnswer>[];
+      final answersResult = await answerRepository.findByWorkOrder(workOrderId);
+      if (answersResult.isSuccess) {
+        answers = answersResult.getOrNull()!;
+      }
+
+      final reportData = ReportDataAssembler.assemble(
+        workOrder: workOrder,
+        customer: customer,
+        technicianProfile: profile,
+        template: template,
+        answers: answers,
+        technicianLogoBytes: technicianLogoBytes,
+      );
+      return Success(reportData);
+    } catch (_) {
+      return const Failure(
+        ValidationError(
+          code: 'REPORT_DATA_LOAD_FAILED',
+          message: 'Não foi possível carregar os dados do laudo.',
+        ),
+      );
     }
   }
 
@@ -109,14 +237,23 @@ class AppPages {
         ),
       AppRoutes.profile => _profileRoutes?.edit(),
       AppRoutes.customers => _customersRoutes?.list(),
-      AppRoutes.workOrders => _workOrdersRoutes?.list(),
+      AppRoutes.workOrders => _workOrdersRoutes?.list(
+          onReport: (id) =>
+              _pushNamedWithArgs(AppRoutes.reportPreview, arguments: id),
+        ),
       AppRoutes.schedule => _scheduleRoutes?.schedule(
             onWorkOrderTapped: (id) => _pushNamed(AppRoutes.workOrders),
             onEmptySlotTapped: (date, time) => _pushNamed(AppRoutes.newWorkOrder),
-          ) ?? _workOrdersRoutes?.list(),
+          ) ??
+          _workOrdersRoutes?.list(
+            onReport: (id) =>
+                _pushNamedWithArgs(AppRoutes.reportPreview, arguments: id),
+          ),
       AppRoutes.newWorkOrder => _workOrdersRoutes?.form(),
       AppRoutes.checklists => _checklistsRoutes?.list(),
       AppRoutes.settings => _settingsRoutes?.edit(),
+      AppRoutes.reportPreview =>
+        _reportsRoutes?.preview(settings.arguments),
       _ => null,
     };
   }
@@ -124,6 +261,11 @@ class AppPages {
   void _pushNamed(String routeName) {
     final nav = navigatorKey?.currentState;
     nav?.pushNamed(routeName);
+  }
+
+  void _pushNamedWithArgs(String routeName, {Object? arguments}) {
+    final nav = navigatorKey?.currentState;
+    nav?.pushNamed(routeName, arguments: arguments);
   }
 
   void _pushNamedReplacement(String routeName) {

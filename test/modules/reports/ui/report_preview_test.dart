@@ -250,6 +250,65 @@ void main() {
 
       controller.dispose();
     });
+
+    test('Carrega ReportData por loader quando workOrderId é informado', () async {
+      final generatedBytes = Uint8List.fromList([37, 80, 68, 70, 77]);
+      final fakeGenerator = FakePdfReportGenerator(result: Success(generatedBytes));
+      final fakeShare = FakeShareService();
+      var loaderCalls = 0;
+
+      final controller = ReportPreviewController(
+        workOrderId: 'OS-1001',
+        reportDataLoader: (id) async {
+          loaderCalls++;
+          expect(id, 'OS-1001');
+          return const Success(sampleData);
+        },
+        pdfGenerator: fakeGenerator,
+        shareService: fakeShare,
+        tempPathResolver: () async => '/tmp/laudo_loader.pdf',
+        fileSaver: (_, _) async {},
+      );
+
+      await controller.generate();
+
+      expect(loaderCalls, 1);
+      expect(fakeGenerator.callCount, 1);
+      expect(controller.reportData.workOrderId, 'OS-1001');
+      expect(controller.generatedBytes.value, equals(generatedBytes));
+      expect(controller.errorMessage.value, isNull);
+      expect(controller.loading.value, isFalse);
+
+      controller.dispose();
+    });
+
+    test('Expõe erro amigável quando loader falha', () async {
+      final fakeGenerator = FakePdfReportGenerator();
+      final fakeShare = FakeShareService();
+
+      final controller = ReportPreviewController(
+        workOrderId: 'OS-404',
+        reportDataLoader: (_) async => const Failure(
+          ValidationError(
+            code: 'REPORT_DATA_LOAD_FAILED',
+            message: 'Ordem de Serviço não encontrada.',
+          ),
+        ),
+        pdfGenerator: fakeGenerator,
+        shareService: fakeShare,
+        tempPathResolver: () async => '/tmp/laudo_loader_err.pdf',
+        fileSaver: (_, _) async {},
+      );
+
+      await controller.generate();
+
+      expect(fakeGenerator.callCount, 0);
+      expect(controller.loading.value, isFalse);
+      expect(controller.generatedBytes.value, isNull);
+      expect(controller.errorMessage.value, 'Ordem de Serviço não encontrada.');
+
+      controller.dispose();
+    });
   });
 
   group('UC-05.02 / UC-05.03 - ReportPreviewPage & ReportsRoutes (Widget Test)', () {
@@ -385,6 +444,48 @@ void main() {
       await tester.pump(); // Inicia transição e montagem da rota escopada
       await tester.pump(const Duration(milliseconds: 300)); // Animação de rota
       await tester.pumpAndSettle(); // Aguarda estabilizar
+
+      expect(find.text('Laudo Técnico'), findsOneWidget);
+      expect(find.text('OS #OS-1001'), findsOneWidget);
+    });
+
+    testWidgets('ReportsRoutes aceita workOrderId com loader e monta preview', (tester) async {
+      final fakeGenerator = FakePdfReportGenerator();
+      final fakeShare = FakeShareService();
+
+      final routes = ReportsRoutes(
+        pdfGenerator: fakeGenerator,
+        shareService: fakeShare,
+        reportDataLoader: (id) async {
+          expect(id, 'OS-1001');
+          return const Success(sampleData);
+        },
+        tempPathResolver: () async => '/tmp/laudo_route_loader.pdf',
+        fileSaver: (_, _) async {},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: ElevatedButton(
+                  key: const Key('btn-open-preview-by-id'),
+                  onPressed: () {
+                    Navigator.of(context).push(routes.preview('OS-1001'));
+                  },
+                  child: const Text('Abrir Preview'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byKey(const Key('btn-open-preview-by-id')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
 
       expect(find.text('Laudo Técnico'), findsOneWidget);
       expect(find.text('OS #OS-1001'), findsOneWidget);
