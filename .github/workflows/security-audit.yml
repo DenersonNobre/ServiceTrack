@@ -1,0 +1,38 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-audit:
+    name: Dependency Audit (D-02)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Setup do Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: 'stable'
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Instalar osv-scanner
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/google/osv-scanner/main/scripts/install.sh \
+            | sudo sh -s -- -b /usr/local/bin
+
+      - name: Auditoria de dependencias/CVE (D-02)
+        env:
+          REQUIRE_OSV_SCANNER: '1'
+        run: bash scripts/ci/security-audit.sh

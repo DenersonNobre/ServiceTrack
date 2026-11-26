@@ -8,7 +8,7 @@
 | **Dependências Diretas** | `EPIC00`, `EPIC01`, `EPIC05`, `EPIC07` (conforme fatia) |
 | **Prioridade** | Média (proposta — aguarda priorização PO) |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Proposto (backlog PO; sem claim ativo)` |
+| **Status Atual** | `Em andamento (UC-08.04 concluído localmente; demais UCs propostos)` |
 | **Referências** | [PRD](../../product/PRD.md) \| [SPEC](../../architecture/SPEC.md) \| [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
@@ -35,7 +35,7 @@ Consolidar pendências residuais de segurança/compliance, operação offline e 
 | **UC-08.01** | Hardening Residual D-01 (full-db/iOS/Keystore) | EPIC00/EPIC01 | INVOKED (superfície sensível: armazenamento/segredos) | `Proposto` |
 | **UC-08.02** | Backup/Exportação Segura Local (RF-13) | EPIC00/EPIC03/EPIC05 | INVOKED (PII/exportação/backup) | `Proposto` |
 | **UC-08.03** | Compliance LGPD do Documento do Recebedor | EPIC04/EPIC07 | INVOKED (PII/LGPD) | `Proposto` |
-| **UC-08.04** | Rate-limit de Credencial & Auditoria CVE | EPIC01 | INVOKED (auth/dependências) | `Proposto` |
+| **UC-08.04** | Rate-limit de Credencial & Auditoria CVE | EPIC01 | INVOKED (auth/dependências) | `Concluído (local; CI security-audit pendente no push)` |
 
 ---
 
@@ -103,14 +103,15 @@ Consolidar pendências residuais de segurança/compliance, operação offline e 
 ### Caso de Uso UC-08.04 — Rate-limit de Credencial & Auditoria CVE
 
 * **Identificador**: `UC-08.04`
-* **Status**: `Proposto`
-* **Gate 2.5**: `INVOKED (auth/dependências).`
+* **Status**: `Concluído (local; CI security-audit pendente no push)`
+* **Gate 2.5**: `INVOKED (auth/dependências) — sem nova superfície de auth; adicionada dependência CI (osv-scanner install script/action de workflow) com escopo restrito a leitura de pubspec.lock; sem segredos.`
 
 #### Narrativa
 - **Como** mantenedor do produto
 - **Eu quero** reduzir risco de brute force local e de dependências vulneráveis
 - **Para que** o hardening de segurança seja contínuo.
 
-#### Critérios iniciais
-- Rate-limit/backoff para verificação de senha mestre (D-03), sem UX degradante.
-- Rotina de auditoria CVE/dependências (D-02) com evidência reproduzível.
+#### Evidência
+- **D-03 (fechado por evidência, código já existente)**: `SecureCredentialStore.verifyPassword` já aplica lockout/backoff exponencial (`passwordFailCountKey`, `passwordLockedUntilKey`, `maxAttempts`, `baseLockout`, `maxLockout`), limpa contadores em sucesso. Evidência: `lib/modules/auth/data/credential_store/secure_credential_store.dart`, `test/modules/auth/data/credential_recovery_test.dart` ("verifyPassword aplica rate-limit/backoff (A1)", "lockout de senha expira (A1)"). DEBITOS atualizado para Mitigado.
+- **D-02 (rotina reproduzível)**: `scripts/ci/security-audit.sh` (falha em advisory atual via `flutter pub outdated --json`; roda `osv-scanner` sobre `pubspec.lock` quando disponível; `REQUIRE_OSV_SCANNER=1` no CI). Workflow `.github/workflows/security-audit.yml` executa em push/PR/schedule/dispatch.
+- **Verificação local 2026-11-25**: `flutter analyze --fatal-infos` limpo; `flutter test` **314/314 passed**; `flutter pub outdated --json` sem `isCurrentAffectedByAdvisory=true`.

@@ -1,37 +1,30 @@
 # UC-CURRENT — Handoff de Estado
 
 ## Metadados
-- **Fatia (Slice)**: `OPS-EPIC04-E2E-DEVICE` — E2E de device do EPIC-04
-- **UC**: `UC-04.09` — UC-04.09 (Modelos de checklist alcançáveis)
-- **Status**: CONCLUÍDO em código+testes; **E2E device pendente** (install bloqueado MIUI intermitente, sonda e fluxo escritos)
-- **Dono**: `opc01@e03ff640`
-- **Épico**: `EPIC-04`
-- **Gate 2.5 (Segurança)**: PULADO — artefato de teste (`integration_test/`) + chaves de widget; sem nova superfície sensível (nenhuma coleta/transmissão de PII, nenhuma dependência nova de rede).
-- **Última Atualização**: `2026-11-22`
+- **Fatia (Slice)**: `UC-08.04` — Rate-limit de Credencial & Auditoria CVE
+- **UC**: `UC-08.04`
+- **Status**: `CONCLUÍDO (local; CI security-audit pendente no push)`
+- **Dono**: `cod01@local001`
+- **Épico**: `EPIC-08`
+- **Gate 2.5 (Segurança)**: INVOKED — superfície auth/dependências: D-03 verificado por evidência (sem nova superfície de auth); D-02 adiciona workflow CI com instalação de osv-scanner e leitura de `pubspec.lock` (sem segredos, sem execução de código de dependência). Sem PII nova.
+- **Última Atualização**: `2026-11-25`
 
 ## Contexto Atual
-- **Sonda medida em device real** (`integration_test/epic04_probe.dart`, executada com sucesso): rota inicial = **onboarding** (`[PROBE] tela inicial: [Crie seu acesso, ...]`) e **GPS OK em 2558 ms** (`lat=-16.7318355, lon=-43.8568404`). Conclusão de OS exige fix de GPS e **não tem bypass**, então a sonda era pré-requisito real do E2E — e foi medida, não presumida.
-- **E2E escrito**: `integration_test/epic04_flow.dart` cobre `onboarding → cliente → OS (cliente + modelo) → check-in → checklist → conclusão`, com asserção computada em cada elo. Fica fora do glob de `flutter test` (sem sufixo `_test`) para o gate headless não tentar rodar E2E sem plugin nativo.
-- **Asserções que provam o contrato**: `IN_PROGRESS` só aparece se o check-in **sem bypass** deu certo (GPS real); `selectedStatus == conforme` é relido do controller após persistir cada item (prova escrita no banco, não só cor do botão); `COMPLETED` só sai com assinatura desenhada + GPS de check-out.
-- **Testabilidade**: os quatro `_Field` do onboarding não tinham `key` — adicionadas `onboarding-name|email|password|pin` + `onboarding-submit` para o E2E nao depender de índice de campo.
-- **Armadilha do ambiente de teste**: `adb shell pm clear` **revoga permissão de runtime**. Sem reconceder `ACCESS_FINE/COARSE_LOCATION` após o `pm clear`, o check-in abre diálogo nativo (que o Dart não toca) e falharia por motivo errado.
-- **Bloqueio medido (install)**: `adb -s 192.168.67.65:5555 install -r -t app-debug.apk` → `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`. Na mesma sessão esse **mesmo comando retornou `Success` uma vez**, sem alteração de configuração no aparelho — logo não é bloqueio permanente. `settings put secure adb_install_need_confirm 0` **não** resolveu (a chave estava `null` e continua recusando). Causa ainda **não determinada**; atribuição anterior ("falta Instalar via USB, exige conta Mi") foi refutada e corrigida no `LEARNINGS.md`.
-- **Hang sem falha (2026-11-23)**: `flutter test integration_test/epic04_flow.dart -d ...` instalou (`37,7s`) e imprimiu `00:00 +0: EPIC-04...`, depois **18:31 de silêncio** até `did not complete` + `No tests were found`. [FATO] Todas as esperas do teste têm deadline (máx 120 s) e terminam em `fail()` com a tela impressa — um stall de rota falharia em ~90 s, não em 18 min. [FATO] App ficou em foreground (`MainActivity`), secure storage **sem credenciais** (só keysets) e **nenhum `.db`** no data dir → rota esperada era onboarding, sem motivo para stall. [HIPÓTESE] O host perdeu o link do observatory sobre o adb-wifi (instalação a 37 s já indica link lento) e nunca recebeu os eventos do device. Mitigações aplicadas na rerun: `screen_off_timeout=1800000`, `pm clear` + grants refeitos, heartbeat `debugPrint('[E2E]...')` em `esperarPor` (visível no logcat mesmo sem o host) e `--no-uninstall` para perícia post-mortem.
-- **Consequência de método**: `epic04_probe.dart` **foi executado** (evidência acima); `epic04_flow.dart` **não foi** — e não é reportado como validado.
+- **D-03 fechado por evidência**: `SecureCredentialStore.verifyPassword` já possui lockout/backoff exponencial (`passwordFailCountKey`, `passwordLockedUntilKey`, `maxAttempts`, `baseLockout`, `maxLockout`), limpa contadores em sucesso. Evidência: `lib/modules/auth/data/credential_store/secure_credential_store.dart`, `test/modules/auth/data/credential_recovery_test.dart` (`verifyPassword aplica rate-limit/backoff (A1)`, `lockout de senha expira (A1)`). `docs/DEBITOS.md` atualizado para Mitigado.
+- **D-02 mitigado com rotina reproduzível**: `scripts/ci/security-audit.sh` (falha se `flutter pub outdated --json` sinalizar `isCurrentAffectedByAdvisory=true`; roda `osv-scanner` sobre `pubspec.lock` quando disponível; `REQUIRE_OSV_SCANNER=1` no CI). Workflow `.github/workflows/security-audit.yml` (push/PR/schedule/dispatch) instala osv-scanner e executa a rotina.
+- **Verificação local**: `flutter analyze --fatal-infos` = No issues found; `flutter test` = **314/314 passed**; `flutter pub outdated --json` sem advisory atual.
 
 ## [EVIDENCIA]
-- Leitura: `integration_test/epic04_flow.dart` → 6 etapas com `esperarPor`/asserticao por etapa; `lib/modules/auth/ui/onboarding/onboarding_page.dart` → `_Field(fieldKey:)` + `onboarding-submit`; `lib/modules/work_orders/ui/list/work_order_list_page.dart` → menu `Iniciar atendimento`/`Checklist`/`Concluir OS` exigindo `IN_PROGRESS` para os dois últimos.
-- Verificação: `adb devices` → `192.168.67.65:5555 device`; `flutter test integration_test/epic04_probe.dart -d 192.168.67.65:5555` → `[PROBE] GPS OK em 2558ms`; `flutter test integration_test/epic04_flow.dart -d ...` → **falhou no install**, antes de executar o teste (`Failed to load ...: Unable to start the app on the device`).
-- Confirmação: `flutter analyze --fatal-infos` → `No issues found!`; `flutter test` → `+221 All tests passed!`; `flutter test integration_test/epic04_flow.dart -d ...` → **falhou no install**, antes de executar o teste (`Failed to load ...: Unable to start the app on the device`).
+- Leitura: `lib/modules/auth/data/credential_store/secure_credential_store.dart:57-60,190-230,424-447` → lockout/backoff de senha presente.
+- Verificação: `dart pub audit` indisponível no Dart 3.13.5 (confirmado); `flutter pub outdated --json` sem `isCurrentAffectedByAdvisory=true`.
+- Confirmação: `flutter analyze --fatal-infos` → No issues found; `flutter test` → 314/314 passed.
 
 ## Próximo passo
-1. Bissecar o tap fantasma em `home-customers`: botão habilitado (`onPressed null? false` medido), tap sem throw e sem navegação. Candidatas: (a) gesto absorvido por outro widget na coordenada — testar via `find.byTooltip('Clientes')`; (b) rota `CustomersRoutes.list()` falhando no build com repos reais — reproduzir em widget test headless com fakes. Uma hipótese por vez.
-2. Com navegação OK: `adb shell pm clear com.servicetrack.service_track`, reconceder as duas permissões de localização e rodar `flutter test integration_test/epic04_flow.dart -d 192.168.67.65:5555`.
-3. **Push**: pendente de autorização explícita do PO + 3 evidências.
-4. **D-01/C-01**: persiste bloqueando persistência de documento do recebedor por design (fail-closed).
+1. Commit atômico UC-08.04 + release claim.
+2. Push com autorização explícita do PO + acompanhar CI (inclui `Security Audit`).
+3. Priorizar próximo slice EPIC-08 (UC-08.01/08.02/08.03).
 
 ## Travas Vivas
-- **Claims**: `OPS-EPIC04-E2E-DEVICE` (`opc01@e03ff640`); `claims status` antes de mutar.
+- **Claims**: sem claim ativo.
 - **Push**: somente com autorização explícita do PO + 3 evidências.
-- **D-01/C-01**: persiste bloqueando documento do recebedor por design (fail-closed).
-- **Greenfield Lock**: **DESTRAVADO**.
+- **D-01/C-01 residual**: LGPD formal/full-db/iOS pendentes (EPIC-08).

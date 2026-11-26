@@ -20,7 +20,7 @@
 | **05 — Motor de Laudo PDF & Compartilhamento** | [epic-05-laudo-pdf-share.md](epics/epic-05-laudo-pdf-share.md) | EPIC00, EPIC03, EPIC04 | Crítica (Core) | `Concluído (evidência local/device 2026-11-25; INV-05 validado on-device)` |
 | **06 — Hardening Técnico & Qualidade Transversal** | [epic-06-hardening-qualidade.md](epics/epic-06-hardening-qualidade.md) | EPIC00, EPIC03 | Média | `Concluído` |
 | **07 — Configurações & Políticas Locais** | [epic-07-configuracoes-politicas.md](epics/epic-07-configuracoes-politicas.md) | EPIC00, EPIC01 | Média | `Concluído (G4 c/ ressalvas)` |
-| **08 — Hardening Residual, Backup & Compliance Operacional** | [epic-08-hardening-residual-backup-compliance.md](epics/epic-08-hardening-residual-backup-compliance.md) | EPIC00, EPIC01, EPIC05, EPIC07 | Média | `Proposto (backlog PO)` |
+| **08 — Hardening Residual, Backup & Compliance Operacional** | [epic-08-hardening-residual-backup-compliance.md](epics/epic-08-hardening-residual-backup-compliance.md) | EPIC00, EPIC01, EPIC05, EPIC07 | Média | `Em andamento (UC-08.04 concluído localmente)` |
 
 ---
 
@@ -68,4 +68,4 @@ graph TD
 6. **EPIC04 (Checklists & Fotos + Reconciliação D-05)**: Implementado em código/testes (UC-04.01–04.09, D-05 mitigado, assinatura canônica). E2E device verde (M2010J19CG, Android 10, 2026-11-25). D-01/C-01 parcialmente mitigado por cifragem de campo AES-GCM do `documentNumber` (chave Keystore/Keychain, fail-closed); residual: política LGPD formal, full-db, iOS.
 7. **EPIC06 (Hardening Técnico & Qualidade)**: Concluído — UC-06.01..06.05 (catálogos de falha + gate com prova negativa; tokens 48dp; `SignaturePadWidget` em Kortex com `setState` zero; `AppDependencies` + `*Routes`; `qa-review-v0.20.0.md`). A suíte tinha **210 testes verdes** no Gate 4 original; o checkpoint posterior registra 296.
 8. **EPIC05 (Laudo PDF & WhatsApp)**: Concluído (evidência local/device 2026-11-25). Gerador PDF, preview, share adapter, cache local, wiring em `AppPages`, `ReportDataAssembler`, histórico visual dedicado e asserções de conteúdo do PDF implementados; INV-05 validado on-device (M2010J19CG, Android 10). Ausência de congelamento de UI permanece observação qualitativa. Detalhes no [épico 05](epics/epic-05-laudo-pdf-share.md).
-9. **EPIC08 (Hardening Residual, Backup & Compliance — Proposto)**: backlog PO para residual D-01 (full-db/iOS/Keystore fabricante), RF-13 backup/export seguro, residual C-01 LGPD, D-02 CVE, D-03 rate-limit. Ver [épico 08](epics/epic-08-hardening-residual-backup-compliance.md).
+9. **EPIC08 (Hardening Residual, Backup & Compliance — Em andamento)**: UC-08.04 concluído localmente (D-03 fechado por evidência; D-02 rotina reproduzível `security-audit.sh` + workflow Security Audit). Restam UC-08.01 (full-db/iOS/Keystore fabricante), UC-08.02 (RF-13 backup/export seguro), UC-08.03 (residual C-01 LGPD). Ver [épico 08](epics/epic-08-hardening-residual-backup-compliance.md).
