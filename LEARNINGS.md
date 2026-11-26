@@ -288,3 +288,9 @@ Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas d
 ### 3. Correção de teclado refutada para este caso (registrar a refutação, não só o fix)
 - O `tocar` foi reforçado (unfocus + `pumpAndSettle` com fallback antes de mirar) sob a hipótese "teclado desloca a coordenada". Três execuções depois: mesmo elo travado, mesmo sintoma. Hipótese **refutada pelo experimento**, e o reforço ficou como higiene (não como causa).
 - Em aberto: tap acerta algo sem throw e sem navegar, com botão habilitado — bissecar gesto absorvido (`find.byTooltip('Clientes')`) vs. rota falhando no build com repos reais (reproduzir headless com fakes). Uma hipótese por vez.
+
+## 2026-11-25 — UC-08.04: D-03 stale, rotina D-02/osv-scanner em CI
+
+- **Dívida documentada pode estar obsoleta — confirme no código antes de implementar.** [FATO] D-03 dizia "`verifyPassword` sem rate-limit (só o PIN tem bloqueio)"; o código já tinha lockout/backoff exponencial (`passwordFailCountKey`/`passwordLockedUntilKey`, limpa em sucesso) e testes `credential_recovery_test` (A1 + expiração). Implementar "rate-limit" teria sido retrabalho/desperdício. **Regra**: antes de executar item de DEBITOS, validar estado atual no código+testes e atualizar o débito por evidência.
+- **`dart pub audit` ausente no Dart 3.13.5**; rotina reproduzível: `flutter pub outdated --json` (sinaliza `isCurrentAffectedByAdvisory`) + `osv-scanner scan source -L pubspec.lock` (v2) no CI. [FATO]
+- **osv-scanner em CI: pinar binário de release, não adivinhar URL de install script.** [FATO] `https://raw.githubusercontent.com/google/osv-scanner/main/scripts/install.sh` retornou 404; fix: download pinado `https://github.com/google/osv-scanner/releases/download/v2.7.1/osv-scanner_linux_amd64` + `chmod +x`. Tornar ausência fatal no CI (`REQUIRE_OSV_SCANNER=1`) para o gate não degradar silenciosamente.
