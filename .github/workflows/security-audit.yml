@@ -29,8 +29,11 @@ jobs:
 
       - name: Instalar osv-scanner
         run: |
-          curl -sSfL https://raw.githubusercontent.com/google/osv-scanner/main/scripts/install.sh \
-            | sudo sh -s -- -b /usr/local/bin
+          OSV_VERSION="v2.7.1"
+          curl -sSfL "https://github.com/google/osv-scanner/releases/download/${OSV_VERSION}/osv-scanner_linux_amd64" \
+            -o /usr/local/bin/osv-scanner
+          chmod +x /usr/local/bin/osv-scanner
+          osv-scanner --version
 
       - name: Auditoria de dependencias/CVE (D-02)
         env:
