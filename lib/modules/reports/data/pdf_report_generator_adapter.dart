@@ -10,6 +10,7 @@ import 'package:kortex_lib/kortex_lib.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../core/security/document_redactor.dart';
 import '../domain/models/report_data.dart';
 import '../domain/ports/pdf_report_generator_port.dart';
 import '../domain/ports/report_failure_codes.dart';
@@ -501,7 +502,7 @@ final class PdfReportGeneratorAdapter implements IPdfReportGeneratorPort {
                 style: pw.TextStyle(fontSize: 7, color: gray700),
               ),
               if (data.signerDocument != null)
-                pw.Text('Doc: ${data.signerDocument}', style: pw.TextStyle(fontSize: 6, color: gray700)),
+                pw.Text('Doc: ${DocumentRedactor.redact(data.signerDocument)}', style: pw.TextStyle(fontSize: 6, color: gray700)),
             ],
           ),
         ],

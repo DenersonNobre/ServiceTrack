@@ -2,6 +2,24 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-27 — Compliance LGPD do Documento do Recebedor (UC-08.03 / C-01, C-11)
+
+### 1. Mascaramento (`Redaction`) Universal de Documentos PII
+- **Fato**: A captura de documento do recebedor na conclusão de OS é sensível sob a LGPD. Exibir o documento completo em compartilhamentos e laudos PDF aumenta a superfície de vazamento em caso de reencaminhamento indevido de relatórios.
+- **Decisão**: Criação do utilitário canônico `DocumentRedactor.redact(document)`.
+  - **CPF**: `***.456.789-**` (ofusca os 3 primeiros e os 2 dígitos verificadores).
+  - **CNPJ**: `**.345.678/0001-**` (ofusca os 2 primeiros e os 2 dígitos verificadores).
+  - **Outros/Alfanuméricos**: Oculta extremidades preservando o miolo central (`**...**`).
+  - **Zero vazamento**: Integrado diretamente na geração do laudo PDF (`PdfReportGeneratorAdapter`) e nas representações `toString()` de `WorkOrder` e `DigitalSignature`.
+
+### 2. Higienização Resiliente de Arquivos Temporários de Compartilhamento (C-11)
+- **Fato**: Cada compartilhamento de laudo PDF ou imagem gera arquivos no diretório temporário do SO (`getTemporaryDirectory`), consumindo espaço em disco e acumulando cópias não criptografadas de relatórios.
+- **Solução**: Implementado `TemporaryFileCleaner` para expurgar arquivos por idade (`maxAge`) ou limpeza forçada (`cleanAll`).
+- **Resiliência a Concorrência**: Erros de I/O em arquivos individuais (como locks temporários do Android/Windows ao compartilhar) são ignorados de forma segura dentro do loop de deleção, garantindo que o restante da fila seja limpo com sucesso.
+- **Anti-String-Mágica**: Criado `StorageFailureCodes.cleanupFailed` em estrita conformidade com a regra M-08.
+
+---
+
 ## 2026-11-27 — Backup & Restauração Segura Local (UC-08.02 / RF-13)
 
 ### 1. Cifragem Autenticada com AES-GCM 256 e PBKDF2

@@ -154,6 +154,7 @@ void main() {
         'Carlos Silva',
         'Recebedor:',
         'da Silva',
+        '***.456.789-**',
       ]);
     });
 
