@@ -2,6 +2,27 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-27 — Backup & Restauração Segura Local (UC-08.02 / RF-13)
+
+### 1. Cifragem Autenticada com AES-GCM 256 e PBKDF2
+- **Fato**: Backups locais contêm PII crítico dos clientes e ordens de serviço. Exportar em claro violaria as diretrizes de segurança da informação (LGPD e PRD v2.0).
+- **Decisão**: Cifragem com `enc.AES(derivedKey, mode: enc.AESMode.gcm)`. O IV de 12 bytes e a tag de autenticação garantem sigilo e integridade contra adulteração (bit-flipping attacks).
+- **Derivação**: Chave de 256 bits derivada da senha do usuário com PBKDF2-HMAC-SHA256 (10.000 iterações + Salt seguro de 16 bytes).
+- **Fail-Closed**: Senha incorreta ou payload corrompido aborta a decifragem imediatamente com falha tipada de validação (`ValidationError`), sem tocar no banco ativo.
+
+### 2. Transação Atômica de Restauração no SQLite com Ordenação de Foreign Keys
+- **Fato**: Se a restauração falhar no meio do processo ou a integridade dos dados for comprometida, o banco de dados ativo não pode ficar inconsistente.
+- **Solução**: Restauração empacotada 100% dentro de `db.transaction((txn) async { ... })`.
+- **Ordem de Limpeza**: A limpeza das tabelas precisa ocorrer na ordem inversa das dependências (`checklist_answers` -> `checklist_items` -> `work_orders` -> `service_locations` -> `customers` -> `app_settings`) para não disparar erro de integridade referencial antes da reconstrução.
+- **Integridade**: Verificação de checksum SHA-256 no payload decifrado antes de iniciar a transação no SQLite.
+
+### 3. Gotcha Técnico: I/O de Arquivo e `FakeAsync` em `testWidgets`
+- **Sintoma**: Testes de widget que interagem com o sistema de arquivos local (`File.writeAsBytes`, `Directory.listSync`) travam com timeout dentro de `testWidgets`.
+- **Causa Raiz**: O runtime de `testWidgets` opera com relógio simulado (`FakeAsync`). Operações reais de I/O em isolado nativo não avançam sem a ponte assíncrona real.
+- **Solução**: Isolar chamadas de leitura/escrita física em `tester.runAsync(() async { ... })`, mantendo o `pumpWidget` e `pumpAndSettle` para asserções visuais.
+
+---
+
 ## 2026-11-25 — Evolução da Agenda (2D Fullscreen e Timeline Diária) e Formatação Universal com Kortex
 
 ### 1. Calendário Mensal em Tela Cheia com Navegação Bidimensional

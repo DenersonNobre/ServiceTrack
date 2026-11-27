@@ -3,11 +3,14 @@ import 'package:kortex/kortex.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/.index.dart';
+import '../../backup/.index.dart';
 import 'settings_controller.dart';
 
 /// Tela de configurações locais (UC-07.02).
 final class SettingsPage extends IKortexPage<SettingsController> {
-  const SettingsPage({super.key});
+  const SettingsPage({this.backupController, super.key});
+
+  final BackupController? backupController;
 
   @override
   Widget buildPage(BuildContext context, SettingsController controller) {
@@ -197,6 +200,10 @@ final class SettingsPage extends IKortexPage<SettingsController> {
                               },
                       ),
                     ),
+                    if (backupController != null) ...[
+                      const Divider(height: 32),
+                      BackupSettingsSection(controller: backupController!),
+                    ],
                   ],
                 );
               },
