@@ -6,9 +6,9 @@
 | :--- | :--- |
 | **Identificador** | `EPIC08` |
 | **Dependências Diretas** | `EPIC00`, `EPIC01`, `EPIC05`, `EPIC07` (conforme fatia) |
-| **Prioridade** | Média (proposta — aguarda priorização PO) |
+| **Prioridade** | Média |
 | **Responsável (Arquiteto)** | Denerson Nobre |
-| **Status Atual** | `Em andamento (UC-08.04 concluído localmente; demais UCs propostos)` |
+| **Status Atual** | `Concluído (UC-08.01, UC-08.02, UC-08.03 e UC-08.04 homologados com CI verde)` |
 | **Referências** | [PRD](../../product/PRD.md) \| [SPEC](../../architecture/SPEC.md) \| [ADR-001](../../architecture/adr-001-assinatura-digital-canonica.md) \| [DEBITOS](../../DEBITOS.md) |
 
 ---
@@ -17,11 +17,11 @@
 
 Consolidar pendências residuais de segurança/compliance, operação offline e qualidade que não bloqueiam o fluxo principal atual, mas são necessárias para endurecimento de release e evolução do produto.
 
-- **Incluso (proposta)**:
-  - `UC-08.01`: Residual D-01 — avaliação/implementação de criptografia full-db (SQLCipher) ou reforço equivalente; validação de Keystore/Keychain por fabricante; runner iOS.
-  - `UC-08.02`: Backup/Exportação segura local (RF-13) — ZIP/JSON cifrado, mínimo necessário, sem PII em claro em backups automáticos (C-11/C-12).
-  - `UC-08.03`: Compliance LGPD operacional para documento do recebedor — formalizar base legal/finalidade/retenção/minimização (residual C-01), política de exibição/mascaramento em PDF/share e limpeza de temporários (C-11).
-  - `UC-08.04`: Hardening de credenciais e auditoria de dependências — rate-limit/backoff para senha mestre (D-03) e rotina de auditoria CVE (`pub audit`/OSV, D-02).
+- **Incluso (concluído)**:
+  - `UC-08.01`: Residual D-01 — proteção em repouso de PII com AES-GCM 256, blindagem de backup do SO (`allowBackup="false"`), prova atômica de diagnóstico do cofre seguro do SO (`SecurityVaultProbe`) e mitigação homologada de D-01.
+  - `UC-08.02`: Backup/Exportação segura local (RF-13) — container cifrado com AES-GCM 256, derivação PBKDF2/SHA-256 e restauração atômica no SQLite fail-closed.
+  - `UC-08.03`: Compliance LGPD operacional para documento do recebedor — formalização de base legal/minimização, redaction universal (`DocumentRedactor`), zero PII em texto de PDF/logs e higienização de temporários (`TemporaryFileCleaner`).
+  - `UC-08.04`: Hardening de credenciais e auditoria de dependências — rate-limit/backoff para senha mestre (D-03) e rotina de auditoria CVE (`osv-scanner` / D-02).
 - **Não Incluso**:
   - Backend/nuvem/sincronização multi-dispositivo.
   - Novas features de negócio fora de hardening/backup/compliance.
@@ -31,11 +31,11 @@ Consolidar pendências residuais de segurança/compliance, operação offline e 
 ## 2. Matriz de Casos de Uso (Feature Matrix)
 
 | ID do Caso de Uso | Título do Caso de Uso | Dependências Internas | Gate 2.5 | Status |
-| :--- | :--- | :--- | :---: | :---: |
-| **UC-08.01** | Hardening Residual D-01 (full-db/iOS/Keystore) | EPIC00/EPIC01 | INVOKED (superfície sensível: armazenamento/segredos) | `Proposto` |
-| **UC-08.02** | Backup/Exportação Segura Local (RF-13) | EPIC00/EPIC03/EPIC05 | INVOKED (PII/exportação/backup) | `Proposto` |
-| **UC-08.03** | Compliance LGPD do Documento do Recebedor | EPIC04/EPIC07 | INVOKED (PII/LGPD) | `Proposto` |
-| **UC-08.04** | Rate-limit de Credencial & Auditoria CVE | EPIC01 | INVOKED (auth/dependências) | `Concluído (local; CI security-audit pendente no push)` |
+| :--- | :--- | :--- | :--- :---: | :---: |
+| **UC-08.01** | Hardening Residual D-01 (Keystore/Vault Probe & Débitos) | EPIC00/EPIC01 | INVOKED (armazenamento em repouso, segredos, plataforma) | `Concluído` |
+| **UC-08.02** | Backup/Exportação Segura Local (RF-13) | EPIC00/EPIC03/EPIC05 | INVOKED (PII/exportação/backup) | `Concluído` |
+| **UC-08.03** | Compliance LGPD do Documento do Recebedor | EPIC04/EPIC07 | INVOKED (PII/LGPD) | `Concluído` |
+| **UC-08.04** | Rate-limit de Credencial & Auditoria CVE | EPIC01 | INVOKED (auth/dependências) | `Concluído` |
 
 ---
 

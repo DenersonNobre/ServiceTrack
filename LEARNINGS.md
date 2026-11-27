@@ -2,6 +2,24 @@
 
 Este arquivo registra aprendizados, armadilhas superadas e decisões técnicas do **ServiceTrack**.
 
+## 2026-11-27 — Hardening Residual D-01 & Diagnóstico de Cofre Seguro do SO (UC-08.01)
+
+### 1. Diagnóstico Atômico de Integridade de Cofre (`SecurityVaultProbe`)
+- **Fato**: Chamadas a `FlutterSecureStorage` (Android Keystore / iOS Keychain) podem falhar silenciosamente ou congelar em devices com falha no Trusted Execution Environment (TEE) ou keystores corrompidos.
+- **Decisão**: Criação do serviço `SecurityVaultProbe.checkVaultAvailability()`.
+- **Protocolo**:
+  1. Gera um token randômico efêmero com timestamp em microsegundos (`probe_${ts}_${rand}`).
+  2. Executa escrita física no cofre.
+  3. Realiza leitura imediata e verifica se o valor lido é idêntico ao gravado.
+  4. Deleta a chave efêmera garantindo resíduo zero.
+- **Fail-Safe**: Qualquer divergência de leitura ou erro de plataforma retorna `Failure(ValidationError(code: DocumentAtRestFailureCodes.vaultUnavailable))` tipado (M-08), sem emitir exceções não tratadas para a árvore de widgets.
+
+### 2. Mitigação Consolidada do Débito D-01 (Armazenamento em Repouso)
+- **Decisão Arquitetural**: A introdução de SQLCipher (criptografia total de banco SQLite) adiciona complexidade significativa de compilação C/C++ nativa e incompatibilidade com FFI em múltiplos hosts de desenvolvimento.
+- **Solução Equivalente Homologada**: Os dados sensíveis que exigem confidencialidade estrita (PII de documento de recebedor, backups) recebem cifragem autenticada por campo com AES-GCM 256 (`AesGcmDocumentAtRestCipher` e `SqliteBackupService`), e as configurações de manifesto do Android desabilitam backups não autorizados (`allowBackup="false"` e `fullBackupContent="false"`). O débito D-01 transita formalmente para `Mitigado`.
+
+---
+
 ## 2026-11-27 — Compliance LGPD do Documento do Recebedor (UC-08.03 / C-01, C-11)
 
 ### 1. Mascaramento (`Redaction`) Universal de Documentos PII
