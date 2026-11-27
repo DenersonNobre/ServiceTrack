@@ -23,7 +23,14 @@ final class BackupController extends IKortexController {
     required this.inspectBackupUseCase,
     required this.restoreBackupUseCase,
     BackupFileAdapter? fileAdapter,
-  }) : fileAdapter = fileAdapter ?? const BackupFileAdapter();
+  }) : fileAdapter = fileAdapter ?? const BackupFileAdapter() {
+    autoDispose(status);
+    autoDispose(localBackups);
+    autoDispose(inspectedMetadata);
+    autoDispose(selectedBackupPath);
+    autoDispose(errorMessage);
+    autoDispose(successMessage);
+  }
 
   final ExportBackupUseCase exportBackupUseCase;
   final InspectBackupUseCase inspectBackupUseCase;
